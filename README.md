@@ -74,6 +74,35 @@ installer distribution, see `LICENSE-NOTICE-TEMPLATE.md`.
 
 To start the system, just say `gforth` (after installing it).
 
+## Fork Synchronization
+
+In this fork, `origin` is expected to point to the fork repository and
+`upstream` is expected to point to the original repository:
+
+```powershell
+git remote -v
+```
+
+To bring upstream changes into this fork:
+
+```powershell
+git fetch upstream
+git checkout main
+git merge upstream/main
+git push origin main
+```
+
+If you prefer a linear history, replace `merge` with `rebase`:
+
+```powershell
+git fetch upstream
+git checkout main
+git rebase upstream/main
+git push origin main
+```
+
+Normal development should push to `origin`, not to `upstream`.
+
 ## Download
 
 You can find new versions of Gforth at\
