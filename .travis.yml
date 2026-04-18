@@ -1,0 +1,27 @@
+version: ~> 1.0
+jobs:
+  include:
+    - os: linux
+      arch: amd64
+      env: M32=
+    - os: linux
+      arch: amd64
+      env: M32=-m32
+    - os: linux
+      arch: arm64
+      env: M32=
+    - os: linux
+      arch: ppc64le
+      env: M32=
+language: c
+compiler: gcc
+dist: bionic
+sudo: required
+before_install: ./install-deps.sh
+script:
+  - ./autogen.sh
+  - export CC=gcc
+  - if [ "${TRAVIS_OS_NAME}" = osx ]; then gcc -v; gcc-14 -v; export CC=gcc-14; fi
+  - ./configure --with-extra-libs --enable-lib CC="$CC $M32"
+  - make
+  - for i in misc r8c 8086 c165; do ./build-ec $i; done

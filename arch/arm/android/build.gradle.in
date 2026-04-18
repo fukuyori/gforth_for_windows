@@ -1,0 +1,81 @@
+cat <<EOF
+buildscript {
+    repositories {
+	google()
+	mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.5.0'
+    }
+}
+allprojects {
+  repositories {
+      google() // and here
+      mavenCentral()
+      maven {
+        // Used only for PhotoView
+        url "https://www.jitpack.io"
+        name 'JitPack Github wrapper'
+      }
+  }
+}
+apply plugin: 'com.android.application'
+
+def keystorePropertiesFile = rootProject.file("ant.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+android {
+    buildToolsVersion "35.0.0"
+
+    compileSdkVersion 35
+
+    ndkVersion "23.1.7779620"
+//    ndkVersion "17.2.4988734"
+
+
+    namespace '${APP_PACKAGE}'
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 35
+        versionCode ${APP_VERSION}
+        versionName "${GFORTH_VERSION}"
+    }
+    signingConfigs {
+        release {
+            // You need to specify either an absolute path or include the
+            // keystore file in the same directory as the build.gradle file.
+            storeFile file(keystoreProperties['key.store'])
+            storePassword keystoreProperties['key.store.password']
+            keyAlias keystoreProperties['key.alias']
+            keyPassword keystoreProperties['key.alias.password']
+        }
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            res.srcDirs = ['res']
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+     }
+     lint {
+         baseline = file("lint-baseline.xml")
+    }
+}
+dependencies {
+    implementation 'androidx.sharetarget:sharetarget:1.2.0'
+}
+EOF

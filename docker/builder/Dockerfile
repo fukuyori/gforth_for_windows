@@ -1,0 +1,46 @@
+ARG VERSION=unstable
+ARG ARCH=amd64
+ARG GCC=gcc-14
+FROM $ARCH/debian:$VERSION
+LABEL maintainer="Bernd Paysan <bernd@net2o.de>"
+ENV LANG=C.UTF-8
+ENV GCC=$GCC
+
+RUN apt-get -y update \
+  && apt-get upgrade -y \
+  && apt-get -y --ignore-missing install libffi-dev libltdl7 libsoil-dev libtool make gcc $GCC g++ \
+     automake texinfo texi2html install-info dpkg-dev debhelper libtool-bin \
+     libltdl-dev autoconf-archive \
+     libx11-dev libx11-xcb-dev libxrandr-dev libgles2-mesa-dev libglew-dev \
+     libgl1-mesa-dev libwayland-dev wayland-protocols libvulkan-dev libpng-dev \
+     libfreetype-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+     libopus-dev libva-dev libavcodec-dev libavutil-dev libstb-dev lsb-release \
+     libxkbcommon-dev libwebp-dev emacs-nox gforth \
+     yodl bison libboost-dev binutils-dev git \
+  && if ! which gforth >/dev/null 2>&1; then \
+         if which wcurl >/dev/null 2>&1; then \
+	 wcurl https://www.complang.tuwien.ac.at/forth/gforth/gforth-0.7.3.tar.gz; \
+	 else \
+	 apt -y install wget; wget https://www.complang.tuwien.ac.at/forth/gforth/gforth-0.7.3.tar.gz; \
+	 fi; \
+       	 tar zxf gforth-0.7.3.tar.gz; \
+	 BARCH=$(bash --version | grep -w bash | sed -e 's/.*(\([^ ]*\))$/\1/g'); \
+         (cd gforth-0.7.3; ./configure CC=$GCC --prefix=/usr --host=$BARCH --build=$BARCH; for i in *.fi; do cp $i $i-; done; make; make install); fi \
+  && if [ "`lsb_release -sc`" = "forky" -a "`gcc -v 2>&1 | tr ' ' '\n' | grep -- --host | cut -f2 -d= | cut -f1 -d-`" = "x86_64" ]; then apt-get -y install texlive-base texlive-latex-base; fi \
+  && apt-get clean
+RUN cd /tmp/ \
+    && if ! which pcre-config; then \
+         git clone https://github.com/nektro/pcre-8.45.git; \
+    	 (cd pcre-8.45; ./configure && sed -e 's/1[.]16/'`cd /usr/bin; echo aclocal-* | cut -f2 -d-`'/g' <Makefile >Makefile.new; mv Makefile.new Makefile; make && make install); fi \
+    && git clone https://github.com/GeraldWodni/swig.git \
+    && cd swig \
+    && ./autogen.sh \
+    && ./configure --program-suffix=-forth --prefix=/usr --exec-prefix=/usr \
+    && make \
+    && make install \
+    && cd .. \
+    && rm -rf swig \
+    && apt-get remove -y yodl bison libboost-dev git \
+    && apt-get clean
+RUN apt-get install -y libpulse-dev libharfbuzz-dev \
+  && apt-get clean

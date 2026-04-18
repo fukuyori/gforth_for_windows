@@ -1,0 +1,59 @@
+#ifndef GFORTH_NATIVE_WIN_CONFIG_H
+#define GFORTH_NATIVE_WIN_CONFIG_H
+
+#define PACKAGE_NAME "gforth"
+#define PACKAGE_TARNAME "gforth"
+#define PACKAGE_VERSION "@PACKAGE_VERSION@"
+#define PACKAGE_STRING "@PACKAGE_STRING@"
+
+#define HAVE_SYS_MMAN_H 1
+#define HAVE_WCHAR_H 1
+#define HAVE_FSEEKO 1
+#define HAVE_FTELLO 1
+#define HAVE_MEMMOVE 1
+#define HAVE_MMAP 1
+#define HAVE_GETPAGESIZE 1
+#define HAVE_SYSCONF 1
+#define HAVE_GETRUSAGE 1
+#define HAVE_STACK_T 1
+#define HAVE___BUILTIN_BSWAP16 1
+#define HAVE___BUILTIN_BSWAP32 1
+#define HAVE___BUILTIN_BSWAP64 1
+#define HAVE___BUILTIN___CLEAR_CACHE 1
+
+#define SIZEOF_CHAR_P 8
+#define SIZEOF_VOID_P 8
+#define SIZEOF_CHAR 1
+#define SIZEOF_SHORT 2
+#define SIZEOF_INT 4
+#define SIZEOF_LONG 4
+#define SIZEOF_LONG_LONG 8
+#define SIZEOF_INTPTR_T 8
+#define SIZEOF___INT128_T 16
+#define SIZEOF___UINT128_T 16
+
+#define CELL_TYPE long long
+#define WYDE_TYPE short
+#define TETRABYTE_TYPE int
+#define OCTABYTE_TYPE long long
+#define DOUBLE_CELL_TYPE __int128_t
+#define DOUBLE_UCELL_TYPE __uint128_t
+#define SMALL_OFF_T 1
+
+#define MAYBE_UNUSED __attribute__((unused))
+#define PER_THREAD __declspec(thread)
+#define ASMCOMMENT "; "
+#define SKIP4 asm(".byte 0x90,0x90,0x90,0x90")
+
+#define DIRSEP '\\'
+#define PATHSEP ';'
+#define DEFAULTSYSTEMPREFIX ""
+#define NO_DYNAMIC_DEFAULT 1
+#define STACK_CACHE_REGS 1
+#define STACK_CACHE_DEFAULT_FAST 1
+#define EXTRACCDIR ""
+#define GKERNEL "kernl64l.fi"
+#define ARCH "amd64"
+#define LT_OBJDIR ".libs/"
+
+#endif

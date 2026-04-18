@@ -1,0 +1,26 @@
+ 
+before_script:
+
+.build-template:
+  image: forthy42/gforth-builder-linux-$ARCH:$DISTRIBUTION
+  script:
+    - ./autogen.sh
+    - export BARCH=$(bash --version | grep -w bash | sed -e 's/.*(\([^ ]*\))$/\1/g')
+    - ./configure --with-extra-libs --host=$BARCH --build=$BARCH
+    - make distclean
+    - dpkg-buildpackage -uc -us -d -b -j4 -a$ARCH
+    - mkdir -p debian/$DISTRIBUTION/$ARCH
+    - rm -f debian/$DISTRIBUTION/$ARCH/*.deb
+    - mv ../*.deb debian/$DISTRIBUTION/$ARCH/
+  
+  # The files which are to be made available in GitLab
+  artifacts:
+    paths:
+      - debian/$DISTRIBUTION/$ARCH/*.deb
+
+build:
+  extends: .build-template
+  parallel:
+    matrix:
+      - DISTRIBUTION: [unstable, stable, oldstable]
+        ARCH: [amd64, i386]

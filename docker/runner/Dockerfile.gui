@@ -1,0 +1,19 @@
+FROM forthy42/gforth:latest
+LABEL maintainer="Bernd Paysan <bernd@net2o.de>"
+ENV LANG=C.UTF-8
+ENV XAUTHORITY=/home/gforth/.Xauthority
+
+USER root
+
+RUN apk add --no-cache mesa-gles libx11 libxrandr \
+        harfbuzz opus pulseaudio mesa-dri-gallium libxkbcommon \
+        wayland-libs-egl wayland-libs-client wayland-libs-cursor \
+	libwebp
+
+COPY pulse-client.conf /etc/pulse/client.conf
+
+USER gforth
+
+RUN mkdir -p /home/gforth/.config
+
+CMD [ "gforth" ]

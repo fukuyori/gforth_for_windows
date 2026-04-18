@@ -1,0 +1,38 @@
+#!/bin/bash
+
+#Usage ./bump [major.minor.patch]
+#If no release is used, reuse old release number and just add a date tag
+
+RELEASE=$1
+OLDRELEASE=$(grep AC_INIT configure.ac | cut -f3 -d'[' | cut -f1 -d'_' | cut -f1 -d']')
+if test -z "$RELEASE"
+then
+    RELEASE=$OLDRELEASE
+fi
+if [ "$RELEASE" = "$OLDRELEASE" ]
+then
+    V="${RELEASE}_$(date +%Y%m%d)"
+else
+    V="${RELEASE}"
+fi
+U=$(env LANG=en_US.UTF-8 date +'%B %d, %Y')
+sed -e "s/AC_INIT(\([^ ,]*, *\[\)[0-9._\-]*/AC_INIT(\1$V/g" -e "s/UPDATED=\".*\"/UPDATED=\"$U\"/g" configure.ac >configure.ac+ && mv configure.ac+ configure.ac
+dvcs ci -m "Bump version number"
+dvcs tag add $V
+git remote | xargs -L 1 git push --follow-tags --all
+if [ -d build ]
+then
+    ./autogen.sh && ./configure --with-extra-libs
+fi
+make -j`nproc` dist
+if [ -d build ]
+then
+    make distclean
+fi
+SHA256=$(sha256sum gforth-$V.tar.xz | cut -f1 -d' ')
+URL="https://net2o.de/gforth-dist/Snapshots/$V/gforth-$V.tar.xz"
+sed -e "s|url: \(.*\)|url: $URL|g" -e "s/sha256: \(.*\)/sha256: $SHA256/g" <flatpak/org.gforth.gforth.yml >flatpak/org.gforth.gforth.yml+
+mv flatpak/org.gforth.gforth.yml+ flatpak/org.gforth.gforth.yml
+gforth-up $(ls -tr1 *.tar.xz | tail -n 1)
+mv *.tar.xz* tarballs
+

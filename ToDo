@@ -1,0 +1,202 @@
+-*- RoadMap for gforth 1.0 -*-
+ABGO Anton, Bernd, Gerald, Others welcome! * = work in progress, x = done, d = dropped, /=drop-candidate
+ B   [x] Multithreading API
+ B       [x] Documentation
+A        [ ]*Documentation review
+  G      [ ] Examples
+ B   [x] Save images that contain C bindings
+  G      [x] Interface files for .h-files; build on install Port typical C-Libraries like stdio
+  G      [x]*Allow for `#?include (c/)?stdio` Same structure as in C -> supported by posix repo
+  G      [x] Hinweis auf SWIG für das C-interface Link auf https://github.com/GeraldWodni/posix
+  G      [ ] Include posix in release (#include or friends?)
+  G      [ ]*Use __attribute__((weak)) for functions, see https://steveyang.blog/en/2022/08/15/gnuc-c-weak-symbol-__atrribute__weak/
+             link against library, use if(<function-name>)...
+A    [ ] Recognizer Documentation & Examples
+A        [x] simplify API
+ B       [x] examples
+AB       [x] Documentation in manual
+  G      [x] Modify env-recognizer to use ${HOME} instead of $HOME to avoid collision with hex-numbers like $BEEF
+ B       [x] update to current word names etc.
+ABGO [ ]*Documentation for Undocumented features
+ B       [x] Document so far, that other programmers can understand the code and complete the documentation
+A        [d] Search changelogs for features
+A        [x] Document what is stable and what is not
+AB   [x] Only make words obsolete that are not used in Gforth and that are non-standard
+A        [x] make file for all obsolete words
+ B       [x] Use of obsolete words in obsolete.fs is not reported
+A        [x] Move standard words from obsolete.fs to regular code
+AB   [x] "IDE" locate, view, where & edit
+         [x] help or doc - get documentation of word
+ B       [x] help for recognizer
+ B       [x] locate of recognized thing
+  G      [x] Website manual - doc/crossdoc.fd doc/doc.fd doc/gforth.texi.in|grep doc- doc/gforth.txt
+ B       [x] Add tex-section support
+A        [x] Add documentation explaining help so that "help help" yields it
+A        [x] where: interaction with editors - g can be used
+ B       [x] implement ANSI control sequences in a way that gl-terminal can emulate them easily
+ B       [x] implement ANSI control sequences in GL terminal
+ B       [x] Handle long lines properly in AFTER-L
+AB       [x] switch between where or backtrace results with left and right keys
+B    [x] version comparison 001.000.000 -> upgrade path: 000.007.009
+  G  [/]*theforth.net - client: look for local version or use global version
+ BG  [x] SWIG: SWIG-forth rename as proper fork, create docker and flatpak
+  G  [x] find out why GLforth stopped working
+  G  [x] better vim support
+A    [ ]*changelog
+A    [ ]*news-file
+A    [ ]*update this ToDo file
+ BG  [x] implement smart .s "..."
+ B   [x] Extensible ... : Allow a stack of recognizer-like scanners
+ B   [/]*Configurable ... : Allow different outputs (think about notation)
+AB   [x] ~~ uses ... and prints floating stack
+ B   [x] compare-image warnings überprüfen
+ABG  [x]*fix warnings during compilation
+ABG  [ ] defaults
+ABG      [x] which recognizers should be included by default
+         [x] which files should be in image
+A        [x] documented words which are not included by default should state how they are included
+A    [x] see-code should work properly with zero-length primitives
+ B   [ ] Build issues
+ B       [x] Build extra libs only on request
+ B       [x] Build text-only on request
+ B       [x] configure stops if gcc is really LLVM
+  G      [x] Summary for BUILD-FROM-SCRATCH 
+AB       [ ] Try building on non-Linux machines (cfarm)
+
+-*- RoadMap for gforth post 1.0 -*-
+ B   [d] (Dropped) Multithreading: Use sections to allow compilation in every threading
+ABG  [ ] fork-marker use fork instead of classic marker
+AB   [x] marker für sections
+ABG  [ ] bin-utils disassembler
+AB   [ ]*documented view>* (internal words) in IDE
+AB   [x] locate of nested recognizers
+ B       [x] print information about recognizer
+A    [x] Gforth words are documented with release
+  G  [ ] Klaut
+AB   [ ] sections
+A        [x] locals in sections
+ B       [ ] header vtables in sections for better performance
+ABG  [ ] access bitfields in C
+  G      [ ] scoping for structures as values
+  G      [ ] for SWIG-forth: use mask-of and shift-of
+  G      [ ] for SWIG (new version): native support with getter and setter
+  G  [ ]*Call everything (Edinburgh) c-interface
+A    [ ] stack depth checker
+A        [ ] formalize stack effect of words
+AB   [x] "IDE" locate, view, where & edit
+A        [ ]*backtrace os-commandline - saving backtraces
+     [ ] autocomplete `foobar (equals to ' foobar)
+     [x] allow tick of recogized words e.g.: ' foo:bar recognizer: wordlist foo, word bar
+     [ ] List all user data words.
+ABGO [ ] Extensible ...
+ B       [ ] Allow a stack of recognizer-like scanners
+ B       [ ] Configurable: Allow different outputs (think about notation)
+ABGO     [ ] Document extensions
+
+-*- outline -*-
+
+This file describes all the things left to do on GNU Forth. The list
+is not complete, so you should add topics you miss or refine existing
+topics. If you are working on a topic, add your name to the right of
+the topic. If you have completed the work, remove the topic.
+
+This an emacs outline. Use '*' to create topics.
+
+* "DOS" Distribution
+eventually convert all text files LF -> CR LF
+check on 8.3 filenames?!
+
+*The Engine
+**measure the effect of some variations on different machines:
+direct/indirect, NEXT splitting, keeping the TOSses in variables
+**make it easy to put the right variation for each processor into the
+configuration. I.e., on installation all combinations of options
+should be measured and the fastest chosen. Knowing OS and architecture
+is not enough, the best options depend more on the processor and the
+compiler version.
+
+* ANSI Forth
+Add the remaining words
+
+*Run-time System
+**Gender-independent image file format and loader
+**Stack Checking using the MMU where the OS makes it possible.
+
+*Porting/Portability
+** Machines/OSs
+VMS (VAX,AXP)
+DOS 8088 (16-bit or 32-bit? Note: there are no far pointers in gforth,
+so 16-bit means 64k max.)
+Windows
+OS/2
+Mac
+Atari
+Amiga
+Use gcc-generated assembly on machines without gcc, but with
+processors supported by gcc
+
+*Foreign Language Interface
+If anybody wants to do this, take a look at
+ftp://ftp.complang.tuwien.ac.at/pub/forth/foreign.ds
+Some of the problems are discussed there,
+**C
+Stuart Ramsden is doing a bit here.
+**FORTRAN
+**C++
+
+*Windows and Graphics
+**Ask Brian Dunn and Mike Hore for their OS-independent interface
+**use the Foreign Language Interface to make X-Windows support
+
+*Program Development Environment
+Issues: Convenience, portability across plattforms, compatibility with
+existing tools (Emacs, F-PC)
+** Decompiler and Debugger
+need debugging
+** Profiling
+The way this (and perhaps also debugging features) could work is this:
+On compilation all code fields are remembered somewhere (using a
+special hook like etags). If the user now decides to profile part of
+the code, the corresponding code fields are replaced by fields
+pointing to code that performs the measurement (or whatever else is
+intended).
+** emacs support
+can be improved
+**prefix file generator
+extend or complement ans-report.fs to provide Forth definitions for
+the simple non-ANSI words.
+** rightcase
+A tool that converts all uses of words in a source text to the exact
+case of the definition. There's something like this out there on the
+net (Joerg Plewe has posted a reference), but I think a program that
+wires itself into the compiler (like etags.fs) is harder to fool by
+search order tricks etc. EVALUATE is a problem.
+
+*Documentation (Neal Crook, nac@forth.org is working on this)
+A texinfo file
+add more about internals (c primitives, creation of engine, etc.)
+**glossaries of all wordsets.
+*** Inclusion of stack comments, glossary comments, and wordset comments
+in all source files.
+
+* Distribution and Announcements
+** Write articles for (general-purpose) magazines
+
+-----
+Authors: Anton Ertl, Gerald Wodni, Bernd Paysan, Jens Wilke, Neal Crook
+Copyright (C) 1995,1996,1997,1999,2003,2007,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025 Free Software Foundation, Inc.
+
+This file is part of Gforth.
+
+Gforth is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.#See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see http://www.gnu.org/licenses/.

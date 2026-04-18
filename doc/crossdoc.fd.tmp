@@ -1,0 +1,4115 @@
+
+#line 87 "#load-file#"
+make-doc image-header )
+
+#line 88 "#load-file#"
+make-doc forthstart )
+
+#line 94 "#load-file#"
+make-doc r@ R:w -- R:w w  ) core r-fetch
+
+#line 97 "#load-file#"
+make-doc / n1 n2 -- n  ) core slash
+n=n1/n2
+
+#line 99 "#load-file#"
+make-doc mod n1 n2 -- n  ) core
+n is the modulus of n1/n2
+
+#line 101 "#load-file#"
+make-doc /mod n1 n2 -- n3 n4  ) core slash_mod
+n1=n2*n4+n3; n3 is the modulus, n4 the quotient.
+
+#line 103 "#load-file#"
+make-doc */mod n1 n2 n3 -- n4 n5  ) core star_slash_mod
+n1*n2=n3*n5+n4, with the intermediate result (n1*n2) being
+double; n4 is the modulus, n5 the quotient.
+
+#line 106 "#load-file#"
+make-doc */ ( n1 n2 n3 -- n4  ) core star_slash
+n4=(n1*n2)/n3, with the intermediate result being double
+
+#line 26 "kernel/vars.fs"
+make-doc cell -- u  ) gforth
+@code{Constant} -- @code{1 cells}
+
+#line 30 "kernel/vars.fs"
+make-doc n/a --  ) gforth-experimental not-available
+This word can be ticked, but throws an ``Operation not supported''
+exception on interpretation and compilation.  Use this for methods
+etc. that aren't supported.
+
+#line 38 "kernel/vars.fs"
+make-doc [noop] --  ) gforth-experimental bracket-noop
+Does nothing, both when executed and when compiled.
+
+#line 42 "kernel/vars.fs"
+make-doc oam-warning --  )
+
+#line 44 "kernel/vars.fs"
+make-doc warn! x addr --  )
+
+#line 48 "kernel/vars.fs"
+make-doc !-table )
+
+#line 49 "kernel/vars.fs"
+make-doc defer-table )
+
+#line 51 "kernel/vars.fs"
+make-doc >uvalue xt -- addr  ) gforth-internal to-uvalue
+@i{Xt} is the xt of a word @i{x} defined with @code{uvalue};
+@i{addr} is the address of the data of @i{x} in the current
+task.  This word is useful for building, e.g., @code{uvalue}.
+Do not use it to circumvent that you cannot get the address of
+a uvalue with @code{addr}; in the future Gforth may perform
+optimizations that assume that uvalues can only be accessed
+through their name.
+
+#line 62 "kernel/vars.fs"
+make-doc to:exec .. u xt1 xt2 -- ..  )
+
+#line 63 "kernel/vars.fs"
+make-doc to:, u xt2 --  )
+
+#line 65 "kernel/vars.fs"
+make-doc uvalue-to )
+
+#line 67 "kernel/vars.fs"
+make-doc u-compile, xt --  )
+
+#line 69 "kernel/vars.fs"
+make-doc (UValue) "name" --  )
+Define a per-thread value
+
+#line 74 "kernel/vars.fs"
+make-doc UValue "name" --  ) gforth
+@i{Name} is a user value.@*
+@i{Name} execution:  ( -- @i{x} )
+
+#line 81 "kernel/vars.fs"
+make-doc 2constant, xt --  )
+
+#line 83 "kernel/vars.fs"
+make-doc 2Constant w1 w2 "name" --  ) double two-constant
+Define @i{name}.@*
+@i{name} execution: @i{( -- w1 w2 )}
+
+#line 96 "kernel/vars.fs"
+make-doc true -- f  ) core-ext
+@code{Constant} -- @i{f} is a cell with all bits set.
+
+#line 100 "kernel/vars.fs"
+make-doc false -- f  ) core-ext
+@code{Constant} -- @i{f} is a cell with all bits clear.
+
+#line 104 "kernel/vars.fs"
+make-doc float -- u  ) gforth
+@code{Constant} -- the number of address units corresponding to a floating-point number.
+
+#line 108 "kernel/vars.fs"
+make-doc bl -- c-char  ) core b-l
+@i{c-char} is the character value for a space.
+
+#line 112 "kernel/vars.fs"
+make-doc /line )
+
+#line 115 "kernel/vars.fs"
+make-doc c/l )
+
+#line 116 "kernel/vars.fs"
+make-doc l/s )
+
+#line 117 "kernel/vars.fs"
+make-doc chars/block )
+
+#line 120 "kernel/vars.fs"
+make-doc word-pno-size -- u  )
+
+#line 122 "kernel/vars.fs"
+make-doc pad-minsize -- u  )
+
+#line 124 "kernel/vars.fs"
+make-doc def#tib )
+default size of terminal input buffer. Default size is 1K
+
+#line 134 "kernel/vars.fs"
+make-doc main-task )
+
+#line 140 "kernel/vars.fs"
+make-doc udp -- a-addr  ) gforth-internal
+user area size
+
+#line 143 "kernel/vars.fs"
+make-doc next-task )
+
+#line 144 "kernel/vars.fs"
+make-doc prev-task )
+
+#line 145 "kernel/vars.fs"
+make-doc save-task )
+
+#line 147 "kernel/vars.fs"
+make-doc sp0 -- a-addr  ) gforth
+User variable -- initial value of the data stack pointer.
+
+#line 151 "kernel/vars.fs"
+make-doc rp0 -- a-addr  ) gforth
+User variable -- initial value of the return stack pointer.
+
+#line 155 "kernel/vars.fs"
+make-doc fp0 -- a-addr  ) gforth
+User variable -- initial value of the floating-point stack pointer.
+
+#line 161 "kernel/vars.fs"
+make-doc lp0 -- a-addr  ) gforth
+User variable -- initial value of the locals stack pointer.
+
+#line 165 "kernel/vars.fs"
+make-doc throw-entry )
+
+#line 167 "kernel/vars.fs"
+make-doc current-section )
+
+#line 170 "kernel/vars.fs"
+make-doc section-start )
+
+#line 171 "kernel/vars.fs"
+make-doc section-size )
+
+#line 172 "kernel/vars.fs"
+make-doc section-dp )
+
+#line 173 "kernel/vars.fs"
+make-doc section-name )
+
+#line 174 "kernel/vars.fs"
+make-doc locs[] )
+
+#line 175 "kernel/vars.fs"
+make-doc primbits )
+
+#line 176 "kernel/vars.fs"
+make-doc targets )
+
+#line 177 "kernel/vars.fs"
+make-doc codestart )
+
+#line 178 "kernel/vars.fs"
+make-doc lastnt )
+
+#line 179 "kernel/vars.fs"
+make-doc litstack )
+
+#line 181 "kernel/vars.fs"
+make-doc section-desc )
+
+#line 184 "kernel/vars.fs"
+make-doc handler -- addr  )
+
+#line 187 "kernel/vars.fs"
+make-doc first-throw -- addr  )
+
+#line 190 "kernel/vars.fs"
+make-doc wraphandler -- addr  )
+
+#line 195 "kernel/vars.fs"
+make-doc backtrace-rp0 )
+
+#line 200 "kernel/vars.fs"
+make-doc errorhandler )
+
+#line 202 "kernel/vars.fs"
+make-doc abort-string )
+
+#line 204 "kernel/vars.fs"
+make-doc holdbufptr )
+
+#line 207 "kernel/vars.fs"
+make-doc holdbuf -- addr  )
+
+#line 208 "kernel/vars.fs"
+make-doc holdbuf-end )
+
+#line 209 "kernel/vars.fs"
+make-doc holdptr )
+
+#line 210 "kernel/vars.fs"
+make-doc holdend )
+
+#line 212 "kernel/vars.fs"
+make-doc base -- a-addr  ) core
+User variable -- @i{a-addr} is the address of a cell that
+stores the number base used by default for number conversion during
+input and output.  Don't store to @code{base}, use
+@code{base-execute} instead.
+
+#line 219 "kernel/vars.fs"
+make-doc dpl -- a-addr  ) gforth d-p-l
+User variable -- @i{a-addr} is the address of a cell that stores
+the position of the decimal point in the most recent input integer
+conversion.  After the conversion of a number containing no decimal
+point, @code{dpl} is -1. After the conversion of @code{2341239.} it
+holds 0. After the conversion of 234123.9 it contains 1, and so
+forth.
+
+#line 228 "kernel/vars.fs"
+make-doc >num-warnings -- a-addr  ) gforth-internal
+Internal bits for warnings after the number conversion
+
+#line 239 "kernel/vars.fs"
+make-doc user-flags -- a-addr  ) gforth-experimental
+Bit vector to store user flags
+
+#line 242 "kernel/vars.fs"
+make-doc state -- a-addr  ) core,tools-ext
+Don't use @word{state}!  @word{State} is the state of the text
+interpreter, and ordinary words should work independently of it; in
+particular, @word{state} does not tell you whether the
+interpretation semantics or compilation semantics of a word are
+being performed.  See @cite{@code{State}-smartness--Why it is evil
+and how to exorcise it}.  For an alternative to @word{state}-smart
+words, see @ref{How to define combined words}.@*
+@i{A-addr} is the address of a cell containing the compilation
+state flag. 0 => interpreting, -1 => compiling.  A standard program
+must not store into @word{state}, but instead use @word{[} and
+@word{]}.
+
+#line 257 "kernel/vars.fs"
+make-doc dp )
+
+#line 262 "kernel/vars.fs"
+make-doc warnings -- addr  ) gforth
+Set warnings level to
+@table @code
+@item 0
+turns warnings off
+@item -1
+turns normal warnings on
+@item -2
+turns beginner warnings on
+@item -3
+turns pedantic warnings on
+@item -4
+turns warnings into errors (including beginner warnings)
+@end table
+
+#line 23 "kernel/input-class.fs"
+make-doc current-input )
+
+#line 26 "kernel/input-class.fs"
+make-doc source -- c-addr u  ) core source
+@i{c-addr u} is the input buffer, i.e., the
+line/block/@word{evaluate}d-string currently processed by the
+text interpreter
+
+#line 31 "kernel/input-class.fs"
+make-doc refill -- flag  ) core-ext,block-ext,file-ext
+Attempt to fill the input buffer from the input source.  When
+the input source is the user input device, attempt to receive
+input into the terminal input device. If successful (including
+lines of length 0), make the result the input buffer, set
+@code{>IN} to 0 and return true; otherwise return false.@* When
+the input source is a text file, attempt to read the next line
+from the file. If successful, make the result the current input
+buffer, set @code{>IN} to 0 and return true; otherwise, return
+false.@* When the input source is a block, add 1 to the value
+of @code{BLK} to make the next block the input source and
+current input buffer, and set @code{>IN} to 0; return true if
+the new value of @code{BLK} is a valid block number, false
+otherwise.
+
+#line 45 "kernel/input-class.fs"
+make-doc source-id -- 0 | -1 | fileid  ) core-ext,file source-i-d
+Return 0 (the input source is the user input device), -1 (the
+input source is a string being processed by @code{evaluate}) or
+a @i{fileid} (the input source is the file specified by
+@i{fileid}).
+
+#line 50 "kernel/input-class.fs"
+make-doc (save-input) -- x1 .. xn n  ) gforth-internal
+
+#line 51 "kernel/input-class.fs"
+make-doc (restore-input) x1 .. xn n --  ) gforth-internal
+
+#line 53 "kernel/input-class.fs"
+make-doc >in -- addr  ) core to-in
+@i{Addr} contains the offset into @word{source} where the text
+interpreter or parsing words parse next.  A word can write to
+@i{addr} in order to change what is parsed next.  @i{Addr} can be
+different for different tasks, and for different input streams
+within a task.
+
+#line 60 "kernel/input-class.fs"
+make-doc input-lexeme -- a-addr  ) gforth-internal
+@code{uvar} variable -- @i{a-addr} is the address of two
+cells containing the string (in c-addr u form) parsed with
+@code{parse}, @code{parse-name} or @code{word}.  If you do your
+own parsing, you can set it with @code{input-lexeme!}.
+
+#line 65 "kernel/input-class.fs"
+make-doc new-where -- a-addr  ) gforth-internal
+keep the new where field
+
+#line 68 "kernel/input-class.fs"
+make-doc #tib -- addr  ) gforth-obsolete number-t-i-b
+@i{Addr} is the address of a cell containing the number of
+characters in the terminal input buffer. @i{Addr} can be
+different for different tasks, and for different input streams
+within a task.  OBSOLETE: This word has been de-standardized in
+Forth-2012.  @code{source} supersedes the function of this
+word.
+
+#line 76 "kernel/input-class.fs"
+make-doc max#tib -- addr  ) gforth-internal max-number-t-i-b
+@code{uvar} variable -- This cell contains the maximum
+size of the current tib.
+
+#line 79 "kernel/input-class.fs"
+make-doc old-input -- addr  ) gforth-internal
+@code{uvar} variable -- This cell contains the pointer to
+the previous input buffer
+
+#line 82 "kernel/input-class.fs"
+make-doc loadline -- addr  ) gforth-internal
+@code{uvar} variable -- This cell contains the line that's
+currently loaded from
+
+#line 86 "kernel/input-class.fs"
+make-doc loadfile -- addr  ) gforth-internal
+@code{uvar} variable -- This cell contains the file the
+input buffer is associated with (0 if none)
+
+#line 90 "kernel/input-class.fs"
+make-doc blk -- addr  ) block b-l-k
+@i{addr} contains the current block number (or 0 if the current
+input source is not a block).
+
+#line 94 "kernel/input-class.fs"
+make-doc #fill-bytes -- addr  ) gforth-internal
+@code{uvar} variable -- number of bytes read via
+(read-line) by the last refill
+
+#line 97 "kernel/input-class.fs"
+make-doc loadfilename# -- addr  ) gforth-internal
+@code{uvar} variable -- n describes index of currently
+interpreted input into loaded filenames
+
+#line 101 "kernel/input-class.fs"
+make-doc tib -- addr  ) gforth-obsolete t-i-b
+@i{Addr} is the start of the input buffer.  OBSOLETE: This word has
+been de-standardized in Forth-2012.  @code{source} supersedes the
+function of this word.
+
+#line 106 "kernel/input-class.fs"
+make-doc tib+ )
+
+#line 27 "kernel/int.fs"
+make-doc >comp xt --  )
+
+#line 18 "compat/strcomp.fs"
+make-doc str= c-addr1 u1 c-addr2 u2 -- f  ) gforth str-equals
+Bytewise equality
+
+#line 22 "compat/strcomp.fs"
+make-doc string-prefix? c-addr1 u1 c-addr2 u2 -- f  ) gforth string-prefix-question
+Is @var{c-addr2 u2} a prefix of @var{c-addr1 u1}?
+
+#line 26 "compat/strcomp.fs"
+make-doc string-suffix? c-addr1 u1 c-addr2 u2 -- f  ) gforth string-suffix-question
+Is @var{c-addr2 u2} a suffix of @var{c-addr1 u1}?
+
+#line 30 "compat/strcomp.fs"
+make-doc str< c-addr1 u1 c-addr2 u2 -- f  ) gforth str-less-than
+Bytewise lexicographic comparison.
+
+#line 32 "kernel/basics.fs"
+make-doc NIL )
+
+#line 38 "kernel/basics.fs"
+make-doc maxaligned addr1 -- addr2  ) gforth
+@i{addr2} is the first address after @i{addr1} that satisfies
+all alignment restrictions.
+
+#line 44 "kernel/basics.fs"
+make-doc cfaligned addr1 -- addr2  ) gforth-internal
+@i{addr2} is the first address after @i{addr1} that is aligned for
+a code field (i.e., such that the corresponding body is maxaligned).
+
+#line 48 "kernel/basics.fs"
+make-doc chars n1 -- n2  ) core
+@i{n2} is the number of address units of @i{n1} chars.
+
+#line 57 "kernel/basics.fs"
+make-doc A! addr1 addr2 --  ) gforth-internal
+
+#line 64 "kernel/basics.fs"
+make-doc dictionary-end -- addr  )
+
+#line 67 "kernel/basics.fs"
+make-doc usable-dictionary-end1 -- addr  )
+
+#line 72 "kernel/basics.fs"
+make-doc usable-dictionary-end -- addr  )
+
+#line 75 "kernel/basics.fs"
+make-doc unused -- u  ) core-ext
+Return the amount of free space remaining (in address units) in
+the region addressed by @code{here}.
+
+#line 80 "kernel/basics.fs"
+make-doc in-dictionary? x -- f  )
+
+#line 81 "kernel/basics.fs"
+make-doc in-dictionary1? x -- f  )
+
+#line 87 "kernel/basics.fs"
+make-doc dpp -- addr  ) gforth-internal
+
+#line 90 "kernel/basics.fs"
+make-doc here -- addr  ) core
+Return the address of the next free location in data space.
+
+#line 94 "kernel/basics.fs"
+make-doc ->here addr --  ) gforth to-here
+Change the value of @code{here} to @i{addr}.
+
+#line 101 "kernel/basics.fs"
+make-doc on a-addr --  ) gforth
+Set the (value of the) variable  at @i{a-addr} to @code{true}.
+
+#line 104 "kernel/basics.fs"
+make-doc off a-addr --  ) gforth
+Set the (value of the) variable at @i{a-addr} to @code{false}.
+
+#line 110 "kernel/basics.fs"
+make-doc dabs d -- ud  ) double d-abs
+
+#line 113 "kernel/basics.fs"
+make-doc roll x0 x1 .. xn n -- x1 .. xn x0  ) core-ext
+
+#line 122 "kernel/basics.fs"
+make-doc stick x0 x1 ... xu x u -- x x1 ... xu  ) gforth-internal
+
+#line 169 "kernel/basics.fs"
+make-doc digit? char -- digit true/ false  ) gforth-internal digit-question
+If @i{char} is a digit in the current @code{base}, return the
+value of that digit and true, otherwise return false.
+
+#line 186 "kernel/basics.fs"
+make-doc accumulate +d0 addr digit - +d1 addr  )
+
+#line 189 "kernel/basics.fs"
+make-doc >number ud1 c-addr1 u1 -- ud2 c-addr2 u2  ) core to-number
+Attempt to convert the character string @var{c-addr1 u1} to an
+unsigned number in the current number base. The double
+@var{ud1} accumulates the result of the conversion to form
+@var{ud2}. Conversion continues, left-to-right, until the whole
+string is converted or a character that is not convertable in
+the current number base is encountered (including + or -). For
+each convertable character, @var{ud1} is first multiplied by
+the value in @code{BASE} and then incremented by the value
+represented by the character. @var{c-addr2} is the location of
+the first unconverted character (past the end of the string if
+the whole string was converted). @var{u2} is the number of
+unconverted characters in the string. Overflow is not detected.
+
+#line 214 "kernel/basics.fs"
+make-doc >number_ ud1 c-addr1 u1 -- ud2 c-addr2 u2  ) gforth-internal to-number-underscore
+like @code{>number}, but accepts @code{_} (and ignores it if
+@code{base<#41}).
+
+#line 226 "kernel/basics.fs"
+make-doc s>d n -- d  ) core		s-to-d
+
+#line 229 "kernel/basics.fs"
+make-doc ud/mod ud1 u2 -- urem udquot  ) gforth
+divide unsigned double @i{ud1} by @i{u2}, resulting in a unsigned double
+quotient @i{udquot} and a single remainder @i{urem}.
+
+#line 245 "kernel/basics.fs"
+make-doc catch x1 .. xn xt -- y1 .. ym 0 / z1 .. zn error  ) exception
+@code{Executes} @i{xt}.  If execution returns normally,
+@code{catch} pushes 0 on the stack.  If execution returns through
+@code{throw}, all the stacks are reset to the depth on entry to
+@code{catch}, and the TOS (the @i{xt} position) is replaced with
+the throw code.
+
+#line 256 "kernel/basics.fs"
+make-doc throw y1 .. ym nerror -- y1 .. ym / z1 .. zn nerror  ) exception
+If @i{nerror} is 0, drop it and continue.  Otherwise, transfer
+control to the next dynamically enclosing exception handler, reset
+the stacks accordingly, and push @i{nerror}.
+
+#line 273 "kernel/basics.fs"
+make-doc c(abort") c-addr --  )
+
+#line 276 "kernel/basics.fs"
+make-doc ?warning f xt --  )
+
+#line 285 "kernel/basics.fs"
+make-doc abort ?? -- ??  ) core,exception-ext
+@code{-1 throw}.
+
+#line 291 "kernel/basics.fs"
+make-doc ?stack ?? -- ??  ) gforth-internal
+
+#line 301 "kernel/basics.fs"
+make-doc depth -- +n  ) core depth
+@var{+n} is the number of values that were on the data stack before
+@var{+n} itself was placed on the stack.
+
+#line 306 "kernel/basics.fs"
+make-doc clearstack ... --  ) gforth clear-stack
+remove and discard all/any items from the data stack.
+
+#line 310 "kernel/basics.fs"
+make-doc clearstacks ... --  ) gforth clear-stacks
+empty data and FP stack
+
+#line 321 "kernel/basics.fs"
+make-doc decimal --  ) core
+Set @code{base} to #10 (decimal).  In many cases
+@code{base-execute} is a better alternative.
+
+#line 326 "kernel/basics.fs"
+make-doc hex --  ) core-ext
+Set @code{base} to $10 (hexadecimal).  In many cases
+@code{base-execute} is a better alternative.
+
+#line 25 "kernel/io.fs"
+make-doc infile-id -- file-id  ) gforth
+@i{File-id} is used by @code{key}, @code{?key}, and anything that
+refers to the "user input device".  By default @code{infile-id}
+produces the process's @code{stdin}, unless changed with
+@code{infile-execute}.
+
+#line 30 "kernel/io.fs"
+make-doc outfile-id -- file-id  ) gforth
+@i{File-id} is used by @code{emit}, @code{type}, and any output
+word that does not take a file-id as input.  By default
+@code{outfile-id} produces the process's @code{stdout}, unless
+changed with @code{outfile-execute}.
+
+#line 35 "kernel/io.fs"
+make-doc debug-fid -- file-id  ) gforth @i{File-id} is used by
+debugging words for output.  By default it is the process's
+@code{stderr}.
+
+#line 39 "kernel/io.fs"
+make-doc out -- addr  ) gforth
+@i{Addr} contains a number that tries to give the position of
+the cursor within the current line on the user output device: It
+resets to 0 on @code{cr}, increases by the number of characters by
+@code{type} and @code{emit}, and decreases on @code{backspaces}.
+Unfortunately, it does not take into account tabs, multi-byte
+characters, or the existence of Unicode characters with width 0 and
+2, so it only works for simple cases.
+
+#line 48 "kernel/io.fs"
+make-doc (type) c-addr u --  )
+
+#line 55 "kernel/io.fs"
+make-doc (emit) c --  )
+
+#line 62 "kernel/io.fs"
+make-doc (err-type) c-addr u --  )
+
+#line 69 "kernel/io.fs"
+make-doc (err-emit) c --  )
+
+#line 76 "kernel/io.fs"
+make-doc EOK )
+
+#line 77 "kernel/io.fs"
+make-doc EINTR )
+
+#line 79 "kernel/io.fs"
+make-doc EBADF )
+
+#line 82 "kernel/io.fs"
+make-doc key-file fd -- key  ) gforth
+Read one character @i{n} from @i{wfileid}.  This word disables
+buffering for @i{wfileid}.  If you want to read characters from a
+terminal in non-canonical (raw) mode, you have to put the terminal
+in non-canonical mode yourself (using the C interface); the
+exception is @code{stdin}: Gforth automatically puts it into
+non-canonical mode.
+
+#line 93 "kernel/io.fs"
+make-doc (key) -- c / ior  )
+
+#line 96 "kernel/io.fs"
+make-doc (key?) -- flag  )
+
+#line 99 "kernel/io.fs"
+make-doc op-vector )
+
+#line 101 "kernel/io.fs"
+make-doc type c-addr u --  ) core
+If @var{u}>0, display @var{u} characters from a string starting
+with the character stored at @var{c-addr}.
+
+#line 104 "kernel/io.fs"
+make-doc emit c --  ) core
+Display the byte @i{c}; for ASCII characters, @code{emit} is
+equivalent to @code{xemit}; for multi-byte characters, additional
+@word{emit} or @word{type} calls may be needed to display a
+complete character.
+
+#line 109 "kernel/io.fs"
+make-doc cr --  ) core c-r
+Output a newline (of the favourite kind of the host OS).  Note
+that due to the way the Forth command line interpreter inserts
+newlines, the preferred way to use @code{cr} is at the start
+of a piece of text; e.g., @code{cr ." hello, world"}.
+
+#line 115 "kernel/io.fs"
+make-doc form -- nlines ncols  ) gforth
+
+#line 117 "kernel/io.fs"
+make-doc page --  ) facility
+Clear the screen
+
+#line 119 "kernel/io.fs"
+make-doc at-xy x y --  ) facility at-x-y
+Put the curser at position @i{x y}.  The top left-hand corner of
+the display is at 0 0.
+
+#line 123 "kernel/io.fs"
+make-doc at-deltaxy dx dy --  ) gforth
+With the current position at @i{x y}, put the cursor at @i{x+dx
+y+dy}.
+
+#line 127 "kernel/io.fs"
+make-doc attr! attr --  )
+apply attribute to terminal (i.e. set color)
+
+#line 129 "kernel/io.fs"
+make-doc control-sequence n char --  )
+send a control sequence to the terminal
+
+#line 131 "kernel/io.fs"
+make-doc theme-color! u --  )
+Set the terminal to theme-color index @var{u}
+
+#line 135 "kernel/io.fs"
+make-doc ip-vector )
+
+#line 137 "kernel/io.fs"
+make-doc key-ior -- c|ior  ) gforth
+Receive (but do not display) one byte @i{c}.  In case of an
+error or interrupt, return the negative @var{ior} instead.
+
+#line 140 "kernel/io.fs"
+make-doc key? -- flag  ) facility key-question
+If a byte is available for receiving with @word{key}, return true,
+otherwise false.
+
+#line 145 "kernel/io.fs"
+make-doc (cr) --  )
+
+#line 148 "kernel/io.fs"
+make-doc key -- c  ) core
+Receive (but do not display) one byte @i{c}.
+
+#line 164 "kernel/io.fs"
+make-doc default-out )
+
+#line 177 "kernel/io.fs"
+make-doc debug-out )
+
+#line 181 "kernel/io.fs"
+make-doc debug-vector )
+
+#line 187 "kernel/io.fs"
+make-doc default-in )
+
+#line 191 "kernel/io.fs"
+make-doc input: key-xt key?-xt --  )
+
+#line 195 "kernel/io.fs"
+make-doc output: type-xt emit-xt cr-xt form-xt --  )
+
+#line 202 "kernel/io.fs"
+make-doc #eof -- c  ) gforth number-e-o-f
+actually EOT (ASCII code 4 aka @code{^D})
+
+#line 204 "kernel/io.fs"
+make-doc #bell -- c  ) gforth number-bell
+
+#line 205 "kernel/io.fs"
+make-doc #bs -- c  ) gforth number-b-s
+
+#line 206 "kernel/io.fs"
+make-doc #tab -- c  ) gforth number-tab
+
+#line 207 "kernel/io.fs"
+make-doc #esc -- c  ) gforth number-esc
+
+#line 208 "kernel/io.fs"
+make-doc #del -- c  ) gforth number-del
+
+#line 209 "kernel/io.fs"
+make-doc #cr -- c  ) gforth number-c-r
+
+#line 211 "kernel/io.fs"
+make-doc #ff -- c  ) gforth number-f-f
+
+#line 212 "kernel/io.fs"
+make-doc #lf -- c  ) gforth number-l-f
+
+#line 214 "kernel/io.fs"
+make-doc bell )
+
+#line 216 "kernel/io.fs"
+make-doc space --  ) core
+Display one space.
+
+#line 222 "kernel/io.fs"
+make-doc theme! )
+
+#line 223 "kernel/io.fs"
+make-doc theme@ )
+
+#line 225 "kernel/io.fs"
+make-doc theme-table )
+
+#line 227 "kernel/io.fs"
+make-doc theme-to n value-xt --  ) gforth-internal
+
+#line 229 "kernel/io.fs"
+make-doc theme-color# )
+
+#line 230 "kernel/io.fs"
+make-doc theme-color: "name" --  )
+
+#line 235 "kernel/io.fs"
+make-doc default-color --  ) gforth
+Future terminal output will use the system-default color
+
+#line 238 "kernel/io.fs"
+make-doc error-color --  ) gforth
+Future terminal output will use the error color (red)
+
+#line 241 "kernel/io.fs"
+make-doc warning-color --  ) gforth
+Future terminal output will use the color for warnings
+(@word{light-mode}: blue, @word{dark-mode}: yellow)
+
+#line 245 "kernel/io.fs"
+make-doc info-color --  ) gforth
+Future terminal output will use the color for informative output
+(@word{light-mode}: green, @word{dark-mode}: cyan)
+
+#line 249 "kernel/io.fs"
+make-doc success-color --  ) gforth
+Future terminal output will use the color for success (green)
+
+#line 252 "kernel/io.fs"
+make-doc input-color --  ) gforth
+Future terminal output will use the color for user-input
+(@word{light-mode}: bold black, @word{dark-mode}: bold white,
+@word{magenta-input}: magenta)
+
+#line 257 "kernel/io.fs"
+make-doc error-hl-ul --  ) gforth
+Future terminal output will be shown in the error color (red) and
+underlined.
+
+#line 261 "kernel/io.fs"
+make-doc error-hl-inv --  ) gforth
+Future terminal output will be shown in the inverted error color
+(background color on red)
+
+#line 265 "kernel/io.fs"
+make-doc status-color --  ) gforth
+Future terminal output will be shown in the color for the
+interpret-state status bar (inverted blue)
+
+#line 269 "kernel/io.fs"
+make-doc compile-color --  ) gforth
+Future terminal output will be shown in the color for the
+compile-state status bar (inverted magenta)
+
+#line 273 "kernel/io.fs"
+make-doc postpone-color --  ) gforth
+Future terminal output will be shown in the color for the
+postpone-state status bar (inverted red)
+
+#line 280 "kernel/io.fs"
+make-doc spaces-loop n addr --  )
+
+#line 282 "kernel/io.fs"
+make-doc spaces u --  ) core
+Display @var{u} spaces. 
+
+#line 286 "kernel/io.fs"
+make-doc backspaces )
+
+#line 291 "kernel/io.fs"
+make-doc deadline d --  )
+wait to absolute time @var{d} in ns since 1970-1-1 0:00:00+000
+
+#line 293 "kernel/io.fs"
+make-doc kernel-deadline d --  )
+
+#line 298 "kernel/io.fs"
+make-doc ns d --  ) gforth
+
+#line 300 "kernel/io.fs"
+make-doc ms n --  ) facility-ext
+
+#line 23 "kernel/nio.fs"
+make-doc pad -- c-addr  ) core-ext
+@var{c-addr} is the address of a transient region that can be
+used as temporary data storage. At least 84 characters of space
+is available.
+
+#line 29 "kernel/nio.fs"
+make-doc +hold n -- addr  )
+Reserve space for n chars in the pictured numeric buffer.
+-17 THROW if no space
+
+#line 35 "kernel/nio.fs"
+make-doc hold char --  ) core
+Used between @code{<<#} and @code{#>}. Prepend the ASCII character
+@var{char} to the pictured numeric output string.  Use
+@word{holds} for prepending non-ASCII characters.
+
+#line 41 "kernel/nio.fs"
+make-doc <# --  ) core	less-number-sign
+Initialise/clear the pictured numeric output string.
+
+#line 45 "kernel/nio.fs"
+make-doc #> xd -- addr u  ) core	number-sign-greater
+Complete the pictured numeric output string by discarding
+@var{xd} and returning @var{addr u}; the address and length of
+the formatted string. A Standard program may modify characters
+within the string.  Does not release the hold area; use
+@code{#>>} to release a hold area started with @code{<<#}, or
+@code{<#} to release all hold areas.
+
+#line 54 "kernel/nio.fs"
+make-doc <<# --  ) gforth	less-less-number-sign
+Start a hold area that ends with @code{#>>}. Can be nested in
+each other and in @code{<#}.  Note: if you do not match up the
+@code{<<#}s with @code{#>>}s, you will eventually run out of
+hold area; you can reset the hold area to empty with @code{<#}.
+
+#line 62 "kernel/nio.fs"
+make-doc #>> --  ) gforth	number-sign-greater-greater
+Release the hold area started with @code{<<#}.
+
+#line 67 "kernel/nio.fs"
+make-doc sign n --  ) core
+Used between @code{<<#} and @code{#>}. If @var{n} (a
+@var{single} number) is negative, prepend ``@code{-}'' to the
+pictured numeric output string.
+
+#line 73 "kernel/nio.fs"
+make-doc digit n --  c  )
+
+#line 76 "kernel/nio.fs"
+make-doc # ud1 -- ud2  ) core		number-sign
+Used between @code{<<#} and @code{#>}. Prepend the
+least-significant digit (according to @code{base}) of @var{ud1}
+to the pictured numeric output string.  @var{ud2} is
+@var{ud1/base}, i.e., the number representing the remaining
+digits.
+
+#line 86 "kernel/nio.fs"
+make-doc #s ud -- 0 0  ) core	number-sign-s
+Used between @code{<<#} and @code{#>}.  Prepend all digits of
+@var{ud} to the pictured numeric output string.  @code{#s} will
+convert at least one digit. Therefore, if @var{ud} is 0,
+@code{#s} will prepend a ``0'' to the pictured numeric output
+string.
+
+#line 111 "kernel/nio.fs"
+make-doc holds addr u --  ) core-ext
+Used between @code{<<#} and @code{#>}. Prepend the string @code{addr u}
+to the pictured numeric output string.
+
+#line 118 "kernel/nio.fs"
+make-doc type-r c-addr u u2 --  ) gforth-experimental
+Type string @i{c-addr u} right-aligned in field of width \i{u2}.
+
+#line 122 "kernel/nio.fs"
+make-doc d.r d n --  ) double	d-dot-r
+Display @var{d} right-aligned in a field @var{n} characters
+wide. If more than @var{n} characters are needed to display the
+number, all digits and, if necessary, the sign ``-'', are
+displayed.
+
+#line 130 "kernel/nio.fs"
+make-doc ud.r ud n --  ) gforth	u-d-dot-r
+Display @var{ud} right-aligned in a field @var{n} characters wide. If more than
+@var{n} characters are needed to display the number, all digits are displayed.
+
+#line 135 "kernel/nio.fs"
+make-doc .r n1 n2 --  ) core-ext	dot-r
+Display @var{n1} right-aligned in a field @var{n2} characters
+wide. If more than @var{n2} characters are needed to display
+the number, all digits and, if necessary, the sign ``-'', are
+displayed.
+
+#line 142 "kernel/nio.fs"
+make-doc u.r u n --  ) core-ext	u-dot-r
+Display @var{u} right-aligned in a field @var{n} characters wide. If more than
+@var{n} characters are needed to display the number, all digits are displayed.
+
+#line 148 "kernel/nio.fs"
+make-doc d. d --  ) double	d-dot
+Display (the signed double number) @var{d} in free-format. followed by a space.
+
+#line 153 "kernel/nio.fs"
+make-doc ud. ud --  ) gforth	u-d-dot
+Display (the signed double number) @var{ud} in free-format, followed by a space.
+
+#line 157 "kernel/nio.fs"
+make-doc . n --  ) core	dot
+Display (the signed single number) @var{n} in free-format, followed by a space.
+
+#line 161 "kernel/nio.fs"
+make-doc u. u --  ) core	u-dot
+Display (the unsigned single number) @var{u} in free-format, followed by a space.
+
+#line 28 "kernel/errore.fs"
+make-doc ErrLink )
+
+#line 30 "kernel/errore.fs"
+make-doc ErrRanges )
+
+#line 42 "kernel/errore.fs"
+make-doc .warning )
+
+#line 46 "kernel/errore.fs"
+make-doc c(warning") c-addr --  )
+
+#line 52 "kernel/errore.fs"
+make-doc >exec )
+
+#line 53 "kernel/errore.fs"
+make-doc >stderr --  )
+
+#line 57 "kernel/errore.fs"
+make-doc do-debug xt --  )
+
+#line 62 "kernel/errore.fs"
+make-doc errlink>string n -- addr u  )
+
+#line 74 "kernel/errore.fs"
+make-doc error$ n -- addr u  )
+
+#line 88 "kernel/errore.fs"
+make-doc .error n --  )
+
+#line 1 "kernel/version.fs"
+make-doc version-string )
+
+#line 38 "kernel/int.fs"
+make-doc (parse) char "ccc<char>" -- c-addr u  )
+
+#line 44 "kernel/int.fs"
+make-doc parse xchar "ccc<xchar>" -- c-addr u  ) core-ext,xchar-ext
+Parse @i{ccc}, delimited by @i{xchar}, in the parse
+area. @i{c-addr u} specifies the parsed string within the
+parse area. If the parse area was empty, @i{u} is 0.
+
+#line 54 "kernel/int.fs"
+make-doc (name) -- c-addr count  )
+
+#line 62 "kernel/int.fs"
+make-doc name-too-short? c-addr u -- c-addr u  )
+
+#line 65 "kernel/int.fs"
+make-doc name-too-long? c-addr u -- c-addr u  )
+
+#line 73 "kernel/int.fs"
+make-doc bases )
+
+#line 78 "kernel/int.fs"
+make-doc getbase addr u -- addr' u'  )
+
+#line 93 "kernel/int.fs"
+make-doc sign? addr u -- addr1 u1 flag  )
+
+#line 100 "kernel/int.fs"
+make-doc ?dnegate d1 f -- d2  )
+
+#line 110 "kernel/int.fs"
+make-doc s'>unumber? addr u -- ud flag  )
+
+#line 117 "kernel/int.fs"
+make-doc s>unumber? c-addr u -- ud flag  ) gforth-internal
+converts string c-addr u into ud, flag indicates success
+
+#line 148 "kernel/int.fs"
+make-doc s>number? addr u -- d f  ) gforth-internal
+converts string addr u into d, flag indicates success
+
+#line 159 "kernel/int.fs"
+make-doc s>number addr len -- d  )
+
+#line 163 "kernel/int.fs"
+make-doc snumber? c-addr u -- 0 / n -1 / d 0>  )
+
+#line 174 "kernel/int.fs"
+make-doc (number?) string -- string 0 / n -1 / d 0>  )
+
+#line 181 "kernel/int.fs"
+make-doc number string -- d  )
+
+#line 189 "kernel/int.fs"
+make-doc ( compilation 'ccc<close-paren>' -- ; run-time --  ) core,file	paren
+Comment, usually till the next @code{)}: parse and discard all
+subsequent characters in the parse area until ")" is
+encountered. During interactive input, an end-of-line also acts as
+a comment terminator. For file input, it does not; if the
+end-of-file is encountered whilst parsing for the ")" delimiter,
+Gforth will generate a warning.
+
+#line 198 "kernel/int.fs"
+make-doc \ compilation 'ccc<newline>' -- ; run-time --  ) core-ext,block-ext backslash
+Comment until the end of line: parse and discard all remaining
+characters in the parse area, except while @code{load}ing from a
+block: while @code{load}ing from a block, parse and discard all
+remaining characters in the 64-byte line.
+
+#line 214 "kernel/int.fs"
+make-doc \G compilation 'ccc<newline>' -- ; run-time --  ) gforth backslash-gee
+Equivalent to @code{\}.  Used right below the start of a
+definition to describe the behaviour of a word.  In Gforth's
+source code these comments are those that are then inserted in
+the documentation.
+
+#line 235 "kernel/int.fs"
+make-doc wordlist-start )
+
+#line 236 "kernel/int.fs"
+make-doc wordlist-exec )
+
+#line 237 "kernel/int.fs"
+make-doc wordlist-map )
+
+#line 244 "kernel/int.fs"
+make-doc wordlist-idfor WORDS etc. )
+
+#line 245 "kernel/int.fs"
+make-doc wordlist-link )
+
+#line 246 "kernel/int.fs"
+make-doc wordlist-extendeg bucket offset )
+
+#line 247 "kernel/int.fs"
+make-doc wordlist-struct )
+
+#line 249 "kernel/int.fs"
+make-doc rec-f83 addr len wordlist-id-addr -- nt translate-name / 0  )
+
+#line 272 "kernel/int.fs"
+make-doc forth-wordlist -- wid  ) search
+@code{Constant} -- @i{wid} identifies the word list that includes
+all of the standard words provided by Gforth. When Gforth is
+invoked, this word list is the compilation word list and is at
+the top of the search order.
+
+#line 278 "kernel/int.fs"
+make-doc f83search )
+
+#line 281 "kernel/int.fs"
+make-doc current -- addr  ) gforth
+@code{Variable} -- holds the @i{wid} of the compilation word list.
+
+#line 283 "kernel/int.fs"
+make-doc voclink )
+
+#line 285 "kernel/int.fs"
+make-doc context -- addr  ) gforth
+@code{context} @code{@@} is the @i{wid} of the word list at the
+top of the search order.
+
+#line 289 "kernel/int.fs"
+make-doc wheres )
+
+#line 292 "kernel/int.fs"
+make-doc where-nt )
+
+#line 293 "kernel/int.fs"
+make-doc where-loc )
+
+#line 294 "kernel/int.fs"
+make-doc where-struct )
+
+#line 296 "kernel/int.fs"
+make-doc where, )
+
+#line 298 "kernel/int.fs"
+make-doc (where,) nt --  )
+
+#line 315 "kernel/int.fs"
+make-doc find-name-in c-addr u wid -- nt | 0  ) gforth
+Find the name @i{c-addr u} in the word list @i{wid}. Return its
+@i{nt}, if found, otherwise 0.
+
+#line 320 "kernel/int.fs"
+make-doc search-wordlist c-addr count wid -- 0 | xt +-1  ) search
+We recommend to use @word{find-name-in} instead of
+@word{search-wordlist}.@*
+Search the word list identified by @i{wid} for the definition
+named by the string at @i{c-addr count}.  If the definition is
+not found, return 0. If the definition is found return 1 (if
+the definition has non-default compilation semantics) or -1 (if
+the definition has default compilation semantics) together with
+the @i{xt}.  In Gforth, the @i{xt} returned represents the
+interpretation semantics.  Forth-2012 does not specify clearly
+what @i{xt} represents.
+
+#line 335 "kernel/int.fs"
+make-doc rec-name c-addr u -- translation  ) gforth-experimental
+Recognizes (@pxref{Defining recognizers})
+a visible local or a visible named word.  If
+successful, @i{translation} represents the text-interpretation
+semantics (interpreting, compiling, postponing) of that word
+(see @word{translate-name}).
+
+#line 342 "kernel/int.fs"
+make-doc find-name c-addr u -- nt | 0  ) gforth
+Find the name @i{c-addr u} in the current search
+order. Return its @i{nt}, if found, otherwise 0.
+
+#line 356 "kernel/int.fs"
+make-doc restrict-mask )
+
+#line 357 "kernel/int.fs"
+make-doc obsolete-mask )
+
+#line 358 "kernel/int.fs"
+make-doc lcount-mask )
+
+#line 362 "kernel/int.fs"
+make-doc flag-sign f -- 1|-1  )
+
+#line 366 "kernel/int.fs"
+make-doc ticking-compile-only-error ... --  )
+
+#line 369 "kernel/int.fs"
+make-doc compile-only-error ... --  )
+
+#line 372 "kernel/int.fs"
+make-doc (x>int) cfa w -- xt  )
+
+#line 379 "kernel/int.fs"
+make-doc ((name>)) nfa -- cfa  )
+
+#line 382 "kernel/int.fs"
+make-doc >hmlink )
+
+#line 383 "kernel/int.fs"
+make-doc >hmcompile, )
+
+#line 384 "kernel/int.fs"
+make-doc >hmto )
+
+#line 385 "kernel/int.fs"
+make-doc >hmextra )
+
+#line 386 "kernel/int.fs"
+make-doc >hm>int )
+
+#line 387 "kernel/int.fs"
+make-doc >hm>comp )
+
+#line 388 "kernel/int.fs"
+make-doc >hm>string )
+
+#line 389 "kernel/int.fs"
+make-doc >hm>link )
+
+#line 395 "kernel/int.fs"
+make-doc >f+c )
+
+#line 396 "kernel/int.fs"
+make-doc >link )
+
+#line 397 "kernel/int.fs"
+make-doc >cfa )
+
+#line 398 "kernel/int.fs"
+make-doc >namehm )
+
+#line 408 "kernel/int.fs"
+make-doc opt-compile, xt --  ) gforth-internal
+The intelligent @code{compile,} compiles each word as specified by
+@code{set-optimizer} for that word.
+
+#line 412 "kernel/int.fs"
+make-doc (to) val operation xt --  ) gforth-internal paren-to
+@i{xt} is of a value like word @i{name}.  Stores @i{val} @code{to}
+@i{name}.  @i{operation} selects between @code{to} (0), @code{+to} (1),
+@code{addr} (2), @code{action-of} (3) and @code{is} (4).
+
+#line 427 "kernel/int.fs"
+make-doc name>interpret nt -- xt  ) tools-ext name-to-interpret
+@i{xt} represents the interpretation semantics of the word
+@i{nt}.
+
+#line 431 "kernel/int.fs"
+make-doc name>compile nt -- xt1 xt2  ) tools-ext name-to-compile
+@i{xt1 xt2} is the compilation token for the word @i{nt}
+(@pxref{Compilation token}).
+
+#line 435 "kernel/int.fs"
+make-doc name>string nt -- addr u  ) tools-ext name-to-string
+@i{addr count} is the name of the word represented by @i{nt}.
+
+#line 437 "kernel/int.fs"
+make-doc name>link nt1 -- nt2 / 0  ) gforth name-to-link
+For a word @i{nt1}, returns the previous word @i{nt2} in the same
+wordlist, or 0 if there is no previous word.
+
+#line 441 "kernel/int.fs"
+make-doc hmsize )
+
+#line 443 "kernel/int.fs"
+make-doc to-access:exec xt --  )
+
+#line 444 "kernel/int.fs"
+make-doc to-access:, xt --  )
+
+#line 446 "kernel/int.fs"
+make-doc value+! n ... xt-value --  ) gforth-internal  value-plus-store
+Adds @i{n} to the value of the location indicated by
+@i{... xt-value}.
+
+#line 449 "kernel/int.fs"
+make-doc defer@ ... xt-deferred -- xt  ) core-ext defer-fetch
+If @i{xt-deferred} belongs to a word defined with @code{defer},
+@i{xt} represents the word currently associated with the
+deferred word @i{xt-deferred}.@* If @i{xt-deferred} belongs to
+another defer-flavoured word (e.g., a defer-flavoured field),
+@i{xt} is the word associated with the location indicated by
+@i{... xt-deferred} (e.g., for a defer-flavoured field @i{...}
+is the structure address).@* If @i{xt-deferred} is the xt of a
+word that is not defer-flavoured, throw -21 (Unsupported
+operation).
+
+#line 459 "kernel/int.fs"
+make-doc defer! xt xt-deferred --  ) core-ext defer-store If
+@i{xt-deferred} belongs to a word defined with @code{defer}, it
+is changed to execute @i{xt} on execution.@* If @i{xt-deferred}
+belongs to another defer-flavoured word (e.g., a
+defer-flavoured field), the location associated with
+@i{... xt-deferred} is changed to execut @i{xt}.@* If
+@i{xt-deferred} is the xt of a word that is not
+defer-flavoured, throw -21 (Unsupported operation).
+
+#line 468 "kernel/int.fs"
+make-doc >extra nt -- addr  )
+
+#line 471 "kernel/int.fs"
+make-doc compile, xt --  ) core-ext compile-comma
+Append the semantics represented by @i{xt} to the current
+definition.  When the resulting code fragment is run, it behaves
+the same as if @i{xt} is @code{execute}d.
+
+#line 477 "kernel/int.fs"
+make-doc , w --  ) core comma
+Reserve data space for one cell and store @i{w} in the space.
+
+#line 481 "kernel/int.fs"
+make-doc mask? nt mask -- flag  ) gforth-internal
+check if there is a flag, and if so, if it is set
+
+#line 485 "kernel/int.fs"
+make-doc immediate? nt -- flag  ) gforth
+true if the word @i{nt} has non-default compilation
+semantics (that's not quite according to the definition of
+immediacy, but many people mean that when they call a word
+``immediate'').
+
+#line 491 "kernel/int.fs"
+make-doc compile-only? nt -- flag  ) gforth
+true if @i{nt} is marked as compile-only.
+
+#line 494 "kernel/int.fs"
+make-doc ?compile-only nt -- nt  )
+
+#line 499 "kernel/int.fs"
+make-doc obsolete? nt -- flag  ) gforth
+true if @i{nt} is obsolete, i.e., will be removed in a future
+version of Gforth.
+
+#line 503 "kernel/int.fs"
+make-doc ?obsolete nt -- nt  )
+
+#line 509 "kernel/int.fs"
+make-doc name?int nt -- xt  ) gforth-internal name-question-int
+Like @code{name>interpret}, but warns when encountering a word marked
+compile-only or obsolete
+
+#line 517 "kernel/int.fs"
+make-doc named>string nt -- addr count  ) gforth-internal     named-to-string
+
+#line 519 "kernel/int.fs"
+make-doc named>link nt1 -- nt2 / 0  ) gforth-internal	named-to-link
+
+#line 522 "kernel/int.fs"
+make-doc noname>string nt -- cfa 0  ) gforth-internal    noname-to-string
+
+#line 524 "kernel/int.fs"
+make-doc noname>link nt -- 0  ) gforth-internal    noname-to-link
+
+#line 530 "kernel/int.fs"
+make-doc (name>intn) nfa -- xt +-1  )
+
+#line 542 "kernel/int.fs"
+make-doc ??? )
+
+#line 544 "kernel/int.fs"
+make-doc hm? hm -- flag  )
+check if a hm is actually one
+
+#line 552 "kernel/int.fs"
+make-doc xt? xt -- f  )
+check for xt - must be code field or primitive
+
+#line 564 "kernel/int.fs"
+make-doc >head-noprim xt -- nt  ) gforth-internal  to-head-noprim
+
+#line 568 "kernel/int.fs"
+make-doc >body xt -- a-addr  ) core to-body
+@i{a-addr} is the address of the body (aka parameter field or data
+field) of the word represented by @i{xt}
+
+#line 573 "kernel/int.fs"
+make-doc body> xt -- a_addr  )
+
+#line 576 "kernel/int.fs"
+make-doc >code-address xt -- c_addr  ) gforth
+@i{c-addr} is the code address of the word @i{xt}.
+
+#line 593 "kernel/int.fs"
+make-doc xt>name xt -- nt  ) gforth xt-to-name
+If @i{xt} is an execution token, produces the same @i{nt} as
+@word{>name}.  Otherwise, @i{nt} is an arbitrary value.
+
+#line 598 "kernel/int.fs"
+make-doc >does-code xt1 -- xt2  ) gforth
+If @i{xt1} is the execution token of a child of a
+@code{set-does>}-defined word, @i{xt2} is the xt passed to
+@code{set-does>}, i.e, the xt of the word that is executed when
+executing @i{xt1} (but first the body address of @i{xt1} is
+pushed).  If @i{xt1} does not belong to a
+@code{set-does>}-defined word, @i{xt2} is 0.
+
+#line 612 "kernel/int.fs"
+make-doc only-code-address! c_addr xt --  )
+
+#line 616 "kernel/int.fs"
+make-doc any-code! xt2 xt1 code-addr --  )
+
+#line 626 "kernel/int.fs"
+make-doc '-error nt translate-name | ... translate-some -- nt | never  ) gforth-internal
+check if there is a name token on the stack, return the corresponding
+@var{nt} or throw @code{wrong argument name} if not.
+
+#line 631 "kernel/int.fs"
+make-doc (') "name" -- nt  ) gforth-internal
+
+#line 634 "kernel/int.fs"
+make-doc ' "name" -- xt  ) core	tick
+@i{xt} represents @i{name}'s interpretation semantics.
+
+#line 642 "kernel/int.fs"
+make-doc parse-name "name" -- c-addr u  ) core-ext
+Get the next word from the input buffer
+
+#line 646 "kernel/int.fs"
+make-doc before-word --  ) gforth
+Deferred word called before the text interpreter parses the next word
+
+#line 650 "kernel/int.fs"
+make-doc before-line --  ) gforth
+Deferred word called before the text interpreter parses the next line
+
+#line 654 "kernel/int.fs"
+make-doc after-line --  ) gforth
+Deferred word called after the text interpreter parsed a line
+
+#line 658 "kernel/int.fs"
+make-doc int-execute ... xt -- ...  )
+
+#line 662 "kernel/int.fs"
+make-doc interpret ... -- ...  ) gforth-internal
+
+#line 675 "kernel/int.fs"
+make-doc bt-rp0-catch ... xt -- ... ball  )
+
+#line 680 "kernel/int.fs"
+make-doc bt-rp0-wrapper ... xt -- ...  )
+
+#line 683 "kernel/int.fs"
+make-doc interpret2 )
+
+#line 698 "kernel/int.fs"
+make-doc save-mem addr1 u -- addr2 u  ) gforth
+Copy the memory block @i{addr u} to @i{addr2}, which is the
+start of a newly heap allocated @i{u}-byte region.
+
+#line 707 "kernel/int.fs"
+make-doc 'quit )
+
+#line 708 "kernel/int.fs"
+make-doc .status )
+
+#line 709 "kernel/int.fs"
+make-doc prompt )
+
+#line 711 "kernel/int.fs"
+make-doc (prompt) --  )
+
+#line 715 "kernel/int.fs"
+make-doc (quit1) --  )
+
+#line 729 "kernel/int.fs"
+make-doc (quit) --  )
+
+#line 736 "kernel/int.fs"
+make-doc /error )
+
+#line 737 "kernel/int.fs"
+make-doc error-stack )
+
+#line 744 "kernel/int.fs"
+make-doc error> --  c-addr1 u1 c-addr2 u2 line# [addr u]  )
+
+#line 749 "kernel/int.fs"
+make-doc >error c-addr1 u1 c-addr2 u2 line# [addr u] --  )
+
+#line 755 "kernel/int.fs"
+make-doc input-error-data -- c-addr1 u1 c-addr2 u2 line# [addr u]  )
+
+#line 761 "kernel/int.fs"
+make-doc dec.r u n --  ) gforth
+Display @i{u} as a unsigned decimal number in a field @i{n}
+characters wide.
+
+#line 766 "kernel/int.fs"
+make-doc -trailing c_addr u1 -- c_addr u2  ) string dash-trailing
+Adjust the string specified by @i{c-addr, u1} to remove all
+trailing spaces. @i{u2} is the length of the modified string.
+
+#line 775 "kernel/int.fs"
+make-doc DoError )
+
+#line 778 "kernel/int.fs"
+make-doc dobacktrace --  )
+
+#line 782 "kernel/int.fs"
+make-doc .error-string throw-code --  )
+
+#line 797 "kernel/int.fs"
+make-doc mark-start )
+
+#line 798 "kernel/int.fs"
+make-doc mark-end )
+
+#line 803 "kernel/int.fs"
+make-doc part-type addr1 u1 u -- addr2 u2  )
+
+#line 807 "kernel/int.fs"
+make-doc .error-line c-addr1 u1 c-addr2 u2 --  )
+
+#line 814 "kernel/int.fs"
+make-doc .error-level n --  )
+
+#line 815 "kernel/int.fs"
+make-doc (.error-level) )
+
+#line 821 "kernel/int.fs"
+make-doc .error-frame throwcode addr1 u1 addr2 u2 n2 addr3 u3 errlevel -- throwcode  )
+
+#line 852 "kernel/int.fs"
+make-doc reset-dpp )
+
+#line 855 "kernel/int.fs"
+make-doc rec-level )
+
+#line 857 "kernel/int.fs"
+make-doc (DoError) throw-code --  )
+
+#line 874 "kernel/int.fs"
+make-doc quit ?? -- ??  ) core
+Empty the return stack, make the user input device
+the input source, enter interpret state and start
+the text interpreter.
+
+#line 899 "kernel/int.fs"
+make-doc do-execute xt --  ) gforth-internal
+C calling us
+
+#line 903 "kernel/int.fs"
+make-doc do-find addr u --  )
+
+#line 908 "kernel/int.fs"
+make-doc (c) --  )
+
+#line 910 "kernel/int.fs"
+make-doc gforth --  )
+
+#line 920 "kernel/int.fs"
+make-doc bootmessage --  ) gforth
+Hook (deferred word) executed right after interpreting the OS
+command-line arguments.  Normally prints the Gforth startup
+message.
+
+#line 927 "kernel/int.fs"
+make-doc 'cold --  ) gforth  tick-cold
+Hook (deferred word) for things to do right before interpreting the
+OS command-line arguments.  Normally does some initializations that
+you also want to perform.
+
+#line 932 "kernel/int.fs"
+make-doc cold --  ) gforth-internal
+
+#line 949 "kernel/int.fs"
+make-doc xt, xt --  )
+
+#line 952 "kernel/int.fs"
+make-doc boot path n **argv argc --  )
+
+#line 996 "kernel/int.fs"
+make-doc bye --  ) tools-ext
+Exit Gforth (with exit status 0).    
+
+#line 998 "kernel/int.fs"
+make-doc kernel-bye --  ) gforth-internal
+
+#line 21 "kernel/header-methods.fs"
+make-doc call-check xt -- xt  )
+
+#line 22 "kernel/header-methods.fs"
+make-doc does-check xt -- xt  )
+
+#line 24 "kernel/header-methods.fs"
+make-doc value, )
+
+#line 25 "kernel/header-methods.fs"
+make-doc constant, )
+
+#line 26 "kernel/header-methods.fs"
+make-doc :, xt --  )
+
+#line 27 "kernel/header-methods.fs"
+make-doc variable, )
+
+#line 28 "kernel/header-methods.fs"
+make-doc user, )
+
+#line 29 "kernel/header-methods.fs"
+make-doc defer, )
+
+#line 30 "kernel/header-methods.fs"
+make-doc field+, )
+
+#line 31 "kernel/header-methods.fs"
+make-doc abi-code, )
+
+#line 32 "kernel/header-methods.fs"
+make-doc ;abi-code, )
+
+#line 33 "kernel/header-methods.fs"
+make-doc does, xt --  )
+
+#line 34 "kernel/header-methods.fs"
+make-doc umethod, )
+
+#line 35 "kernel/header-methods.fs"
+make-doc uvar, )
+
+#line 38 "kernel/header-methods.fs"
+make-doc (uv) ip -- xt-addr  )
+
+#line 41 "kernel/header-methods.fs"
+make-doc is-umethod method-xt --  ) gforth-internal
+
+#line 43 "kernel/header-methods.fs"
+make-doc hm-list )
+
+#line 37 "kernel/comp.fs"
+make-doc allot n --  ) core
+Reserve @i{n} address units of data space without
+initialization. @i{n} is a signed number, passing a negative
+@i{n} releases memory.  In Forth-2012 you can only deallocate
+memory from the current contiguous region in this way.  In
+Gforth you can deallocate anything in this way but named words.
+The system does not check this restriction.
+
+#line 49 "kernel/comp.fs"
+make-doc small-allot n -- addr  )
+
+#line 52 "kernel/comp.fs"
+make-doc c, c --  ) core c-comma
+Reserve data space for one char and store @i{c} in the space.
+
+#line 56 "kernel/comp.fs"
+make-doc 2, w1 w2 --  ) gforth two-comma
+Reserve data space for two cells and store the double @i{w1
+w2} there, @i{w2} first (lower address).
+
+#line 64 "kernel/comp.fs"
+make-doc >align addr a-addr --  ) gforth-internal
+add enough spaces to reach a-addr
+
+#line 68 "kernel/comp.fs"
+make-doc align --  ) core
+If the data-space pointer is not aligned, reserve enough space to align it.
+
+#line 75 "kernel/comp.fs"
+make-doc falign --  ) floating f-align
+If the data-space pointer is not float-aligned, reserve
+enough space to align it.
+
+#line 80 "kernel/comp.fs"
+make-doc maxalign --  ) gforth
+Align data-space pointer for all Forth alignment requirements.
+
+#line 85 "kernel/comp.fs"
+make-doc cfalign --  ) gforth-internal
+Align data-space pointer for code field requirements (i.e., such
+that the corresponding body is maxaligned).
+
+#line 89 "kernel/comp.fs"
+make-doc A, addr --  ) gforth a-comma
+Reserve data space for one cell, and store @i{addr} there.  For our
+cross-compiler this provides the type information necessary for a
+relocatable image; normally, though, this is equivalent to
+@code{,}.
+
+#line 95 "kernel/comp.fs"
+make-doc const )
+
+#line 103 "kernel/comp.fs"
+make-doc mem, addr u --  ) gforth
+Reserve @i{u} bytes of dictionary space and copy @i{u} bytes
+starting at @i{addr} there.  If you want the memory to be
+aligned, precede @code{mem,} with an alignment word.
+
+#line 109 "kernel/comp.fs"
+make-doc string, c-addr u --  ) gforth string-comma
+Reserve @i{u}+1 bytes of dictionary space and store the string
+@i{c-addr u} there as counted string.
+
+#line 123 "kernel/comp.fs"
+make-doc get-current -- wid  ) search
+@i{wid} is the identifier of the current compilation word list.
+
+#line 127 "kernel/comp.fs"
+make-doc encode-pos nline nchar -- npos  )
+
+#line 130 "kernel/comp.fs"
+make-doc current-sourcepos3 -- nfile nline nchar  )
+
+#line 133 "kernel/comp.fs"
+make-doc encode-view nfile nline nchar -- xpos  )
+
+#line 136 "kernel/comp.fs"
+make-doc replace-sourceview )
+
+#line 138 "kernel/comp.fs"
+make-doc current-sourceview -- xpos  )
+
+#line 141 "kernel/comp.fs"
+make-doc current-view -- xpos  )
+
+#line 144 "kernel/comp.fs"
+make-doc check-shadow addr u wid --  )
+
+#line 145 "kernel/comp.fs"
+make-doc no-check-shadow addr u wid --  )
+
+#line 150 "kernel/comp.fs"
+make-doc recurse ... -- ...  ) core
+Alias to the current definition.
+
+#line 159 "kernel/comp.fs"
+make-doc noname-hm --  )
+modify hm for noname words
+
+#line 164 "kernel/comp.fs"
+make-doc named-hm --  )
+modify hm for named words
+
+#line 170 "kernel/comp.fs"
+make-doc header-flags )
+
+#line 172 "kernel/comp.fs"
+make-doc namehm, --  )
+
+#line 175 "kernel/comp.fs"
+make-doc name, c-addr u --  ) gforth-internal
+compile the named part of a header
+
+#line 184 "kernel/comp.fs"
+make-doc 0name, --  )
+
+#line 187 "kernel/comp.fs"
+make-doc noname, --  ) gforth-internal
+create an empty header for an unnamed word
+
+#line 191 "kernel/comp.fs"
+make-doc record-name --  )
+
+#line 194 "kernel/comp.fs"
+make-doc header-name, )
+
+#line 195 "kernel/comp.fs"
+make-doc header-extra )
+
+#line 196 "kernel/comp.fs"
+make-doc header --  ) gforth-internal
+create a header for a word
+
+#line 200 "kernel/comp.fs"
+make-doc create-from nt "name" --  ) gforth
+Create a word @i{name} that behaves like @i{nt}, but with an
+empty body.  @i{nt} must be the nt of a named word.  The
+resulting header is not yet @code{reveal}ed; use @code{reveal}
+to reveal it or @code{latest} to get its xt.  Creating a word
+with @code{create-from} without using any @code{set-} words is
+faster than if you create a word using @code{set-} words,
+@code{immediate}, or @code{does>}.  You can use @code{noname}
+with @code{create-from}.
+
+#line 214 "kernel/comp.fs"
+make-doc noname-from xt --  ) gforth
+Create a nameless word that behaves like @i{xt}, but with an
+empty body.  @i{xt} must be the nt of a nameless word.
+
+#line 219 "kernel/comp.fs"
+make-doc input-stream-header "name" --  )
+
+#line 222 "kernel/comp.fs"
+make-doc input-stream --  ) gforth-internal
+switches back to getting the name from the input stream ;
+
+#line 228 "kernel/comp.fs"
+make-doc nextname$ )
+
+#line 230 "kernel/comp.fs"
+make-doc nextname-header --  )
+
+#line 235 "kernel/comp.fs"
+make-doc nextname c-addr u --  ) gforth
+The next defined word will have the name @var{c-addr u}; the
+defining word will leave the input stream alone.
+
+#line 241 "kernel/comp.fs"
+make-doc noname-header --  )
+
+#line 244 "kernel/comp.fs"
+make-doc noname --  ) gforth
+The next defined word will be anonymous. The defining word will
+leave the input stream alone. The xt of the defined word will
+be given by @code{latestxt}, its nt by @code{latestnt}
+(@pxref{Name token}).
+
+#line 251 "kernel/comp.fs"
+make-doc latestnt -- nt  ) gforth
+@i{nt} is the name token of the most recent word (named or
+unnamed) defined in the current section.
+
+#line 257 "kernel/comp.fs"
+make-doc latestxt -- xt  ) gforth
+@i{xt} is the execution token of the most recent word defined in the current section.
+
+#line 262 "kernel/comp.fs"
+make-doc latest -- nt|0  ) gforth
+If the most recent word defined in the current section has a
+name, @i{nt} is its name token; otherwise, return 0.
+
+#line 269 "kernel/comp.fs"
+make-doc >lits x --  )
+
+#line 270 "kernel/comp.fs"
+make-doc lits> -- x  )
+
+#line 271 "kernel/comp.fs"
+make-doc lits# -- u  )
+
+#line 272 "kernel/comp.fs"
+make-doc lits, --  )
+
+#line 276 "kernel/comp.fs"
+make-doc clear-litstack --  )
+
+#line 279 "kernel/comp.fs"
+make-doc Literal compilation n -- ; run-time -- n  ) core
+Compilation semantics: ( @i{n --} ) compile the run-time semantics.@*
+Run-time Semantics: ( @i{ -- n} ).@*
+Interpretation semantics: not defined in the standard.
+
+#line 286 "kernel/comp.fs"
+make-doc 2Literal compilation w1 w2 -- ; run-time  -- w1 w2  ) double two-literal
+Compilation semantics: ( @i{w1 w2 --} ) compile the run-time semantics.@*
+Run-time Semantics: ( @i{ -- w1 w2} ).@*
+Interpretation semantics: not defined in the standard.
+
+#line 292 "kernel/comp.fs"
+make-doc ALiteral compilation addr -- ; run-time -- addr  ) gforth
+Works like @code{literal}, but (when used in cross-compiled
+code) tells the cross-compiler that the literal is an address.
+
+#line 297 "kernel/comp.fs"
+make-doc ?parse-name -- addr u  )
+same as parse-name, but fails with an error
+
+#line 303 "kernel/comp.fs"
+make-doc cfa, code-address --  ) gforth-internal	cfa-comma
+
+#line 306 "kernel/comp.fs"
+make-doc basic-block-end --  )
+
+#line 308 "kernel/comp.fs"
+make-doc +target addr --  )
+
+#line 319 "kernel/comp.fs"
+make-doc xt-location )
+
+#line 320 "kernel/comp.fs"
+make-doc xt-location1 addr -- addr  )
+
+#line 327 "kernel/comp.fs"
+make-doc addr>view )
+give @i{view} information for instruction address @i{ip-addr}
+
+#line 334 "kernel/comp.fs"
+make-doc name>view nt -- view / 0  )
+give @i{view} information for name token @i{nt}
+
+#line 339 "kernel/comp.fs"
+make-doc prim-check xt -- xt  )
+
+#line 342 "kernel/comp.fs"
+make-doc peephole-compile, xt --  )
+
+#line 346 "kernel/comp.fs"
+make-doc flush-code --  )
+
+#line 364 "kernel/comp.fs"
+make-doc default-name>comp nt -- w xt  ) gforth-internal default-name-to-comp
+
+#line 366 "kernel/comp.fs"
+make-doc default-name>int nt -- xt  ) gforth-internal default-name-to-int
+The @word{name>interpret} implementation of most words.
+
+#line 370 "kernel/comp.fs"
+make-doc default-i/c --  )
+
+#line 374 "kernel/comp.fs"
+make-doc ['] compilation. "name" -- ; run-time. -- xt  ) core      bracket-tick
+@i{xt} represents @i{name}'s interpretation semantics.
+
+#line 378 "kernel/comp.fs"
+make-doc COMP' "name" -- xt1 xt2  ) gforth  comp-tick
+Compilation token @i{xt1 xt2} represents @i{name}'s compilation semantics.
+
+#line 382 "kernel/comp.fs"
+make-doc [COMP'] compilation "name" -- ; run-time -- xt1 xt2  ) gforth bracket-comp-tick
+Compilation token @i{xt1 xt2} represents @i{name}'s compilation semantics.
+
+#line 386 "kernel/comp.fs"
+make-doc postpone, xt1 xt2 --  ) gforth	postpone-comma
+Compile the compilation semantics represented by the
+compilation token @i{xt1 xt2}.
+
+#line 35 "kernel/recognizer.fs"
+make-doc lit, x --  ) gforth lit-comma
+This is a non-immediate variant of @word{literal}@*
+Execution semantics: ( @i{x --} ) Compile the following semantics:@*
+Compiled semantics: ( @i{ -- x} ).
+
+#line 40 "kernel/recognizer.fs"
+make-doc 2lit, x1 x2 --  ) gforth two-lit-comma
+This is a non-immediate variant of @word{2literal}@*
+Execution semantics: ( @i{x1 x2 --} ) Compile the following semantics:@*
+Compiled semantics: ( @i{-- x1 x2} ).
+
+#line 46 "kernel/recognizer.fs"
+make-doc no.extensions --  )
+
+#line 48 "kernel/recognizer.fs"
+make-doc do-translate ... translator -- ...  ) gforth-internal
+
+#line 50 "kernel/recognizer.fs"
+make-doc (translate:) int-xt comp-xt post-xt "name" --  ) gforth-experimental
+
+#line 53 "kernel/recognizer.fs"
+make-doc translate: int-xt comp-xt post-xt "name" --  ) gforth-experimental
+Defines @i{name}, a translation token (@pxref{Defining recognizers}).@*
+@i{name} execution: ( @i{ -- translation-token } )@*
+@i{name} interpreting action: ( @i{ ... translation -- ... } )@*
+Remove the translation token from the stack and execute @i{int-xt}.@*
+@i{name} compiling action: ( @i{ ... translation -- ... } )@*
+Remove the translation token from the stack and execute @i{comp-xt}.@*
+@i{name} postponing action: ( @i{ translation -- } )@*
+Remove the translation token from the stack and execute @i{post-xt}.
+
+#line 64 "kernel/recognizer.fs"
+make-doc translate-fallback-error )
+
+#line 66 "kernel/recognizer.fs"
+make-doc postponing ... translation --  ) gforth-experimental
+Perform the postponing action of @i{translation}.  For a
+system-defined translation token, first remove @i{translation} from
+the stack, then possibly perform additional scanning specified for
+the translation token, and finally perform the postponing run-time
+of the translation token.  For a user-defined translation token,
+remove it from the stack and execute its @i{post-xt}.
+
+#line 82 "kernel/recognizer.fs"
+make-doc name-compsem ... nt -- ...  )
+
+#line 92 "kernel/recognizer.fs"
+make-doc translate-name, )
+
+#line 93 "kernel/recognizer.fs"
+make-doc translate-name nt -- translation  ) gforth-experimental
+Interpreting run-time: @code{( @i{... -- ...} )}@*
+Perform the interpretation semantics of @i{nt}.@*
+Compiling run-time:  @code{( @i{... -- ...} )}@*
+Perform the compilation semantics of @i{nt}.
+
+#line 102 "kernel/recognizer.fs"
+make-doc translate-cell, )
+
+#line 103 "kernel/recognizer.fs"
+make-doc translate-cell x -- translation  ) gforth-experimental
+Interpreting run-time: @code{( @i{ -- x} )}
+
+#line 106 "kernel/recognizer.fs"
+make-doc ?warn# )
+
+#line 111 "kernel/recognizer.fs"
+make-doc translate-dcell, )
+
+#line 112 "kernel/recognizer.fs"
+make-doc translate-dcell xd -- translation  ) gforth-experimental
+Interpreting run-time: @code{( @i{ -- xd} )}
+
+#line 115 "kernel/recognizer.fs"
+make-doc translate-none )
+
+#line 117 "kernel/recognizer.fs"
+make-doc ?found nt|0 -- nt  ) gforth-experimental
+@code{throw}s -13 (undefined word) if @var{token} is 0.
+
+#line 121 "kernel/recognizer.fs"
+make-doc ?rec-found translation -- translation  ) gforth-experimental
+@code{throw}s -13 (undefined word) if @i{translation} is
+@code{translate-none}.
+
+#line 126 "kernel/recognizer.fs"
+make-doc translate-name? token -- flag  )
+check if name token; postpone action may differ
+
+#line 129 "kernel/recognizer.fs"
+make-doc nt>rec nt / 0 -- nt translate-name / translate-none  )
+
+#line 134 "kernel/recognizer.fs"
+make-doc rec-number-kernel c-addr u -- translation  ) gforth-internal
+
+#line 144 "kernel/recognizer.fs"
+make-doc get-stack stack -- x1 .. xn n  ) gforth-experimental
+Push the contents of @i{stack} on the data stack, with the top
+element in @i{stack} being pushed as @i{xn}.
+
+#line 149 "kernel/recognizer.fs"
+make-doc set-stack x1 .. xn n stack --  ) gforth-experimental
+Overwrite the contents of @i{stack} with @i{n} elements from
+the data stack, with @i{xn} becoming the top of @i{stack}.
+
+#line 155 "kernel/recognizer.fs"
+make-doc stack: n "name" --  ) gforth-experimental stack-colon
+Create a named stack with at least @var{n} cells space.
+
+#line 158 "kernel/recognizer.fs"
+make-doc do-stack: x1 .. xn n xt "name" --  )
+
+#line 160 "kernel/recognizer.fs"
+make-doc stack n -- stack  ) gforth-experimental
+Create an unnamed stack with at least @var{n} cells space.
+
+#line 164 "kernel/recognizer.fs"
+make-doc >stack x stack --  ) gforth-experimental to-stack
+Push @i{x} to top of @i{stack}.
+
+#line 168 "kernel/recognizer.fs"
+make-doc stack> stack -- x  ) gforth-experimental stack-from
+Pop item @i{x} from top of @i{stack}.
+
+#line 172 "kernel/recognizer.fs"
+make-doc stack# stack -- elements  )
+
+#line 175 "kernel/recognizer.fs"
+make-doc rec-kernel addr u -- ... translate-xt / 0  ) gforth-internal
+Sequence of @code{rec-name} and @code{rec-number-kernel}
+
+#line 179 "kernel/recognizer.fs"
+make-doc rec-forth c-addr u -- translation  ) gforth-experimental
+The system recognizer: @word{rec-forth} is a @word{defer}red
+word that contains a recognizer (sequence).  The system's text
+interpreter calls @word{rec-forth}.
+
+#line 185 "kernel/recognizer.fs"
+make-doc [ --  )  core	left-bracket
+Enter interpretation state. Immediate word.
+
+#line 189 "kernel/recognizer.fs"
+make-doc ] --  ) core	right-bracket
+Enter compilation state.
+
+#line 193 "kernel/recognizer.fs"
+make-doc postpone "name" --  ) core
+Compiles the compilation semantics of @i{name}.
+
+#line 400 "kernel/comp.fs"
+make-doc ," "string"<"> --  )
+
+#line 407 "kernel/comp.fs"
+make-doc or! bmask addr --  )
+
+#line 413 "kernel/comp.fs"
+make-doc lastflags -- c-addr  )
+
+#line 419 "kernel/comp.fs"
+make-doc imm>comp )
+
+#line 420 "kernel/comp.fs"
+make-doc immediate --  ) core
+Change the compilation semantics of the most recently defined
+word to be the same as its interpretation semantics.
+
+#line 425 "kernel/comp.fs"
+make-doc restrict --  ) gforth
+A synonym for @code{compile-only}
+
+#line 429 "kernel/comp.fs"
+make-doc compile-only --  ) gforth
+Mark the last definition as compile-only; as a result, the text
+interpreter and @code{'} will warn when they encounter such a word.
+
+#line 433 "kernel/comp.fs"
+make-doc obsolete --  ) gforth-internal
+Mark the last word as obsolete
+
+#line 445 "kernel/comp.fs"
+make-doc a>int nt --  )
+
+#line 446 "kernel/comp.fs"
+make-doc a>comp nt -- xt1 xt2  )
+
+#line 448 "kernel/comp.fs"
+make-doc s>int nt -- xt  )
+
+#line 449 "kernel/comp.fs"
+make-doc s>comp nt -- xt1 xt2  )
+
+#line 450 "kernel/comp.fs"
+make-doc s-to val operation nt --  )
+
+#line 453 "kernel/comp.fs"
+make-doc s-compile, xt --  )
+
+#line 455 "kernel/comp.fs"
+make-doc synonym, nt int comp --  ) gforth-internal
+
+#line 461 "kernel/comp.fs"
+make-doc Alias xt "name" --  ) gforth
+Define @i{name} as a word that performs @i{xt}.  Unlike for
+deferred words, aliases don't have an indirection overhead when
+compiled.
+
+#line 467 "kernel/comp.fs"
+make-doc alias? nt -- flag  )
+
+#line 470 "kernel/comp.fs"
+make-doc synonym-mask )
+
+#line 472 "kernel/comp.fs"
+make-doc Synonym "name" "oldname" --  ) tools-ext
+Define @i{name} to behave the same way as @i{oldname}: Same
+interpretation semantics, same compilation semantics, same
+@word{to}, @word{+to}, @word{is}, @word{action-of} and
+@word{addr} semantics.
+
+#line 482 "kernel/comp.fs"
+make-doc synonym? nt -- flag  )
+
+#line 485 "kernel/comp.fs"
+make-doc Create "name" --  ) core
+
+#line 488 "kernel/comp.fs"
+make-doc buffer: u "name" --  ) core-ext buffer-colon
+Define @i{name} and reserve @i{u} bytes starting at @i{addr}.
+Gforth initializes the reserved bytes to 0, but the standard
+does not guarantee this.@* @i{name} execution: @code{( -- addr
+)}.
+
+#line 495 "kernel/comp.fs"
+make-doc Variable "name" --  ) core
+Define @i{name} and reserve a cell at @i{addr}.@* @i{name}
+execution: @code{( -- addr )}.
+
+#line 500 "kernel/comp.fs"
+make-doc AVariable "name" --  ) gforth
+Works like @code{variable}, but (when used in cross-compiled
+code) tells the cross-compiler that the cell stored in the
+variable is an address.
+
+#line 506 "kernel/comp.fs"
+make-doc 2Variable "name" --  ) double two-variable
+Define @i{name} and reserve two cells starting at @i{addr}.@* @i{name}
+execution: @code{( -- addr )}.
+
+#line 511 "kernel/comp.fs"
+make-doc uallot n1 -- n2  ) gforth
+Reserve @i{n1} bytes of user data.  @i{n2} is the offset of the
+start of the reserved area within the user area.
+
+#line 516 "kernel/comp.fs"
+make-doc User "name" --  ) gforth
+@i{Name} is a user variable (1 cell).@*
+@i{Name} execution: ( -- @i{addr} )@*
+@i{Addr} is the address of the user variable in the current task.
+
+#line 522 "kernel/comp.fs"
+make-doc AUser "name" --  ) gforth
+@i{Name} is a user variable containing an address (this only
+makes a difference in the cross-compiler).
+
+#line 527 "kernel/comp.fs"
+make-doc (Constant) )
+
+#line 529 "kernel/comp.fs"
+make-doc (Value) )
+
+#line 531 "kernel/comp.fs"
+make-doc Constant w "name" --  ) core
+Define @i{name}.@*
+@i{name} execution: @i{( -- w )}
+
+#line 536 "kernel/comp.fs"
+make-doc AConstant addr "name" --  ) gforth
+Like @code{constant}, but defines a constant for an address
+(this only makes a difference in the cross-compiler).
+
+#line 541 "kernel/comp.fs"
+make-doc Value w "name" --  ) core-ext
+Define @i{name} with the initial value @i{w} @*
+@i{name} execution: @i{( -- w2 )} push the current value of @i{name}.@*
+@code{to @i{name}} run-time: @i{( w3 -- )} change the value of
+@i{name} to @i{w3}.@*
+@code{+to @i{name}} run-time: @i{( n|u -- )} increment the value of
+@i{name} by @i{n|u}
+
+#line 550 "kernel/comp.fs"
+make-doc AValue w "name" --  ) gforth
+Like @code{value}, but defines a value for an address
+(this only makes a difference in the cross-compiler).
+
+#line 555 "kernel/comp.fs"
+make-doc to-table-size# )
+
+#line 557 "kernel/comp.fs"
+make-doc (Field) )
+
+#line 561 "kernel/comp.fs"
+make-doc defer-default --  )
+
+#line 565 "kernel/comp.fs"
+make-doc Defer "name" --  ) core-ext
+Define a deferred word @i{name}; you have to set it to an xt
+before executing it.@*
+@i{name} execution: execute the xt that @i{name} has
+most recently been set to execute.@*
+@code{Is @i{name}} run-time: @i{( xt1 -- )} Set @i{name} to
+execute @i{xt1}.@*
+@code{Action-of @i{name}} run-time: @i{( -- xt2 )}
+@i{xt2} is the xt that @i{name} has most recently been set to execute.
+
+#line 577 "kernel/comp.fs"
+make-doc defers compilation "name" -- ; run-time ... -- ...  ) gforth
+Compiles the present contents of the deferred word @i{name}
+into the current definition.  I.e., this produces static
+binding as if @i{name} was not deferred.
+
+#line 586 "kernel/comp.fs"
+make-doc does>-like xt -- colon-sys  )
+
+#line 601 "kernel/comp.fs"
+make-doc hmtemplate )
+
+#line 613 "kernel/comp.fs"
+make-doc hm-activate xt --  )
+
+#line 615 "kernel/comp.fs"
+make-doc hmcopy xt --  ) gforth-internal
+
+#line 619 "kernel/comp.fs"
+make-doc hmsave -- addr u  ) gforth-internal
+save hmtemplate for nested definitions
+
+#line 623 "kernel/comp.fs"
+make-doc hmrestore addr u --  ) gforth-internal
+restore hmtemplate
+
+#line 627 "kernel/comp.fs"
+make-doc hm= hm1 hm2 -- flag  )
+
+#line 630 "kernel/comp.fs"
+make-doc (hm,) --  )
+
+#line 635 "kernel/comp.fs"
+make-doc hm, --  )
+
+#line 642 "kernel/comp.fs"
+make-doc make-latest nt --  ) gforth
+Make @i{nt} the latest definition, which can be manipulated by
+@code{immediate} and @code{set-*} operations.  If you have used
+(especially compiled) the word referred to by nt already, do
+not change the behaviour of the word (only its implementation),
+otherwise you may get a surprising mix of behaviours that is
+not consistent between Gforth engines and versions.
+
+#line 651 "kernel/comp.fs"
+make-doc hm! xt offset --  )
+
+#line 659 "kernel/comp.fs"
+make-doc !namehm addr --  )
+
+#line 661 "kernel/comp.fs"
+make-doc general-compile, xt --  )
+
+#line 665 "kernel/comp.fs"
+make-doc set-optimizer xt --  ) gforth
+Changes the current word such that @code{compile,}ing it
+executes @i{xt} (with the same stack contents as passed to
+@code{compile,}).  Note that @code{compile,} must be consistent
+with @code{execute}, so you must use @code{set-optimizer} only
+to install a more efficient implementation of the same
+behaviour.
+
+#line 674 "kernel/comp.fs"
+make-doc set-execute ca --  ) gforth
+Changes the current word such that it jumps to the native code
+at @i{ca}.  Also changes the @code{compile,} implementation to
+the most general (and slowest) one.  Call @code{set-optimizer}
+afterwards if you want a more efficient @code{compile,}
+implementation.
+
+#line 683 "kernel/comp.fs"
+make-doc does-code! xt2 xt1 --  ) gforth
+Change @i{xt1} to be a @code{@i{xt2} set-does>}-defined word.
+
+#line 688 "kernel/comp.fs"
+make-doc set-does> xt --  ) gforth
+Changes the current word such that it pushes its body address
+and then executes @i{xt}.  Also changes the @code{compile,}
+implementation accordingly.  Call @code{set-optimizer}
+afterwards if you want a more efficient implementation.
+
+#line 697 "kernel/comp.fs"
+make-doc set-to to-xt --  ) gforth
+Changes the implementations of the to-class methods of the most
+recently defined word to come from the to-class that has the xt
+@i{to-xt}.
+
+#line 703 "kernel/comp.fs"
+make-doc set->int xt --  ) gforth set-to-int
+Sets the implementation of the @code{name>interpret ( nt -- xt2 )}
+method of the current word to @i{xt}.
+
+#line 707 "kernel/comp.fs"
+make-doc set->comp xt --  ) gforth set-to-comp
+Sets the implementation of the @code{name>compile ( nt -- xt1 xt2 )}
+method of the current word to @i{xt}.
+
+#line 711 "kernel/comp.fs"
+make-doc set-name>string xt --  ) gforth set-name-to-string
+Sets the implementation of the @code{name>string ( nt -- addr u )}
+method of the current word to @i{xt}.
+
+#line 715 "kernel/comp.fs"
+make-doc set-name>link xt --  ) gforth set-name-to-link
+Sets the implementation of the @code{name>link ( nt1 -- nt2|0 )}
+method of the current word to @i{xt}.
+
+#line 720 "kernel/comp.fs"
+make-doc int-opt; flag lastxt --  )
+
+#line 723 "kernel/comp.fs"
+make-doc opt: compilation -- colon-sys2 ; run-time -- nest-sys  ) gforth
+Starts a nameless colon definition; when it is complete, this
+colon definition will become the @code{compile,} implementation
+of the latest word (before the @code{opt:}).
+
+#line 730 "kernel/comp.fs"
+make-doc opt!-compile, xt --  ) gforth-internal
+force optimizing compile,
+
+#line 737 "kernel/comp.fs"
+make-doc (to), xt --  )
+in compiled @code{to @i{name}}, xt is that of @i{name}.  This
+word generates code for storing v (of type appropriate for
+@i{name}) there.  This word is a factor of @code{to}.
+
+#line 750 "kernel/comp.fs"
+make-doc ?fold1 colon-xt l:x -- x  |  <to>-xt -- never  ) gforth-internal
+Prepare one-literal constant folding: if there's no literal on the
+literal stack, just compile the @var{colon-xt} as is, and do not return
+to the caller.  If there is, drop the xt of the \var{colon-xt}, and
+retrieve the literal @var{x} and return to the caller.
+
+#line 756 "kernel/comp.fs"
+make-doc fold1: -- colon-sys  ) gforth-internal
+Define the code that optimizes constant folding with a single constant.
+The code following @code{fold1:} has a stack effect of @code{( x -- )},
+where @var{x} is the topmost entry from the literal stack.  If there's
+none, this code is never reached, and the colon definition is compiled
+as is.
+
+#line 766 "kernel/comp.fs"
+make-doc reveal! xt wid --  ) core-ext  reveal-store
+Add @var{xt} to a wordlist. Mapped to @code{DEFER!}.
+
+#line 768 "kernel/comp.fs"
+make-doc initwl wid --  ) core-ext  initwl
+initialize a wordlist. Mapped to @code{+TO}.
+
+#line 771 "kernel/comp.fs"
+make-doc reveal-method wid -- addr  )
+
+#line 773 "kernel/comp.fs"
+make-doc value-to n value-xt --  ) gforth-internal
+this is the TO-method for normal values
+
+#line 776 "kernel/comp.fs"
+make-doc defer-is n value-xt --  ) gforth-internal
+this is the TO-method for deferred words
+
+#line 779 "kernel/comp.fs"
+make-doc int-to "name" x --  ) gforth-internal
+Interpretation semantics of \code{to}.
+
+#line 783 "kernel/comp.fs"
+make-doc comp-to compilation "name" -- ; run-time x --  ) gforth-internal
+Compilation semantics of \code{to}.
+
+#line 787 "kernel/comp.fs"
+make-doc TO value ... "name" --  ) core-ext
+@i{Name} is a value-flavoured word, @i{...} is optional additional
+addressing information, e.g., for a value-flavoured field.  At
+run-time, perform the @i{to @i{name}} semantics: change @i{name}
+(with the same additional addressing information) to push
+@i{value}.  The type of @i{value} depends on the type of @i{name}
+(see the defining word for @i{name} for the actual type).
+An alternative syntax is to write @code{->@i{name}}.
+
+#line 796 "kernel/comp.fs"
+make-doc <IS> "name" xt --  ) gforth-internal angle-is
+Changes the @code{defer}red word @var{name} to execute @var{xt}.
+
+#line 800 "kernel/comp.fs"
+make-doc [IS] compilation "name" -- ; run-time xt --  ) gforth-internal bracket-is
+At run-time, changes the @code{defer}red word @var{name} to
+execute @var{xt}.
+
+#line 805 "kernel/comp.fs"
+make-doc IS xt ... "name" --  ) core-ext
+@i{Name} is a defer-flavoured word, @i{...} is optional additional
+addressing information, e.g., for a defer-flavoured field.  At
+run-time, perform the @i{is @i{name}} semantics: change @i{name}
+(with the same additional addressing information) to execute
+@i{xt}.
+
+#line 812 "kernel/comp.fs"
+make-doc <+TO>' )
+
+#line 813 "kernel/comp.fs"
+make-doc [+TO]' )
+
+#line 815 "kernel/comp.fs"
+make-doc +TO value ... "name" --  ) gforth
+@i{Name} is a value-flavoured word, @i{...} is optional additional
+addressing information, e.g., for a value-flavoured field.  At
+run-time, perform the @i{+to @i{name}} semantics: if @i{name} (with
+the same additional addressing information) pushed @i{value1}
+before, change it to push @i{value2}, the sum of the @i{value1} and
+@i{value}.  The type of @i{value} depends on the type of @i{name}
+(see the defining word for @i{name} for the actual type).  An
+alternative syntax is to write @code{+>@i{name}}.
+
+#line 827 "kernel/comp.fs"
+make-doc :-hook sys1 -- sys2  )
+
+#line 828 "kernel/comp.fs"
+make-doc ;-hook sys2 -- sys1  )
+
+#line 829 "kernel/comp.fs"
+make-doc ;-hook2 --  )
+
+#line 830 "kernel/comp.fs"
+make-doc 0-adjust-locals-size --  )
+
+#line 832 "kernel/comp.fs"
+make-doc colon-sys-xt-offset )
+you get the xt in a colon-sys with COLON-SYS-XT-OFFSET PICK
+
+#line 835 "kernel/comp.fs"
+make-doc defstart )
+
+#line 836 "kernel/comp.fs"
+make-doc colon-sys -- colon-sys  )
+
+#line 845 "kernel/comp.fs"
+make-doc :start --  )
+
+#line 849 "kernel/comp.fs"
+make-doc : "name" -- colon-sys  ) core	colon
+
+#line 852 "kernel/comp.fs"
+make-doc dummy-noname )
+
+#line 853 "kernel/comp.fs"
+make-doc :noname -- xt colon-sys  ) core-ext	colon-no-name
+
+#line 857 "kernel/comp.fs"
+make-doc ; compilation colon-sys -- ; run-time nest-sys --  ) core	semicolon
+
+#line 862 "kernel/comp.fs"
+make-doc concat xt1 xt2 -- xt  )
+
+#line 868 "kernel/comp.fs"
+make-doc comp-does>; some-sys flag lastxt --  )
+
+#line 873 "kernel/comp.fs"
+make-doc comp-does> compilation colon-sys1 -- colon-sys2  )
+
+#line 880 "kernel/comp.fs"
+make-doc int-does>; flag lastxt --  )
+
+#line 883 "kernel/comp.fs"
+make-doc int-does> -- colon-sys  )
+
+#line 889 "kernel/comp.fs"
+make-doc DOES> compilation colon-sys1 -- colon-sys2  ) core does
+Changes the current word such that it pushes its body address
+and then calls the code behind the @word{does>}.  Also changes
+the @code{compile,} implementation accordingly.  Call
+@code{set-optimizer} afterwards if you want a more efficient
+implementation.
+
+#line 898 "kernel/comp.fs"
+make-doc i/c>comp nt -- xt1 xt2  )
+
+#line 903 "kernel/comp.fs"
+make-doc (nocheck-reveal) nt wid --  )
+
+#line 907 "kernel/comp.fs"
+make-doc (reveal) nt wid --  )
+
+#line 911 "kernel/comp.fs"
+make-doc reveal --  ) gforth
+Put the current word in the wordlist current at the time of the
+header definition.
+
+#line 924 "kernel/comp.fs"
+make-doc voc-tablereveal )
+
+#line 926 "kernel/comp.fs"
+make-doc voc-to n voc-xt --  ) gforth-internal
+this is the TO-method for wordlists
+
+#line 929 "kernel/comp.fs"
+make-doc recursive compilation -- ; run-time --  ) gforth
+Make the current definition visible, enabling it to call itself
+recursively.
+
+#line 21 "kernel/accept.fs"
+make-doc edit-out )
+
+#line 24 "kernel/accept.fs"
+make-doc insert-char )
+
+#line 25 "kernel/accept.fs"
+make-doc insert-string )
+
+#line 26 "kernel/accept.fs"
+make-doc edit-control )
+
+#line 27 "kernel/accept.fs"
+make-doc everychar )
+
+#line 28 "kernel/accept.fs"
+make-doc everyline )
+
+#line 29 "kernel/accept.fs"
+make-doc edit-update span addr pos1 -- span addr pos1  )
+
+#line 30 "kernel/accept.fs"
+make-doc ctrlkeys )
+
+#line 31 "kernel/accept.fs"
+make-doc altkeys )
+
+#line 32 "kernel/accept.fs"
+make-doc edit-linew )
+
+#line 34 "kernel/accept.fs"
+make-doc (ins) max span addr pos1 key -- max span addr pos2  )
+
+#line 37 "kernel/accept.fs"
+make-doc (ins-string) max span addr pos1 addr1 u1 -- max span addr pos2  )
+
+#line 40 "kernel/accept.fs"
+make-doc (bs) max span addr pos1 -- max span addr pos2 flag  )
+
+#line 44 "kernel/accept.fs"
+make-doc (ret) max span addr pos1 -- max span addr pos2 flag  )
+
+#line 46 "kernel/accept.fs"
+make-doc (edit-control) max span addr pos1 ctrl-key -- max span addr pos2 flag  )
+
+#line 49 "kernel/accept.fs"
+make-doc std-ctrlkeys )
+
+#line 62 "kernel/accept.fs"
+make-doc (edit-update) span addr pos -- span addr pos  )
+
+#line 65 "kernel/accept.fs"
+make-doc (edit-everyline) --  )
+
+#line 77 "kernel/accept.fs"
+make-doc kernel-editor )
+
+#line 80 "kernel/accept.fs"
+make-doc >control key -- ctrl-key  )
+
+#line 84 "kernel/accept.fs"
+make-doc decode max span addr pos1 key -- max span addr pos2 flag  )
+
+#line 95 "kernel/accept.fs"
+make-doc edit-key )
+
+#line 97 "kernel/accept.fs"
+make-doc edit-line c-addr n1 n2 -- n3  ) gforth
+edit the string with length @var{n2} in the buffer @var{c-addr
+n1}, like @code{accept}.
+
+#line 104 "kernel/accept.fs"
+make-doc accept c-addr +n1 -- +n2  ) core
+Get a string of up to @var{n1} characters from the user input
+device and store it at @var{c-addr}.  @var{n2} is the length of
+the received string. The user indicates the end by pressing
+@key{RET}.  Gforth supports all the editing functions available
+on the Forth command line (including history and word
+completion) in @code{accept}.
+
+#line 23 "kernel/input.fs"
+make-doc input-lexeme! c-addr u --  )
+
+#line 28 "kernel/input.fs"
+make-doc input-start-line --  )
+
+#line 33 "kernel/input.fs"
+make-doc .scanning --  )
+
+#line 35 "kernel/input.fs"
+make-doc .unstatus )
+
+#line 51 "kernel/input.fs"
+make-doc terminal-input )
+
+#line 53 "kernel/input.fs"
+make-doc evaluate-input )
+
+#line 63 "kernel/input.fs"
+make-doc read-line c_addr u1 wfileid -- u2 flag wior  ) file
+Reads a line from @i{wfileid} into the buffer at @i{c_addr u1}.
+Gforth supports all three common line terminators: LF, CR and
+CRLF.  A non-zero @i{wior} indicates an error.  A false
+@i{flag} indicates that @code{read-line} has been invoked at
+the end of the file. @i{u2} indicates the line length (without
+terminator): @i{u2}<@i{u1} indicates that the line is @i{u2}
+chars long; @i{u2}=@i{u1} indicates that the line is at least
+@i{u1} chars long, @i{u1} chars of the buffer have been
+filled with chars from the line, and the next slice of the line
+will be read with the next @code{read-line}.  If the line is
+@i{u1} chars long, the first @code{read-line} returns
+@i{u2}=@i{u1} and the next read-line returns @i{u2}=0.
+
+#line 104 "kernel/input.fs"
+make-doc file-input )
+
+#line 109 "kernel/input.fs"
+make-doc new-tib method n --  ) gforth-internal
+Create a new entry of the tib stack, size @i{n}, method table
+@i{method}.
+
+#line 115 "kernel/input.fs"
+make-doc expand-tib n --  )
+
+#line 120 "kernel/input.fs"
+make-doc push-file --  ) gforth-internal
+Create a new file input buffer
+
+#line 124 "kernel/input.fs"
+make-doc pop-file throw-code -- throw-code  ) gforth-internal
+pop and free the current top input buffer
+
+#line 133 "kernel/input.fs"
+make-doc save-input -- x1 .. xn n  ) core-ext
+The @i{n} entries @i{xn - x1} describe the current state of the
+input source specification, in some platform-dependent way that can
+be used by @code{restore-input}.
+
+#line 139 "kernel/input.fs"
+make-doc restore-input x1 .. xn n -- flag  ) core-ext
+Attempt to restore the input source specification to the state
+described by the @i{n} entries @i{xn - x1}. @i{flag} is true if
+the restore fails.  In Gforth 1.0, it is
+possible to save and restore between different active input
+streams. Note that closing the input streams must happen in the
+reverse order as they have been opened, but as long as they are
+both active, everything is allowed.  These Gforth versions only
+produce non-zero flags as results of @word{catch}ing some
+exception, and the @i{flag} itself is the @code{throw}n ball
+and can be re@code{throw}n.
+
+#line 161 "kernel/input.fs"
+make-doc create-input --  )
+create a new terminal input
+
+#line 165 "kernel/input.fs"
+make-doc execute-parsing-wrapper ... addr1 u1 xt addr2 u2 -- ...  ) gforth-internal
+
+#line 177 "kernel/input.fs"
+make-doc execute-parsing ... addr u xt -- ...  ) gforth
+Make @i{addr u} the current input source, execute @i{xt @code{(
+... -- ... )}}, then restore the previous input source.
+
+#line 182 "kernel/input.fs"
+make-doc evaluate ... addr u -- ...  ) core,block
+Save the current input source.  Store @code{-1} in @code{source-id}
+and @code{0} in @code{blk}. Set @code{>IN} to @code{0} and make the
+string @i{c-addr u} the input source and input
+buffer. Tex-interpret the input buffer. When the parse area is
+empty, restore the input source.
+
+#line 192 "kernel/input.fs"
+make-doc clear-tibstack --  ) gforth-internal
+clears the tibstack; if there is none, create the bottom entry:
+the terminal input buffer.
+
+#line 198 "kernel/input.fs"
+make-doc query --  ) gforth-obsolete
+Make the user input device the input source. Receive input into
+the Terminal Input Buffer. Set @code{>IN} to zero. OBSOLETE:
+This Forth-94 word has been de-standardized in Forth-2012.  It
+is superceeded by @code{accept}.
+
+#line 207 "kernel/input.fs"
+make-doc line-end-hook --  ) gforth
+Deferred word called at every end-of-line when text-interpreting
+from a file.
+
+#line 212 "kernel/input.fs"
+make-doc eof-warning )
+
+#line 215 "kernel/input.fs"
+make-doc read-loop1 i*x -- j*x  )
+
+#line 218 "kernel/input.fs"
+make-doc read-loop i*x -- j*x  ) gforth-internal
+refill and interpret a file until EOF
+
+#line 222 "kernel/input.fs"
+make-doc second-ctrl-c )
+
+#line 224 "kernel/input.fs"
+make-doc ?end-input throwcode -- throwcode  )
+
+#line 228 "kernel/input.fs"
+make-doc get-input -- flag  ) gforth-internal
+read a line of input
+
+#line 232 "kernel/input.fs"
+make-doc get-input-colored -- flag  ) gforth-internal
+perform get-input colored with input-color
+
+#line 236 "kernel/input.fs"
+make-doc ?set-current-view --  )
+
+#line 239 "kernel/input.fs"
+make-doc execute-parsing-named-file i*x wfileid filename-addr filename-u xt -- j*x  )
+
+#line 246 "kernel/input.fs"
+make-doc execute-parsing-file i*x fileid xt -- j*x  ) gforth
+Make @i{fileid} the current input source, execute @i{xt @code{( i*x
+-- j*x )}}, then restore the previous input source.
+
+#line 251 "kernel/input.fs"
+make-doc include-file i*x wfileid -- j*x  ) file
+Interpret (process using the text interpreter) the contents of
+the file @var{wfileid}.
+
+#line 21 "kernel/license.fs"
+make-doc license --  ) gforth
+print the license statement
+
+#line 2 "kernel/authors.fs"
+make-doc authors --  ) gforth
+show the list of authors
+
+#line 26 "kernel/xchars.fs"
+make-doc xc-vector )
+
+#line 28 "kernel/xchars.fs"
+make-doc xemit xc --  ) xchar x-emit
+Display extended char @i{xc}.
+
+#line 31 "kernel/xchars.fs"
+make-doc xkey -- xc  ) xchar x-key
+Reads an extended character @i{xc} xchar from the terminal without
+printing it. This will discard all input events until all bytes of
+@i{xc} have been received.
+
+#line 36 "kernel/xchars.fs"
+make-doc xchar+ xc-addr1 -- xc-addr2  ) xchar x-char-plus
+@i{xc-addr2} is the address of the next xchar behind the one pointed
+to by @i{xc-addr}.
+
+#line 40 "kernel/xchars.fs"
+make-doc xchar- xc-addr1 -- xc-addr2  ) xchar-ext x-char-minus
+@i{xc-addr2} is the address of the previous xchar in front of the
+one pointed to by @i{xc-addr}.
+
+#line 44 "kernel/xchars.fs"
+make-doc +x/string xc-addr1 u1 -- xc-addr2 u2  ) xchar-ext plus-x-slash-string
+@i{xc-addr1 u1} is a string of @i{u1} chars.  @var{xc-addr2} is the
+address of the next xchar behind the one pointed to by @i{xc-addr}.
+@i{u2} is the size (in chars) of the rest of the string.
+
+#line 49 "kernel/xchars.fs"
+make-doc x\string- xc-addr u1 -- xc-addr u2  ) xchar-ext x-backslash-string-minus
+@i{xc-addr1 u1} is a string of @i{u1} chars.  @i{u2} is the size of
+the string without its last xchar.
+
+#line 53 "kernel/xchars.fs"
+make-doc xc@ xc-addr -- xc  ) xchar-ext	x-c-fetch
+@i{xc} is the xchar starting at @var{xc-addr1}.
+
+#line 56 "kernel/xchars.fs"
+make-doc xc!+ xc xc-addr1 -- xc-addr2  ) xchar	x-c-store
+Stores the xchar @var{xc} at @var{xc-addr1}. @var{xc-addr2} is the
+next unused address in the buffer.  Note that this writes up to 4
+bytes, so you need at least 3 bytes of padding after the end of the
+buffer to avoid overwriting useful data if you only check the
+address against the end of the buffer.
+
+#line 63 "kernel/xchars.fs"
+make-doc xc!+? xc xc-addr1 u1 -- xc-addr2 u2 f  ) xchar x-c-store-plus-query
+Stores the xchar @var{xc} into the buffer starting at address
+@var{xc-addr1}, @var{u1} chars large. @var{xc-addr2} points to the
+first memory location after @var{xc}, @var{u2} is the remaining
+size of the buffer. If the xchar @var{xc} did fit into the buffer,
+@var{f} is true, otherwise @var{f} is false, and @var{xc-addr2}
+@var{u2} equal @var{xc-addr1} @var{u1}. XC!+?  is safe against buffer
+overflows, and therefore preferred over XC!+.
+
+#line 72 "kernel/xchars.fs"
+make-doc xc@+ xc-addr1 -- xc-addr2 xc  ) xchar	x-c-fetch-plus
+@i{xc} is the xchar starting at @var{xc-addr1}.  @i{xc-addr2} points
+to the first memory location after @i{xc}.
+
+#line 76 "kernel/xchars.fs"
+make-doc xc-size xc -- u  ) xchar x-c-size
+The xchar @i{xc} occupies @i{u} chars in memory.
+
+#line 79 "kernel/xchars.fs"
+make-doc x-size xc-addr u1 -- u2  ) xchar
+The first xchar at @i{xc-addr} occupies @i{u2} chars; if @i{xc-addr
+u1} does not contain a complete xchar, @i{u2} is @i{u1}.
+
+#line 83 "kernel/xchars.fs"
+make-doc x-width xc-addr u -- n  ) xchar-ext
+@i{n} is the number of monospace ASCII chars that take the same
+space to display as @var{xc-addr u} needs on a monospaced display.
+
+#line 87 "kernel/xchars.fs"
+make-doc -trailing-garbage xc-addr u1 -- xc-addr u2  ) xchar-ext minus-trailing-garbage
+@i{xc-addr1 u1} is a string of @i{u1} chars.  @i{u2} is the size of
+the string after removing the chars from the end that do not
+constitute a complete, valid xchar.@*The idea here is that if you
+read a fixed number of chars, e.g., with @word{read-file}, there
+may be an incomplete xchar at the end; you eliminate that with
+@word{-trainling-garbage}, leaving a valid xchar string for
+processing (if the string starts with a complete xchar and only
+contains valid xchars).  You prepend the eliminated chars to the
+next read block of chars so you do not miss any parts.
+
+#line 98 "kernel/xchars.fs"
+make-doc xc@+? xc-addr1 u1 -- xc-addr2 u2 xc  ) gforth-experimental x-c-fetch-plus-query
+@i{xc} is the xchar starting at @var{xc-addr1}.  @var{xc-addr2 u2}
+is the remaining string behind @var{xc}.  If the start of
+@i{xc-addr1 u1} contains no valid xchar, @i{xc} is
+@word{invalid-char}, and @i{xc-addr2 u2} is the remaining string
+after skipping at least one byte.  If @i{u1}=0, the current
+behaviour does not make much sense and may change in the future:
+@i{xc-addr2}=@i{xc-addr1}+1, @i{u2}=MAX-U, and @i{xc} is either 0
+or @word{invalid-char}.
+
+#line 112 "kernel/xchars.fs"
+make-doc x@+/string xc-addr1 u1 -- xc-addr2 u2 xc  )
+
+#line 117 "kernel/xchars.fs"
+make-doc xhold xc --  ) xchar-ext x-hold
+Used between @code{<<#} and @code{#>}. Prepend @var{xc} to the
+pictured numeric output string.  We recommend that you use
+@word{holds} instead.
+
+#line 123 "kernel/xchars.fs"
+make-doc xc, xc --  ) xchar x-c-comma
+Reserve data space for @i{xc}, and store @i{xc} in that space.
+
+#line 129 "kernel/xchars.fs"
+make-doc char- c-addr1 -- c-addr2  ) gforth char-minus
+@code{1 chars -}
+
+#line 132 "kernel/xchars.fs"
+make-doc +string c-addr1 u1 -- c-addr2 u2  )
+
+#line 134 "kernel/xchars.fs"
+make-doc string- c-addr1 u1 -- c-addr1 u2  )
+
+#line 137 "kernel/xchars.fs"
+make-doc c!+ c c-addr1 -- c-addr2  )
+
+#line 140 "kernel/xchars.fs"
+make-doc c!+? c c-addr1 u1 -- c-addr2 u2 f  )
+
+#line 148 "kernel/xchars.fs"
+make-doc invalid-char -- xc  ) gforth-experimental
+Unicode code point returned for cases where the string does not
+contain a valid Unicode encoding.  Current value: the Unicode
+replacement character U+FFFD.
+
+#line 153 "kernel/xchars.fs"
+make-doc c@+? c-addr1 u1 -- c-addr2 u2 c  )
+
+#line 157 "kernel/xchars.fs"
+make-doc c-size c -- 1  )
+
+#line 160 "kernel/xchars.fs"
+make-doc ca-size addr u -- 1  )
+
+#line 179 "kernel/xchars.fs"
+make-doc fixed-width )
+
+#line 181 "kernel/xchars.fs"
+make-doc set-encoding addr --  )
+
+#line 182 "kernel/xchars.fs"
+make-doc set-encoding-fixed-width --  )
+
+#line 21 "kernel/files.fs"
+make-doc w/o -- fam  ) file	w-o
+
+#line 22 "kernel/files.fs"
+make-doc r/w -- fam  ) file	r-w
+
+#line 23 "kernel/files.fs"
+make-doc r/o -- fam  ) file	r-o
+
+#line 25 "kernel/files.fs"
+make-doc bin fam1 -- fam2  ) file
+
+#line 32 "kernel/files.fs"
+make-doc +fmode fam1 rwxrwxrwx -- fam2  ) gforth plus-f-mode
+@i{Rwxrwxrwx} is a 9-bit number; e.g. @code{%110_010_000}
+specifies that the owner can read and write a file, the group
+can read a file, and others cannot access the file.  When
+passing @i{fam2} to @word{create-file}, the created file will
+have the mode specified by @i{rwxrwxrwx}, modified by the
+umask.  Default: @code{%110_110_110} i.e. RW for everyone
+(modified by umask).
+
+#line 44 "kernel/files.fs"
+make-doc write-line c-addr u wfileid -- ior  ) file
+
+#line 55 "kernel/files.fs"
+make-doc ( compilation 'ccc<close-paren>' -- ; run-time --  ) core,file	paren
+
+#line 21 "kernel/stringk.fs"
+make-doc delete c-addr u u1 --  ) gforth
+In the memory block @i{c-addr u}, delete the first @i{u1} chars
+by copying the contents of the block starting at
+@i{c-addr}+@i{u1} there; fill the @i{u1} characters at the end
+of the block with blanks.
+
+#line 29 "kernel/stringk.fs"
+make-doc insert c-addr1 u1 c-addr2 u2 --  ) gforth
+Move the contents of the buffer @i{c-addr2 u2} towards higher
+addresses by @i{u1} chars, and copy the string @i{c-addr1 u1}
+into the first @i{u1} chars of the buffer.
+
+#line 49 "kernel/stringk.fs"
+make-doc $padding n -- n'  ) gforth-internal
+
+#line 53 "kernel/stringk.fs"
+make-doc $free $addr --  ) gforth string-free
+free the string pointed to by addr, and set addr to 0
+
+#line 57 "kernel/stringk.fs"
+make-doc $!buf $buf $addr --  ) gforth-internal string-store-buf
+stores a buffer in a string variable and frees the previous buffer
+
+#line 60 "kernel/stringk.fs"
+make-doc $make addr1 u -- $buf  )
+create a string buffer as address on stack, which can be stored into
+a string variable, internal factor
+
+#line 65 "kernel/stringk.fs"
+make-doc $@len $addr -- u  ) gforth string-fetch-len
+returns the length of the stored string.
+
+#line 68 "kernel/stringk.fs"
+make-doc $!len u $addr --  ) gforth string-store-len
+changes the length of the stored string.  Therefore we must
+change the memory area and adjust address and count cell as
+well.
+
+#line 76 "kernel/stringk.fs"
+make-doc $! addr1 u $addr --  ) gforth string-store
+stores a newly allocated string buffer at an address,
+frees the previous buffer if necessary.
+
+#line 84 "kernel/stringk.fs"
+make-doc $@ $addr -- addr2 u  ) gforth string-fetch
+returns the stored string.
+
+#line 87 "kernel/stringk.fs"
+make-doc $+!len u $addr -- addr  ) gforth string-plus-store-len
+make room for u bytes at the end of the memory area referenced
+by $addr; addr is the address of the first of these bytes.
+
+#line 91 "kernel/stringk.fs"
+make-doc $+! addr1 u $addr --  ) gforth string-plus-store
+appends a string to another.
+
+#line 94 "kernel/stringk.fs"
+make-doc c$+! char $addr --  ) gforth c-string-plus-store
+append a character to a string.
+
+#line 98 "kernel/stringk.fs"
+make-doc $ins addr1 u $addr off --  ) gforth string-ins
+Inserts string @var{addr1 u} at offset @var{off} bytes in the
+string @var{$addr}.
+
+#line 102 "kernel/stringk.fs"
+make-doc $del $addr off u --  ) gforth string-del
+Deletes @var{u} bytes at offset @var{off} bytes in the string @var{$addr}.
+
+#line 107 "kernel/stringk.fs"
+make-doc $init $addr --  ) gforth string-init
+store an empty string there, regardless of what was in before
+
+#line 113 "kernel/stringk.fs"
+make-doc $split c-addr u char -- c-addr u1 c-addr2 u2  ) gforth string-split
+Divides a string @i{c-addr u} into two, with @i{char} as
+separator.  @i{U1} is the length of the string up to, but
+excluding the first occurrence of the separator, @i{c-addr2 u2}
+is the part of the input string behind the separator.  If the
+separator does not occur in the string, @i{u1}=@i{u}, @i{u2}=0
+and @i{c-addr2}=@i{c-addr}+@i{u}.
+
+#line 123 "kernel/stringk.fs"
+make-doc $iter .. $addr char xt -- ..  ) gforth string-iter
+Splits the string in @i{$addr} using @i{char} as separator.
+For each part, its descriptor @i{c-addr u} is pushed and @i{xt}
+@code{( @i{... c-addr u} -- @i{...} )} is executed.
+
+#line 133 "kernel/stringk.fs"
+make-doc $room u $addr --  )
+generate room for at least @i{u} bytes, erase when expanding
+
+#line 138 "kernel/stringk.fs"
+make-doc $[] u $[]addr -- addr'  ) gforth string-array
+@i{Addr'} is the address of the @i{u}th element of the string
+array @i{$[]addr}.  The array is resized if needed.
+
+#line 145 "kernel/stringk.fs"
+make-doc $bit u $addr -- c-addr mask  )
+
+#line 150 "kernel/stringk.fs"
+make-doc $+bit u $addr --  )
+set bit @i{u} in the string
+
+#line 153 "kernel/stringk.fs"
+make-doc $-bit u $addr --  )
+clear bit @i{u} in the string
+
+#line 156 "kernel/stringk.fs"
+make-doc $bit@ u $addr -- flag  )
+check bit @i{u} in the string
+
+#line 162 "kernel/stringk.fs"
+make-doc $boot $addr --  ) gforth-internal string-boot
+Take string from dictionary to allocated memory.
+Clean dictionary afterwards.
+
+#line 166 "kernel/stringk.fs"
+make-doc $save $addr --  ) gforth-internal string-save
+push string to dictionary for savesys
+
+#line 169 "kernel/stringk.fs"
+make-doc $[]boot addr --  ) gforth-internal string-array-boot
+take string array from dictionary to allocated memory
+
+#line 174 "kernel/stringk.fs"
+make-doc $[]save addr --  ) gforth-internal string-array-save
+push string array to dictionary for savesys
+
+#line 180 "kernel/stringk.fs"
+make-doc boot$[] )
+
+#line 181 "kernel/stringk.fs"
+make-doc boot[][] )
+
+#line 183 "kernel/stringk.fs"
+make-doc $saved addr --  ) gforth-internal string-saved
+mark an address as booted/saved
+
+#line 186 "kernel/stringk.fs"
+make-doc $[]saved addr --  ) gforth-internal string-array-saved
+mark an address as booted/saved
+
+#line 189 "kernel/stringk.fs"
+make-doc $Variable "name" --  ) gforth string-variable
+Defines a string variable whose content is preserved across savesystem
+
+#line 192 "kernel/stringk.fs"
+make-doc $[]Variable "name" --  ) gforth string-array-variable
+Defines a string array variable whose content is preserved across savesystem
+
+#line 195 "kernel/stringk.fs"
+make-doc boot-strings --  )
+
+#line 206 "kernel/stringk.fs"
+make-doc save-strings --  )
+
+#line 216 "kernel/stringk.fs"
+make-doc 'image --  )
+deferred word executed before saving an image
+
+#line 53 "kernel/paths.fs"
+make-doc fpath -- path-addr  ) gforth
+
+#line 54 "kernel/paths.fs"
+make-doc ofile )
+
+#line 55 "kernel/paths.fs"
+make-doc tfile )
+
+#line 57 "kernel/paths.fs"
+make-doc clear-paths --  )
+
+#line 61 "kernel/paths.fs"
+make-doc os-cold --  )
+
+#line 66 "kernel/paths.fs"
+make-doc also-path c-addr len path-addr --  ) gforth
+add the directory @i{c-addr len} to @i{path-addr}.
+
+#line 73 "kernel/paths.fs"
+make-doc clear-path path-addr --  ) gforth
+Set the path @i{path-addr} to empty.
+
+#line 77 "kernel/paths.fs"
+make-doc only-path adr len path --  )
+
+#line 80 "kernel/paths.fs"
+make-doc path+ path-addr  "dir" --  ) gforth
+Add the directory @var{dir} to the search path @var{path-addr}.
+
+#line 84 "kernel/paths.fs"
+make-doc fpath+ "dir"  ) gforth
+Add directory @var{dir} to the Forth search path.
+
+#line 88 "kernel/paths.fs"
+make-doc substc addr u charold charnew -- addr u  )
+
+#line 91 "kernel/paths.fs"
+make-doc path= path-addr "dir1|dir2|dir3" --  ) gforth path-equals
+Make a complete new search path; the path separator is |.
+
+#line 95 "kernel/paths.fs"
+make-doc fpath= "dir1|dir2|dir3"  ) gforth f-path-equals
+Make a complete new Forth search path; the path separator is |.
+
+#line 99 "kernel/paths.fs"
+make-doc path>string path -- c-addr u  )
+
+#line 103 "kernel/paths.fs"
+make-doc next-path addr u -- addr1 u1 addr2 u2  )
+
+#line 107 "kernel/paths.fs"
+make-doc .path path-addr --  ) gforth
+Display the contents of the search path @var{path-addr}.
+
+#line 112 "kernel/paths.fs"
+make-doc .fpath --  ) gforth
+Display the contents of the Forth search path.
+
+#line 116 "kernel/paths.fs"
+make-doc absolute-file? addr u -- flag  ) gforth
+A filename is absolute if it starts with a / or a ~ (~ expansion),
+or if it is in the form ./*, extended regexp: ^[/~]|./, or if
+it has a colon as second character ("C:...").  Paths simply
+containing a / are not absolute!
+
+#line 128 "kernel/paths.fs"
+make-doc pathsep? )
+
+#line 130 "kernel/paths.fs"
+make-doc need/ )
+
+#line 132 "kernel/paths.fs"
+make-doc extractpath adr len -- adr len2  )
+
+#line 137 "kernel/paths.fs"
+make-doc remove~+ --  )
+
+#line 143 "kernel/paths.fs"
+make-doc expandtopic --  )
+
+#line 156 "kernel/paths.fs"
+make-doc del-string addr u u1 -- addr u2  )
+
+#line 160 "kernel/paths.fs"
+make-doc del-./s addr u -- addr u2  )
+
+#line 172 "kernel/paths.fs"
+make-doc preserve-root addr1 u1 -- addr2 u2  )
+
+#line 179 "kernel/paths.fs"
+make-doc skip-..-prefixes addr1 u1 -- addr2 u2  )
+
+#line 186 "kernel/paths.fs"
+make-doc compact-filename addr u1 -- addr u2  )
+
+#line 204 "kernel/paths.fs"
+make-doc reworkdir --  )
+
+#line 209 "kernel/paths.fs"
+make-doc open-ofile -- wfileid ior  )
+opens the file whose name is in ofile
+
+#line 213 "kernel/paths.fs"
+make-doc execute-path-file addr1 u1 xt path-addr -- wfileid addr2 u2 0 | ior  ) gforth-internal
+
+#line 234 "kernel/paths.fs"
+make-doc open-path-file addr1 u1 path-addr -- wfileid addr2 u2 0 | ior  ) gforth
+Look in path @var{path-addr} for the file specified by @var{addr1
+u1}.  If found, the resulting path and an (read-only) open file
+descriptor are returned. If the file is not found, @var{ior} is
+what came back from the last attempt at opening the file (in the
+current implementation).
+
+#line 242 "kernel/paths.fs"
+make-doc open-fpath-file addr1 u1 -- wfileid addr2 u2 0 | ior  ) gforth-internal
+Look in the Forth search path for the file specified by @var{addr1 u1}.
+If found, the resulting path and an open file descriptor
+are returned. If the file is not found, @var{ior} is non-zero.
+
+#line 23 "kernel/require.fs"
+make-doc included-files )
+
+#line 25 "kernel/require.fs"
+make-doc sourcefilename -- c-addr u  ) gforth
+The name of the source file which is currently the input
+source.  The result is valid only while the file is being
+loaded.  If the current input source is no (stream) file, the
+result is an arbitrary string.  In Gforth, the result is valid
+during the whole session (but not across @code{savesystem}
+etc.).
+
+#line 34 "kernel/require.fs"
+make-doc included-filename[] index -- c-addr u  ) gforth-internal
+convert a file name index to a file name
+
+#line 43 "kernel/require.fs"
+make-doc sourceline# -- u  ) gforth		sourceline-number
+The line number of the line that is currently being interpreted
+from a (stream) file. The first line has the number 1. If the
+current input source is not a (stream) file, the result is
+an unspecified number.
+
+#line 50 "kernel/require.fs"
+make-doc str>loadfilename# addr u -- n  )
+
+#line 61 "kernel/require.fs"
+make-doc included? c-addr u -- f  ) gforth
+True only if the file @var{c-addr u} is in the list of earlier
+included files. If the file has been loaded, it may have been
+specified as, say, @file{foo.fs} and found somewhere on the
+Forth search path. To return @code{true} from @code{included?},
+you must specify the exact path to the file, even if that is
+@file{./foo.fs}
+
+#line 70 "kernel/require.fs"
+make-doc add-included-file c-addr u --  ) gforth-internal
+add name c-addr u to included-files
+
+#line 74 "kernel/require.fs"
+make-doc included1 i*x file-id c-addr u -- j*x  ) gforth-internal
+Include the file file-id with the name given by @var{c-addr u}.
+
+#line 79 "kernel/require.fs"
+make-doc >included c-addr1 u1 -- fd c-addr2 u2 wior  )
+
+#line 81 "kernel/require.fs"
+make-doc >include c-addr1 u1 -- c-addr2 u2  )
+
+#line 84 "kernel/require.fs"
+make-doc include-auto-extension-filename )
+
+#line 85 "kernel/require.fs"
+make-doc >include-auto-extension c-addr1 u1 -- fd c-addr2 u2 wior  )
+
+#line 97 "kernel/require.fs"
+make-doc included i*x c-addr u -- j*x  ) file
+@code{include-file} the file whose name is given by the string
+@var{c-addr u}.
+
+#line 102 "kernel/require.fs"
+make-doc required i*x addr u -- i*x  ) file-ext
+@code{include-file} the file with the name given by @var{addr
+u}, if it is not @code{included} (or @code{required})
+already. Currently this works by comparing the name of the file
+(with path) against the names of earlier included files.
+
+#line 121 "kernel/require.fs"
+make-doc include ... "file" -- ...  ) file-ext
+@code{include-file} the file @var{file}.
+
+#line 125 "kernel/require.fs"
+make-doc require ... "file" -- ...  ) file-ext
+@code{include-file} @var{file} only if it is not included already.
+
+#line 148 "kernel/require.fs"
+make-doc .included --  ) gforth
+List the names of the files that have been @code{included}.
+
+#line 23 "kernel/args.fs"
+make-doc cstring>sstring c-addr -- c-addr u  ) gforth	cstring-to-sstring
+@i{C-addr} is the start address of a zero-terminated string,
+@i{u} is its length.
+
+#line 28 "kernel/args.fs"
+make-doc arg u -- addr count  ) gforth
+Return the string for the @i{u}th command-line argument; returns
+@code{0 0} if the access is beyond the last argument.  @code{0 arg}
+is the program name with which you started Gforth.  The next
+unprocessed argument is always @code{1 arg}, the one after that is
+@code{2 arg} etc.  All arguments already processed by the system
+are deleted.  After you have processed an argument, you can delete
+it with @code{shift-args}.
+
+#line 42 "kernel/args.fs"
+make-doc #! --  ) gforth   hash-bang
+An alias for @code{\}
+
+#line 46 "kernel/args.fs"
+make-doc pathstring )
+
+#line 48 "kernel/args.fs"
+make-doc argv -- addr  ) gforth
+@code{Variable} -- a pointer to a vector of pointers to the
+command-line arguments (including the command-name). Each argument
+is represented as a C-style zero-terminated string.  Changed by
+@code{next-arg} and @code{shift-args}.
+
+#line 54 "kernel/args.fs"
+make-doc argc -- addr  ) gforth
+@code{Variable} -- the number of command-line arguments (including
+the command name).  Changed by @code{next-arg} and @code{shift-args}.
+
+#line 58 "kernel/args.fs"
+make-doc script? -- flag  )
+
+#line 60 "kernel/args.fs"
+make-doc clear-args --  )
+
+#line 63 "kernel/args.fs"
+make-doc shift-args --  ) gforth
+@code{1 arg} is deleted, shifting all following OS command line
+parameters to the left by 1, and reducing @code{argc @@}.  This word
+can change @code{argv @@}.
+
+#line 74 "kernel/args.fs"
+make-doc next-arg -- addr u  ) gforth
+get the next argument from the OS command line, consuming it; if
+there is no argument left, return @code{0 0}.
+
+#line 87 "kernel/args.fs"
+make-doc arg-input )
+
+#line 94 "kernel/args.fs"
+make-doc (process-option) addr u -- translation  )
+
+#line 101 "kernel/args.fs"
+make-doc process-option addr u -- ... xt | 0  ) gforth
+Recognizer that processes an option, returns an execute-only
+xt to process the option
+
+#line 106 "kernel/args.fs"
+make-doc process-args --  )
+
+#line 117 "kernel/args.fs"
+make-doc os-boot path n **argv argc --  )
+
+#line 22 "kernel/cond.fs"
+make-doc locals-list )
+
+#line 25 "kernel/cond.fs"
+make-doc dead-code )
+
+#line 26 "kernel/cond.fs"
+make-doc backedge-locals )
+
+#line 30 "kernel/cond.fs"
+make-doc backedge-locals-default )
+
+#line 37 "kernel/cond.fs"
+make-doc cs-depth1 -- u  )
+
+#line 39 "kernel/cond.fs"
+make-doc cs-floor -- u  )
+
+#line 42 "kernel/cond.fs"
+make-doc :-hook1 --  )
+
+#line 48 "kernel/cond.fs"
+make-doc ;-hook21 --  )
+
+#line 52 "kernel/cond.fs"
+make-doc UNREACHABLE --  ) gforth
+This word promises to the compiler that it can never be
+executed.  One could put it, e.g., behind a @code{-13 throw}.
+
+#line 58 "kernel/cond.fs"
+make-doc ASSUME-LIVE compilation orig -- orig  ) gforth
+Used immediatly before a @word{BEGIN} that is not reachable
+from above.  Causes the @word{BEGIN} to assume that the same
+locals are live as right before the control flow word
+(typically @word{ahead}) that pushed the @i{orig}.
+
+#line 66 "kernel/cond.fs"
+make-doc update-backedge-locals-default --  )
+
+#line 71 "kernel/cond.fs"
+make-doc cs-depth1++ --  )
+
+#line 74 "kernel/cond.fs"
+make-doc cs-depth1-- --  )
+
+#line 77 "kernel/cond.fs"
+make-doc before-cs-push --  )
+
+#line 80 "kernel/cond.fs"
+make-doc after-cs-pop --  )
+
+#line 90 "kernel/cond.fs"
+make-doc push-stack-state1 -- addr  )
+
+#line 93 "kernel/cond.fs"
+make-doc push-stack-state -- addr  )
+
+#line 98 "kernel/cond.fs"
+make-doc pop-stack-state1 addr --  )
+
+#line 101 "kernel/cond.fs"
+make-doc pop-stack-state addr --  )
+
+#line 112 "kernel/cond.fs"
+make-doc live-orig )
+
+#line 113 "kernel/cond.fs"
+make-doc dead-orig )
+
+#line 114 "kernel/cond.fs"
+make-doc dest )
+
+#line 115 "kernel/cond.fs"
+make-doc do-dest )
+
+#line 116 "kernel/cond.fs"
+make-doc scopestart )
+
+#line 118 "kernel/cond.fs"
+make-doc orig? n --  )
+
+#line 121 "kernel/cond.fs"
+make-doc dest? n --  )
+
+#line 124 "kernel/cond.fs"
+make-doc do-dest? n --  )
+
+#line 127 "kernel/cond.fs"
+make-doc scope? n --  )
+
+#line 130 "kernel/cond.fs"
+make-doc non-orig? n --  )
+
+#line 133 "kernel/cond.fs"
+make-doc cs-item? n --  )
+
+#line 136 "kernel/cond.fs"
+make-doc cs-item-size )
+
+#line 138 "kernel/cond.fs"
+make-doc CS-PICK dest0/orig0 dest1/orig1 ... destu/origu u -- ... dest0/orig0  ) tools-ext c-s-pick
+
+#line 145 "kernel/cond.fs"
+make-doc CS-ROLL destu/origu .. dest0/orig0 u -- .. dest0/orig0 destu/origu  ) tools-ext c-s-roll
+
+#line 151 "kernel/cond.fs"
+make-doc CS-DROP dest/orig --  ) gforth
+
+#line 154 "kernel/cond.fs"
+make-doc cs-push-part -- stack-state list addr  )
+
+#line 157 "kernel/cond.fs"
+make-doc cs-push-orig -- orig  )
+
+#line 167 "kernel/cond.fs"
+make-doc other-control-flow --  )
+
+#line 169 "kernel/cond.fs"
+make-doc if-like )
+
+#line 172 "kernel/cond.fs"
+make-doc ?struc tag --  )
+
+#line 174 "kernel/cond.fs"
+make-doc ?colon-sys ... xt tag --  )
+
+#line 177 "kernel/cond.fs"
+make-doc >mark -- orig  )
+
+#line 179 "kernel/cond.fs"
+make-doc >mark? -- orig  )
+
+#line 181 "kernel/cond.fs"
+make-doc >resolve addr --  )
+
+#line 184 "kernel/cond.fs"
+make-doc <resolve addr --  )
+
+#line 187 "kernel/cond.fs"
+make-doc BUT )
+
+#line 189 "kernel/cond.fs"
+make-doc YET )
+
+#line 191 "kernel/cond.fs"
+make-doc NOPE )
+
+#line 196 "kernel/cond.fs"
+make-doc AHEAD compilation -- orig ; run-time --  ) tools-ext
+At run-time, execution continues after the @code{THEN} that
+consumes the @i{orig}.
+
+#line 201 "kernel/cond.fs"
+make-doc IF compilation -- orig ; run-time f --  ) core
+At run-time, if @i{f}=0, execution continues after the
+@code{THEN} (or @code{ELSE}) that consumes the @i{orig},
+otherwise right after the @code{IF} (@pxref{Selection}).
+
+#line 207 "kernel/cond.fs"
+make-doc ?dup-IF compilation -- orig ; run-time n -- n|  ) gforth	question-dupe-if
+This is the preferred alternative to the idiom "@code{?DUP
+IF}", since it can be better handled by tools like stack
+checkers. Besides, it's faster.
+
+#line 213 "kernel/cond.fs"
+make-doc ?DUP-0=-IF compilation -- orig ; run-time n -- n|  ) gforth	question-dupe-zero-equals-if
+
+#line 216 "kernel/cond.fs"
+make-doc then-like orig --  )
+
+#line 217 "kernel/cond.fs"
+make-doc cs>addr orig/dest --  )
+
+#line 220 "kernel/cond.fs"
+make-doc THEN compilation orig -- ; run-time --  ) core
+The @code{IF}, @code{AHEAD}, @code{ELSE} or @code{WHILE} that
+pushed @i{orig} jumps right after the @code{THEN}
+(@pxref{Selection}).
+
+#line 226 "kernel/cond.fs"
+make-doc ENDIF compilation orig -- ; run-time --  ) gforth
+Same as @code{THEN}.
+
+#line 230 "kernel/cond.fs"
+make-doc ELSE compilation orig1 -- orig2 ; run-time --  ) core
+At run-time, execution continues after the @code{THEN} that
+consumes the @i{orig}; the @code{IF}, @code{AHEAD}, @code{ELSE}
+or @code{WHILE} that pushed @i{orig1} jumps right after the
+@code{ELSE}.  (@pxref{Selection}).
+
+#line 239 "kernel/cond.fs"
+make-doc begin-like --  )
+
+#line 242 "kernel/cond.fs"
+make-doc BEGIN compilation -- dest ; run-time --  ) core
+The @code{UNTIL}, @code{AGAIN} or @code{REPEAT} that consumes
+the @i{dest} jumps right behind the @code{BEGIN}
+(@pxref{General Loops}).
+
+#line 249 "kernel/cond.fs"
+make-doc again-like stack-state locals-list addr -- stack-state addr  )
+
+#line 252 "kernel/cond.fs"
+make-doc AGAIN compilation dest -- ; run-time --  ) core-ext
+At run-time, execution continues after the @code{BEGIN} that
+produced the @i{dest} (@pxref{General Loops}).
+
+#line 258 "kernel/cond.fs"
+make-doc until-like stack-state list addr xt1 xt2 --  )
+
+#line 263 "kernel/cond.fs"
+make-doc UNTIL compilation dest -- ; run-time f --  ) core
+At run-time, if @i{f}=0, execution continues after the
+@code{BEGIN} that produced @i{dest}, otherwise right after
+the @code{UNTIL} (@pxref{General Loops}).
+
+#line 269 "kernel/cond.fs"
+make-doc WHILE compilation dest -- orig dest ; run-time f --  ) core
+At run-time, if @i{f}=0, execution continues after the
+@code{REPEAT} (or @code{THEN} or @code{ELSE}) that consumes the
+@i{orig}, otherwise right after the @code{WHILE}
+(@pxref{General Loops}).
+
+#line 277 "kernel/cond.fs"
+make-doc REPEAT compilation orig dest -- ; run-time --  ) core
+At run-time, execution continues after the @code{BEGIN} that
+produced the @i{dest}; the @code{WHILE}, @code{IF},
+@code{AHEAD} or @code{ELSE} that pushed @i{orig} jumps right
+after the @code{REPEAT}.  (@pxref{General Loops}).
+
+#line 293 "kernel/cond.fs"
+make-doc leave-stack )
+
+#line 295 "kernel/cond.fs"
+make-doc clear-leave-stack --  )
+
+#line 298 "kernel/cond.fs"
+make-doc leave-empty? -- f  )
+
+#line 301 "kernel/cond.fs"
+make-doc >leave orig --  )
+
+#line 306 "kernel/cond.fs"
+make-doc leave> -- orig  )
+
+#line 311 "kernel/cond.fs"
+make-doc DONE compilation do-sys -- ; run-time --  ) gforth
+resolves all LEAVEs up to the do-sys
+
+#line 324 "kernel/cond.fs"
+make-doc unresolved-leave --  )
+
+#line 327 "kernel/cond.fs"
+make-doc LEAVE compilation -- ; run-time loop-sys --  ) core
+@xref{Counted Loops}.
+
+#line 332 "kernel/cond.fs"
+make-doc ?LEAVE compilation -- ; run-time f | f loop-sys --  ) gforth	question-leave
+@xref{Counted Loops}.
+
+#line 337 "kernel/cond.fs"
+make-doc DO compilation -- do-sys ; run-time w1 w2 -- loop-sys  ) core
+@xref{Counted Loops}.
+
+#line 342 "kernel/cond.fs"
+make-doc ?do-like -- do-sys  )
+
+#line 346 "kernel/cond.fs"
+make-doc ?DO compilation -- do-sys ; run-time w1 w2 -- | loop-sys  ) core-ext	question-do
+@xref{Counted Loops}.
+
+#line 350 "kernel/cond.fs"
+make-doc +DO compilation -- do-sys ; run-time n1 n2 -- | loop-sys  ) gforth	plus-do
+@xref{Counted Loops}.
+
+#line 354 "kernel/cond.fs"
+make-doc U+DO compilation -- do-sys ; run-time u1 u2 -- | loop-sys  ) gforth	u-plus-do
+@xref{Counted Loops}.
+
+#line 358 "kernel/cond.fs"
+make-doc -DO compilation -- do-sys ; run-time n1 n2 -- | loop-sys  ) gforth	minus-do
+@xref{Counted Loops}.
+
+#line 362 "kernel/cond.fs"
+make-doc U-DO compilation -- do-sys ; run-time u1 u2 -- | loop-sys  ) gforth	u-minus-do
+@xref{Counted Loops}.
+
+#line 366 "kernel/cond.fs"
+make-doc FOR compilation -- do-sys ; run-time u -- loop-sys  ) gforth
+@xref{Counted Loops}.
+
+#line 373 "kernel/cond.fs"
+make-doc loop-like do-sys xt1 xt2 --  )
+
+#line 377 "kernel/cond.fs"
+make-doc LOOP compilation do-sys -- ; run-time loop-sys1 -- | loop-sys2  ) core
+Finish a counted loop.  If started with @word{mem+do} or
+@word{mem-do}, the stride (increment) and terminating condition
+is given by these words, otherwise the stride is 1 and the loop
+ends when the limit is reached (the last iteration has
+@word{i}=limit-1).
+
+#line 387 "kernel/cond.fs"
+make-doc +LOOP compilation do-sys -- ; run-time loop-sys1 n -- | loop-sys2  ) core	plus-loop
+@xref{Counted Loops}.
+
+#line 392 "kernel/cond.fs"
+make-doc -LOOP compilation do-sys -- ; run-time loop-sys1 u -- | loop-sys2  ) gforth	minus-loop
+@xref{Counted Loops}.
+
+#line 396 "kernel/cond.fs"
+make-doc NEXT compilation do-sys -- ; run-time loop-sys1 -- | loop-sys2  ) gforth
+@xref{Counted Loops}.
+
+#line 402 "kernel/cond.fs"
+make-doc exit-like --  )
+
+#line 405 "kernel/cond.fs"
+make-doc EXIT compilation -- ; run-time nest-sys --  ) core
+Return to the calling definition; usually used as a way of
+forcing an early return from a definition. Before
+@code{EXIT}ing you must clean up the return stack and
+@code{UNLOOP} any outstanding @code{?DO}...@code{LOOP}s.
+
+#line 415 "kernel/cond.fs"
+make-doc ?EXIT --  ) gforth question-exit
+Return to the calling definition if @i{f} is true.
+
+#line 419 "kernel/cond.fs"
+make-doc execute-exit compilation -- ; run-time xt nest-sys --  ) gforth
+Execute @code{xt} and return from the current definition, in a
+tail-call-optimized way: The return address @code{nest-sys} and
+the locals are deallocated before executing @code{xt}.
+
+#line 430 "kernel/cond.fs"
+make-doc scope compilation  -- scope ; run-time  --  ) gforth
+
+#line 433 "kernel/cond.fs"
+make-doc adjust-locals-list wid --  )
+
+#line 436 "kernel/cond.fs"
+make-doc endscope compilation scope -- ; run-time  --  ) gforth
+
+#line 442 "kernel/cond.fs"
+make-doc wrap@-kernel -- wrap-sys  )
+
+#line 447 "kernel/cond.fs"
+make-doc wrap!-kernel wrap-sys --  )
+
+#line 452 "kernel/cond.fs"
+make-doc wrap@ -- wrap-sys  )
+Suspend current compilation and store the internal state in
+@i{wrap-sys}.  Note that you still have to switch the section
+yourself.
+
+#line 458 "kernel/cond.fs"
+make-doc wrap! wrap-sys --  )
+Resume compilation from @i{wrap-sys}.
+
+#line 462 "kernel/cond.fs"
+make-doc (int-;]) some-sys lastxt --  )
+
+#line 463 "kernel/cond.fs"
+make-doc (;]) some-sys lastxt --  )
+
+#line 469 "kernel/cond.fs"
+make-doc int-[: -- flag colon-sys  )
+
+#line 471 "kernel/cond.fs"
+make-doc comp-[: -- quotation-sys flag colon-sys  )
+
+#line 475 "kernel/cond.fs"
+make-doc [: compile-time: -- quotation-sys flag colon-sys  ) gforth bracket-colon
+Starts a quotation in the next section.
+
+#line 478 "kernel/cond.fs"
+make-doc ;] compile-time: quotation-sys -- ; run-time: -- xt  ) gforth semi-bracket
+Ends a quotation (represented by @i{xt}) and switch to the
+previous section.  @word{Latestxt} and @word{latestnt} refer to
+the last word in the current section, i.e., not to the
+quotation.
+
+#line 486 "kernel/cond.fs"
+make-doc inline: "name" -- inline:-sys  ) gforth-experimental inline-colon
+Start inline colon definition.  The code between @code{inline:}
+and @code{;inline} has to compile (not perform) the code to be
+inlined, but the resulting definition @i{name} is a colon
+definition that performs the inlined code.  Note that the
+compiling code must have the stack effect @code{( -- )},
+otherwise you will get an error when Gforth tries to create the
+colon definition for @i{name}.
+
+#line 496 "kernel/cond.fs"
+make-doc ;inline inline:-sys --  ) gforth-experimental semi-inline
+end inline definition started with @code{inline:}
+
+#line 27 "kernel/quotes.fs"
+make-doc next-section --  ) gforth
+Switch to the next section in the section stack.  If there is no
+such section yet, create it (with the size being a quarter of the
+size of the current section).
+
+#line 32 "kernel/quotes.fs"
+make-doc previous-section --  ) gforth
+Switch to the previous section in the section stack; the now-next
+section continues to exist with everything that was put there.
+Throw an exception if there is no previous section.
+
+#line 40 "kernel/quotes.fs"
+make-doc CLiteral Compilation c-addr1 u ; run-time -- c-addr  )
+
+#line 44 "kernel/quotes.fs"
+make-doc SLiteral Compilation c-addr1 u -- ; run-time -- c-addr2 u  ) string
+Compilation semantics: ( @i{c-addr1 u --} )
+Copy the string described by @i{c-addr1 u} to @i{c-addr2 u} and
+compile the run-time semantics.@*
+Run-time Semantics: ( @i{ -- c-addr2 u} ).@*
+Interpretation semantics: not defined in the standard.
+
+#line 55 "kernel/quotes.fs"
+make-doc ABORT" compilation 'ccc"' -- ; run-time ... f --  ) core,exception-ext	abort-quote
+If any bit of @i{f} is non-zero, perform the function of @code{-2 throw},
+displaying the string @i{ccc} if there is no exception frame on the
+exception stack.
+
+#line 62 "kernel/quotes.fs"
+make-doc WARNING" compilation 'ccc"' -- ; run-time f --  ) gforth warning-quote
+if @i{f} is non-zero, display the string @i{ccc} as warning message.
+
+#line 75 "kernel/quotes.fs"
+make-doc S" Interpretation 'ccc"' -- c-addr u  ) core,file	s-quote
+Interpretation: Parse the string @i{ccc} delimited by a @code{"}
+(double quote).  Store the resulting string in newly allocated heap
+memory, and push its descriptor @i{c-addr u}.
+@*
+Compilation @code{( '@i{ccc}"' -- )}: Parse the string @i{ccc}
+delimited by a @code{"} (double quote).  Append the run-time
+semantics below to the current definition.
+@*
+Run-time @code{( -- c-addr u )}: Push a descriptor for the
+parsed string.
+
+#line 89 "kernel/quotes.fs"
+make-doc ." compilation 'ccc"' -- ; run-time --  ) core	dot-quote
+Compilation: Parse a string @i{ccc} delimited by a " (double
+quote). At run-time, display the string. Interpretation semantics
+for this word are undefined in standard Forth. Gforth's interpretation
+semantics are to display the string.
+
+#line 21 "kernel/toolsext.fs"
+make-doc countif )
+
+#line 22 "kernel/toolsext.fs"
+make-doc endif? )
+
+#line 24 "kernel/toolsext.fs"
+make-doc dummy )
+
+#line 25 "kernel/toolsext.fs"
+make-doc scan-reclistlfind )
+
+#line 27 "kernel/toolsext.fs"
+make-doc [struct]-search )
+
+#line 30 "kernel/toolsext.fs"
+make-doc [struct]-voc )
+
+#line 32 "kernel/toolsext.fs"
+make-doc scanif-r addr u -- xt  )
+
+#line 35 "kernel/toolsext.fs"
+make-doc ?if --  )
+
+#line 37 "kernel/toolsext.fs"
+make-doc scanning? -- flag  )
+
+#line 42 "kernel/toolsext.fs"
+make-doc [IF] )
+
+#line 44 "kernel/toolsext.fs"
+make-doc [THEN] )
+
+#line 46 "kernel/toolsext.fs"
+make-doc [ELSE] )
+
+#line 49 "kernel/toolsext.fs"
+make-doc [IFDEF] )
+
+#line 50 "kernel/toolsext.fs"
+make-doc [IFUNDEF] )
+
+#line 51 "kernel/toolsext.fs"
+make-doc [ENDIF] )
+
+#line 52 "kernel/toolsext.fs"
+make-doc [BEGIN] )
+
+#line 53 "kernel/toolsext.fs"
+make-doc [WHILE] )
+
+#line 54 "kernel/toolsext.fs"
+make-doc [UNTIL] )
+
+#line 55 "kernel/toolsext.fs"
+make-doc [AGAIN] )
+
+#line 56 "kernel/toolsext.fs"
+make-doc [DO] )
+
+#line 57 "kernel/toolsext.fs"
+make-doc [?DO] )
+
+#line 58 "kernel/toolsext.fs"
+make-doc [LOOP] )
+
+#line 59 "kernel/toolsext.fs"
+make-doc [+LOOP] )
+
+#line 60 "kernel/toolsext.fs"
+make-doc [REPEAT] )
+
+#line 75 "kernel/toolsext.fs"
+make-doc [defined] "<spaces>name" -- flag  ) tools-ext bracket-defined
+returns true if name is found in current search order.  Immediate word.
+
+#line 80 "kernel/toolsext.fs"
+make-doc defined )
+
+#line 81 "kernel/toolsext.fs"
+make-doc [undefined] "<spaces>name" -- flag  ) tools-ext bracket-undefined
+returns false if name is found in current search order.  Immediate word.
+
+#line 85 "kernel/toolsext.fs"
+make-doc scanif --  )
+
+#line 97 "kernel/toolsext.fs"
+make-doc [IF] flag --  ) tools-ext bracket-if
+If flag is @code{TRUE} do nothing (and therefore
+execute subsequent words as normal). If flag is @code{FALSE},
+parse and discard words from the parse
+area (refilling it if necessary using
+@code{REFILL}) including nested instances of @code{[IF]}..
+@code{[ELSE]}.. @code{[THEN]} and @code{[IF]}.. @code{[THEN]}
+until the balancing @code{[ELSE]} or @code{[THEN]} has been
+parsed and discarded. Immediate word.
+
+#line 108 "kernel/toolsext.fs"
+make-doc [IFDEF] "<spaces>name" --  ) gforth bracket-if-def
+If name is found in the current search-order, behave like
+@code{[IF]} with a @code{TRUE} flag, otherwise behave like
+@code{[IF]} with a @code{FALSE} flag. Immediate word.
+
+#line 114 "kernel/toolsext.fs"
+make-doc [IFUNDEF] "<spaces>name" --  ) gforth bracket-if-un-def
+If name is not found in the current search-order, behave like
+@code{[IF]} with a @code{TRUE} flag, otherwise behave like
+@code{[IF]} with a @code{FALSE} flag. Immediate word.
+
+#line 120 "kernel/toolsext.fs"
+make-doc [ELSE] --  ) tools-ext bracket-else
+Parse and discard words from the parse
+area (refilling it if necessary using
+@code{REFILL}) including nested instances of @code{[IF]}..
+@code{[ELSE]}.. @code{[THEN]} and @code{[IF]}.. @code{[THEN]}
+until the balancing @code{[THEN]} has been parsed and discarded.
+@code{[ELSE]} only gets executed if the balancing @code{[IF]}
+was @code{TRUE}; if it was @code{FALSE}, @code{[IF]} would
+have parsed and discarded the @code{[ELSE]}, leaving the
+subsequent words to be executed as normal.
+Immediate word.
+
+#line 133 "kernel/toolsext.fs"
+make-doc [THEN] --  ) tools-ext bracket-then
+Do nothing; used as a marker for other words to parse
+and discard up to. Immediate word.
+
+#line 138 "kernel/toolsext.fs"
+make-doc [ENDIF] --  ) gforth bracket-end-if
+Do nothing; synonym for @code{[THEN]}
+
+#line 32 "kernel/tools.fs"
+make-doc .s. )
+
+#line 35 "kernel/tools.fs"
+make-doc maxdepth-.s -- addr  ) gforth maxdepth-dot-s
+A variable containing 9 by default.  @code{.s} and @code{f.s}
+display at most that many stack items.
+
+#line 40 "kernel/tools.fs"
+make-doc .s --  ) tools dot-s
+Display the number of items on the data stack, followed by a list
+of the items (but not more than specified by @code{maxdepth-.s};
+TOS is the right-most item.
+
+#line 55 "kernel/tools.fs"
+make-doc /dump )
+
+#line 57 "kernel/tools.fs"
+make-doc .4 addr -- addr'  )
+
+#line 61 "kernel/tools.fs"
+make-doc .chars addr --  )
+
+#line 67 "kernel/tools.fs"
+make-doc .line addr --  )
+
+#line 70 "kernel/tools.fs"
+make-doc dump addr u --  ) tools dump
+Display @var{u} lines of memory starting at address @var{addr}. Each line
+displays the contents of 16 bytes. When Gforth is running under
+an operating system you may get @file{Invalid memory address} errors
+if you attempt to access arbitrary locations.
+
+#line 83 "kernel/tools.fs"
+make-doc ? a-addr --  ) tools question
+Display the contents of address @var{a-addr} in the current number base.
+
+#line 27 "kernel/termsize.fs"
+make-doc rows -- u  )
+
+#line 30 "kernel/termsize.fs"
+make-doc cols -- u  )
+
+#line 91 "kernel/tools.fs"
+make-doc map-wordlist ... wid xt -- ...  )
+xt: ( ... nt -- ... ) free to use the stack underneath
+
+#line 100 "kernel/tools.fs"
+make-doc traverse-wordlist ... xt wid -- ...  ) tools-ext
+perform @i{xt} ( ... nt -- f ... ) once for every word @i{nt}
+in the wordlist @i{wid}, until @i{f} is false or the wordlist
+is exhausted.  @i{xt} is free to use the stack underneath.
+
+#line 112 "kernel/tools.fs"
+make-doc word-colorize )
+
+#line 114 "kernel/tools.fs"
+make-doc .word n nt -- n'  )
+
+#line 119 "kernel/tools.fs"
+make-doc wordlist-words wid --  ) gforth
+Display the contents of the wordlist wid.
+
+#line 123 "kernel/tools.fs"
+make-doc words --  ) tools
+Display a list of all of the definitions in the word list at the top
+of the search order.
+
+#line 128 "kernel/tools.fs"
+make-doc vlist --  ) gforth
+Old (pre-Forth-83) name for @code{WORDS}.
+
+#line 22 "kernel/getdoers.fs"
+make-doc docon: -- addr  ) gforth
+The code address of a @code{CONSTANT}.
+
+#line 27 "kernel/getdoers.fs"
+make-doc dovalue: -- addr  ) gforth
+The code address of a @code{CONSTANT}.
+
+#line 31 "kernel/getdoers.fs"
+make-doc docol: -- addr  ) gforth
+The code address of a colon definition.
+
+#line 36 "kernel/getdoers.fs"
+make-doc dovar: -- addr  ) gforth
+The code address of a @code{CREATE}d word.
+
+#line 43 "kernel/getdoers.fs"
+make-doc douser: -- addr  ) gforth
+The code address of a @code{USER} variable.
+
+#line 48 "kernel/getdoers.fs"
+make-doc dodefer: -- addr  ) gforth
+The code address of a @code{defer}ed word.
+
+#line 53 "kernel/getdoers.fs"
+make-doc dofield: -- addr  ) gforth
+The code address of a @code{field}.
+
+#line 58 "kernel/getdoers.fs"
+make-doc (does-dummy) )
+
+#line 59 "kernel/getdoers.fs"
+make-doc dodoes: -- addr  ) gforth
+The code address of a @code{DOES>}-defined word.
+
+#line 64 "kernel/getdoers.fs"
+make-doc (abi-code-dummy) )
+
+#line 65 "kernel/getdoers.fs"
+make-doc doabicode: -- addr  ) gforth
+The code address of a @code{ABI-CODE} definition.
+
+#line 70 "kernel/getdoers.fs"
+make-doc (;abi-code-dummy) )
+
+#line 71 "kernel/getdoers.fs"
+make-doc do;abicode: -- addr  )
+
+#line 27 "kernel/memory.fs"
+make-doc heap-words )
+
+#line 29 "kernel/memory.fs"
+make-doc current-memory-words )
+
+#line 32 "kernel/memory.fs"
+make-doc allocate u -- a_addr wior  ) memory
+Allocate @i{u} address units of contiguous data space. This
+data space is not initialized.  If the allocation is
+successful, @i{a-addr} is the start address of the allocated
+region and @i{wior} is 0. If the allocation fails, @i{a-addr}
+is arbitrary and @i{wior} is a non-zero I/O result code.
+
+#line 39 "kernel/memory.fs"
+make-doc free a_addr -- wior  ) memory
+Return the region of data space starting at @i{a-addr} to the
+system.  The region must originally have been obtained using
+@code{allocate} or @code{resize}, otherwise the result of
+@code{free} is unpredictable. If the operation is successful,
+@i{wior} is 0.  If the operation fails, @i{wior} is a non-zero
+I/O result code.
+
+#line 47 "kernel/memory.fs"
+make-doc resize a_addr1 u -- a_addr2 wior  ) memory
+Change the size of the allocated area at @i{a-addr1} to @i{u}
+address units, possibly moving the contents to a different
+area. @i{a-addr2} is the address of the resulting area.  If the
+operation is successful, @i{wior} is 0.  If the operation
+fails, @i{wior} is a non-zero I/O result code. If @i{a-addr1}
+is 0, Gforth's (but not the Standard) @code{resize}
+@code{allocate}s @i{u} address units.
