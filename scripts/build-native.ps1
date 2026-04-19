@@ -16,6 +16,32 @@ function Convert-ToGforthPath {
     return $Path.Replace("\", "/")
 }
 
+function Convert-ToBootstrapArgumentPath {
+    param([string]$Path)
+
+    if (-not $Path) {
+        return $null
+    }
+
+    $candidate = $Path
+    try {
+        $candidate = (Resolve-Path $Path).Path
+    } catch {
+    }
+
+    if ([System.IO.Path]::IsPathRooted($candidate)) {
+        try {
+            $relative = [System.IO.Path]::GetRelativePath($RepoRoot, $candidate)
+            if ($relative) {
+                return Convert-ToGforthPath $relative
+            }
+        } catch {
+        }
+    }
+
+    return Convert-ToGforthPath $candidate
+}
+
 function Get-PackageVersion {
     $line = Select-String -Path "configure.ac" -Pattern "AC_INIT\(\[gforth\],\[([^\]]+)\]" | Select-Object -First 1
     if (-not $line) {
@@ -433,6 +459,57 @@ function Resolve-ToolPath {
     return $null
 }
 
+function Get-LocalBootstrapExe {
+    $localExe = Join-Path $RepoRoot "build/native/gforth.exe"
+    if (Test-Path $localExe) {
+        return $localExe
+    }
+    return $null
+}
+
+function Get-LocalBootstrapImage {
+    $localImage = Join-Path $RepoRoot "build/native/gforth.fi"
+    if (Test-Path $localImage) {
+        return $localImage
+    }
+    return $null
+}
+
+function Test-ExistingPath {
+    param([string]$Path)
+
+    if (-not $Path) {
+        return $false
+    }
+
+    try {
+        return Test-Path $Path
+    } catch {
+        return $false
+    }
+}
+
+function Get-InstalledBootstrapExe {
+    $candidates = @(
+        (Join-Path ${env:ProgramFiles(x86)} "gforth\gforth.exe"),
+        (Join-Path ${env:ProgramFiles} "gforth\gforth.exe"),
+        (Join-Path ${env:LOCALAPPDATA} "Programs\Gforth\gforth.exe")
+    ) | Where-Object { $_ }
+
+    foreach ($candidate in $candidates) {
+        if (Test-ExistingPath $candidate) {
+            return $candidate
+        }
+    }
+
+    $resolved = Resolve-ToolPath -CommandName "gforth"
+    if ($resolved) {
+        return $resolved
+    }
+
+    return $null
+}
+
 function Get-BootstrapRoot {
     if (-not $script:ResolvedBootstrapExe) {
         return $null
@@ -605,17 +682,39 @@ function Invoke-Link {
 Write-NativeConfig
 Write-SupportGeneratedFiles
 
-$script:ResolvedBootstrapExe = Resolve-ToolPath -ExplicitPath $BootstrapExe -CommandName "gforth"
-$script:ResolvedBootstrapImage = if ($BootstrapImage) { Convert-ToGforthPath $BootstrapImage } else { $null }
+$script:ResolvedBootstrapExe = if ($BootstrapExe) {
+    $BootstrapExe
+} else {
+    $installedBootstrapExe = Get-InstalledBootstrapExe
+    if ($installedBootstrapExe) {
+        $installedBootstrapExe
+    } else {
+        Get-LocalBootstrapExe
+    }
+}
+
+$script:ResolvedBootstrapImage = if ($BootstrapImage) {
+    Convert-ToBootstrapArgumentPath $BootstrapImage
+} else {
+    $null
+}
 $script:ResolvedBootstrapPrimSpec = $BootstrapPrimSpec
 $script:ResolvedM4Exe = Resolve-ToolPath -ExplicitPath $M4Exe -CommandName "m4"
+
+if (-not $script:ResolvedBootstrapImage) {
+    $localBootstrapExe = Get-LocalBootstrapExe
+    $localBootstrapImage = Get-LocalBootstrapImage
+    if ($localBootstrapImage -and $script:ResolvedBootstrapExe -eq $localBootstrapExe) {
+        $script:ResolvedBootstrapImage = Convert-ToBootstrapArgumentPath $localBootstrapImage
+    }
+}
 
 if (-not $script:ResolvedBootstrapImage) {
     $bootstrapRoot = Get-BootstrapRoot
     if ($bootstrapRoot) {
         $defaultImage = Join-Path $bootstrapRoot "gforth.fi"
-        if (Test-Path $defaultImage) {
-            $script:ResolvedBootstrapImage = Convert-ToGforthPath $defaultImage
+        if (Test-ExistingPath $defaultImage) {
+            $script:ResolvedBootstrapImage = Convert-ToBootstrapArgumentPath $defaultImage
         }
     }
 }

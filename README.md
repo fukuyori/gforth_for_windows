@@ -54,13 +54,13 @@ Smoke test:
 Create the installer from an existing native build:
 
 ```powershell
-.\scripts\build-installer.ps1 -SkipNativeBuild
+.\scripts\build-installer.ps1
 ```
 
-Or build everything in one step:
+If you explicitly want the script to run the native build first:
 
 ```powershell
-.\scripts\build-installer.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
+.\scripts\build-installer.ps1 -BuildNative -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
 ```
 
 The installer output is written to:

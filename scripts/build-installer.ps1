@@ -3,7 +3,7 @@ param(
     [string]$StageDir = "$(Join-Path (Get-Location) 'build/installer/stage')",
     [string]$OutputDir = "$(Join-Path (Get-Location) 'build/installer/output')",
     [string]$InnoCompiler,
-    [switch]$SkipNativeBuild,
+    [switch]$BuildNative,
     [switch]$StageOnly
 )
 
@@ -33,12 +33,18 @@ function Resolve-InnoCompiler {
     return $candidates | Select-Object -First 1
 }
 
-if (-not $SkipNativeBuild) {
+if ($BuildNative) {
     $nativeArgs = @{}
     if ($BootstrapExe) {
         $nativeArgs.BootstrapExe = $BootstrapExe
     }
     & (Join-Path $RepoRoot "scripts/build-native.ps1") @nativeArgs
+} else {
+    $nativeExe = Join-Path $RepoRoot "build/native/gforth.exe"
+    $nativeImage = Join-Path $RepoRoot "build/native/gforth.fi"
+    if (-not (Test-Path $nativeExe) -or -not (Test-Path $nativeImage)) {
+        throw "Missing build/native/gforth.exe or build/native/gforth.fi. Run scripts/build-native.ps1 first, or rerun this script with -BuildNative."
+    }
 }
 
 & (Join-Path $RepoRoot "scripts/stage-native-dist.ps1") -StageDir $StageDir -Clean

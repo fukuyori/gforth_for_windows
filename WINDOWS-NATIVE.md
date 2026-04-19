@@ -33,13 +33,13 @@ Native build:
 Installer build from an existing native build:
 
 ```powershell
-.\scripts\build-installer.ps1 -SkipNativeBuild
+.\scripts\build-installer.ps1
 ```
 
-Full native build plus installer:
+If you explicitly want one command to run both stages:
 
 ```powershell
-.\scripts\build-installer.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
+.\scripts\build-installer.ps1 -BuildNative -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
 ```
 
 The native build produces:
@@ -248,5 +248,5 @@ Interactive startup:
 Recreate the installer from an existing native build:
 
 ```powershell
-.\scripts\build-installer.ps1 -SkipNativeBuild
+.\scripts\build-installer.ps1
 ```
