@@ -13,8 +13,8 @@ The script `install-deps.sh` tries to install all necessary build
 dependencies, depending on the variable `BUILD_FROM` (if set to `tarball`,
 it's a tarball build, otherwise, everything for a git build will be installed).
 
-For the native Windows-specific build and installer flow, see
-`WINDOWS-NATIVE.md`.
+This fork also includes a native Windows build and installer flow.  For that
+path, see `WINDOWS-NATIVE.md`.
 
 ## Build from git
 

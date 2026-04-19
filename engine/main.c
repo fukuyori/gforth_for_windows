@@ -43,6 +43,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <signal.h>
+#ifdef _WIN32
+#include <io.h>
+#endif
 
 #ifdef max
 #undef max
@@ -2268,6 +2271,20 @@ void compile_prim1(Cell *start)
 static int gforth_ltdlinited=0;
 #endif
 
+#ifdef _WIN32
+static void gforth_set_binary_mode(FILE *stream)
+{
+  int fd;
+
+  if (stream == NULL)
+    return;
+
+  fd = fileno(stream);
+  if (fd >= 0)
+    _setmode(fd, _O_BINARY);
+}
+#endif
+
 int gforth_init()
 {
 #if 0 && defined(__i386)
@@ -2287,6 +2304,14 @@ int gforth_init()
 #endif
 #ifndef STANDALONE
   /* buffering of the user output device */
+#ifdef _WIN32
+  /* Gforth already emits CRLF itself on Windows.  Keep the CRT from
+     rewriting '\n' again, which otherwise produces CRCRLF on pipes and
+     terminal emulators such as WezTerm/ConPTY. */
+  gforth_set_binary_mode(stdin);
+  gforth_set_binary_mode(stdout);
+  gforth_set_binary_mode(stderr);
+#endif
 #ifdef _IONBF
   if (isatty(fileno(stdout))) {
     fflush(stdout);

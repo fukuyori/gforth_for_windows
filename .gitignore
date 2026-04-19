@@ -138,6 +138,9 @@ libtool.dump
 m4/
 logs
 /build/native/gforth.exe
+/build/native/gforth.fi
+/build/native/obj/
+/build/native/*.log
 /build/installer/stage/
 /build/installer/output/
 /.tmp-stagecheck/

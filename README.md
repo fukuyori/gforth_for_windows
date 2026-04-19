@@ -1,89 +1,118 @@
 # Gforth README
 
-This repository is forked from [forthy42/gforth](https://github.com/forthy42/gforth)
-and is based on `Gforth 0.7.9_20260415`.
+This repository is a fork of
+[forthy42/gforth](https://github.com/forthy42/gforth) that has been modified so
+Gforth can be built, run, and packaged natively on Windows.  It is currently
+based on `Gforth 0.7.9_20260415` and this fork's current release version is
+`0.7.9_20260415+fukuyori.1.1`.
 
-[![Build Status Travis](https://travis-ci.org/forthy42/gforth.png?branch=master)](https://travis-ci.org/forthy42/gforth)
-[![pipeline status](https://gitlab.com/forthy42/gforth/badges/master/pipeline.svg)](https://gitlab.com/forthy42/gforth/commits/master)
-[![pipeline status](https://git.net2o.de/bernd/gforth/badges/master/pipeline.svg)](https://git.net2o.de/bernd/gforth/commits/master)
+Gforth is a fast and portable implementation of ANS Forth and Forth 200x.  The
+upstream project remains the base of this repository; this fork adds a native
+Windows build path, Windows terminal fixes, and an Inno Setup-based installer
+flow.
 
-Gforth is a fast and portable implementation of the ANS Forth/Forth 200x
-language. It works nicely with the Emacs editor, offers some nice features
-such as input completion and history, backtraces, a decompiler and a powerful
-locals facility, and it has a comprehensive manual. Gforth combines
-traditional implementation techniques with newer techniques for portability
-and performance: its inner interpreter is direct threaded with several
-optimizations, but you can also use a traditional-style indirect threaded
-interpreter.  Gforth is distributed under the GNU General Public license (see
-COPYING).
+## What This Fork Adds
 
-Gforth is part of the GNU Operating System, developed by the GNU Project.  To
-learn more about Free (libre) Software, you can read this page:
-[https://gnu.org/philosophy/free-sw.html](https://gnu.org/philosophy/free-sw.html)
+Compared with the upstream repository, this fork currently focuses on:
 
-If you are the author of an awesome program and want to join us in
-writing Free (libre) Software, please consider making it an official
-GNU program and become a GNU Maintainer.  You can find instructions 
-on how to do this here: [https://www.gnu.org/help/evaluation](https://www.gnu.org/help/evaluation)
+- native Windows builds without requiring MSYS2 or MinGW at runtime
+- a usable interactive REPL in Windows Terminal and WezTerm
+- Windows packaging with a per-user Inno Setup installer
+- PowerShell scripts for native build, staging, and installer creation
 
-Another way to contribute to the Forth community is by uploading your program
-as a package to the Forth Net: [https://theforth.net](https://theforth.net)
+For the Windows-specific implementation details, see `WINDOWS-NATIVE.md`.
 
-## Supported Systems
+## Quick Start
 
-Gforth runs under GNU, BSD, and similar systems, MS Windows and MacOS X
-and should not be hard to port to other systems supported by GCC. This
-version has been tested successfully on the following platforms:
+### Native Windows build
 
-* GNU/Linux
-  * amd64
-  * arm64
-  * armel
-  * armhf
-  * i386
-  * mips
-  * mipsel
-  * powerpc
-* Android/Linux
-  * amd64
-  * arm64
-  * arm
-  * i386
-  * mips
-* Gforth EC(embedded): r8c, 4stack, misc, 8086
-* Windows
-  * amd64
-  * i386
-* MacOS
-  * amd64
-  * i386
+Build a native `gforth.exe` and `gforth.fi` on Windows:
 
-## Installation
+```powershell
+.\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
+```
 
-Read `INSTALL` for installation instructions from tarball,\
-or `INSTALL.md` for from git,\
-or `INSTALL.BINDIST` if you have a binary package distributed as `.tar.xz` file.\
-If you received a self-installing executable,
-just run it and follow the instructions.
+This produces:
 
-For details on the native Windows build and installer flow, see
-`WINDOWS-NATIVE.md`.
+- `build/native/gforth.exe`
+- `build/native/gforth.fi`
 
-For suggested English notices for source releases, binary releases, and
-installer distribution, see `LICENSE-NOTICE-TEMPLATE.md`.
+Run the native build:
 
-To start the system, just say `gforth` (after installing it).
+```powershell
+.\build\native\gforth.exe
+```
+
+Smoke test:
+
+```powershell
+.\build\native\gforth.exe -e '1 2 + . cr bye'
+```
+
+### Windows installer
+
+Create the installer from an existing native build:
+
+```powershell
+.\scripts\build-installer.ps1 -SkipNativeBuild
+```
+
+Or build everything in one step:
+
+```powershell
+.\scripts\build-installer.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
+```
+
+The installer output is written to:
+
+- `build/installer/output/gforth-native-<version>-x64-setup.exe`
+
+### Upstream-style builds
+
+This repository still contains the normal upstream source tree and build
+machinery for Unix-like systems.  For those paths, see:
+
+- `INSTALL`
+- `INSTALL.md`
+- `INSTALL.BINDIST`
+
+## Documentation Guide
+
+Use these entry points depending on what you want to do:
+
+- `WINDOWS-NATIVE.md`: native Windows build, terminal behavior, and installer flow
+- `INSTALL.md`: build from source, especially from git
+- `INSTALL`: general installation notes from the traditional build flow
+- `INSTALL.BINDIST`: installation from binary distributions
+- `LICENSE-NOTICE-TEMPLATE.md`: release and installer notice templates for this fork
+
+## Repository Layout
+
+The files most relevant to the Windows-native fork are:
+
+- `compat/win32/`: Windows compatibility headers and source
+- `engine/`: runtime and terminal handling code
+- `kernel/`: Forth kernel sources, including interactive input handling
+- `scripts/build-native.ps1`: native Windows build entry point
+- `scripts/stage-native-dist.ps1`: installer staging step
+- `scripts/build-installer.ps1`: Inno Setup wrapper
+- `installer/gforth-native.iss`: Windows installer definition
+
+The wider tree still contains the upstream Gforth sources, examples, add-ons,
+tests, and packaging files for other environments.
 
 ## Fork Synchronization
 
 In this fork, `origin` is expected to point to the fork repository and
-`upstream` is expected to point to the original repository:
+`upstream` is expected to point to the original repository.
+
+Check your remotes:
 
 ```powershell
 git remote -v
 ```
 
-To bring upstream changes into this fork:
+Bring upstream changes into this fork with a merge:
 
 ```powershell
 git fetch upstream
@@ -103,77 +132,22 @@ git push origin main
 
 Normal development should push to `origin`, not to `upstream`.
 
-## Download
+## Upstream Project and Support
 
-You can find new versions of Gforth at\
-[www.complang.tuwien.ac.at/forth/gforth/](https://www.complang.tuwien.ac.at/forth/gforth/)\
-and current snapshots on\
-[www.complang.tuwien.ac.at/forth/gforth/Snapshots/current/](https://www.complang.tuwien.ac.at/forth/gforth/Snapshots/current/)\
-or at\
-[ftp://ftp.gnu.org/gnu/gforth/](ftp://ftp.gnu.org/gnu/gforth/)
+The upstream Gforth project is part of the GNU Operating System and remains the
+base project for this fork.  General Gforth discussion and support still follow
+the usual upstream channels:
 
-## Files
+- Usenet: `comp.lang.forth`
+- Mailing list: `gforth@gnu.org`
+- Bug tracker: <https://savannah.gnu.org/bugs/?func=addbug&group=gforth>
 
-On popular request, here are the meanings of unusual file extensions:
+If you are publishing releases from this fork, keep the existing upstream
+copyright and license notices intact.
 
-`\*.fs`	Forth stream source file (include with "`include _<file>_`" from within
-        gforth, or start with "`gforth _<file1> <file2>_ ...`")\
-`\*.fi`	Forth image files (start with "`gforth -i _<image file>_`")\
-`\*.fb`	Forth blocks file (load with "`use _<block file>_ 1 load`")\
-`\*.i`	C include files\
-`\*.texi.in`	documenation source\
-`\*TAGS`	etags files
+## License
 
-A number of Forth source files are included in this package that are
-not necessary for building Gforth. Not all of them are mentioned in
-the rest of the documentation, so here's a short overview:
-
-__Add-ons:__
-
-    code.fs random.fs more.fs ansi.fs colorize.fs
-    oof.fs oofsampl.fs objects.fs blocked.fb tasker.fs
-
-__Utilities:__
-
-    ans-report.fs etags.fs glosgen.fs filedump.fs
-
-__Games:__
-
-    tt.fs sokoban.fs
-
-__Test programs (for testing Forth systems):__
-
-    test/*.fs
-
-__Benchmarks:__
-
-    bubble.fs siev.fs matrix.fs fib.fs
-
-__ANS Forth implementations of Gforth extensions:__
-
-    compat/*.fs
-
-__C-Bindings:__
-
-    unix/*.fs
-
-## Support
-
-For discussions about Gforth, use the Usenet newsgroup
-comp.lang.forth.  If you prefer not to post on Usenet, there is also a
-mailing list: gforth@gnu.org.  You have to subsribe to post there.
-You can subscribe through
-[http://lists.gnu.org/mailman/listinfo/gforth](http://lists.gnu.org/mailman/listinfo/gforth).  The list is archived
-at [http://lists.gnu.org/pipermail/gforth/](http://lists.gnu.org/pipermail/gforth).
-
-You can also report bugs through these channels, or you can report
-them through our bug database:
-
-[https://savannah.gnu.org/bugs/?func=addbug&group=gforth](https://savannah.gnu.org/bugs/?func=addbug&group=gforth)
-
-- anton
-anton@mips.complang.tuwien.ac.at
-[http://www.complang.tuwien.ac.at/anton/home.html](http://www.complang.tuwien.ac.at/anton/home.html)
+Gforth is distributed under the GNU General Public License; see `COPYING`.
 
 ---
 

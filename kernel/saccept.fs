@@ -25,12 +25,8 @@ require ./io.fs
 
 Variable eof
 Variable echo  -1 echo !
+stdin isatty 0= IF  echo off  THEN
 
-os-type s" win32" str=
-[IF]
-: accept ( adr len -- len )
-  stdin read-line throw drop ;
-[ELSE]
 : accept ( adr len -- len )
   ( xon ) over + over ( start end pnt )  eof off
   BEGIN
@@ -47,9 +43,8 @@ os-type s" win32" str=
    ELSE	>r 2dup <> IF r>
 	   echo @ IF  dup emit  THEN
 	   over c! char+ ELSE r> drop bell THEN
-   THEN 
+   THEN
   AGAIN ;
-[THEN]
 
 \ simple include for terminal.fs
 

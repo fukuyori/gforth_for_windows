@@ -51,6 +51,31 @@ typedef unsigned int uint32_t;
 #include <sys/file.h>
 #ifdef _WIN32
 #include <conio.h>
+
+static int gforth_win32_pending_key = -1;
+static int gforth_win32_pending_newline = -1;
+static FILE *gforth_stream_pending_newline_stream = NULL;
+static int gforth_stream_pending_newline = -1;
+
+static Cell gforth_win32_take_pending_key(void)
+{
+  Cell result = gforth_win32_pending_key;
+  gforth_win32_pending_key = -1;
+  return result;
+}
+
+static int gforth_win32_has_pending_key(void)
+{
+  return gforth_win32_pending_key >= 0;
+}
+
+static Cell gforth_win32_read_console_key(void)
+{
+  Cell result = _getch();
+  if (result == 0 || result == 0xE0)
+    result = _getch();
+  return result;
+}
 #endif
 #if (defined(__sun) || defined(__FreeBSD__)) && !defined(FIONREAD)
 #include <sys/filio.h>
@@ -494,8 +519,13 @@ void prep_terminal ()
   }      /* added by MdG */
 
 #ifdef _WIN32
-  /* Keep the Windows console in cooked mode so Enter stays a normal
-     line terminator for the host console. */
+  tcgetattr (tty, &tio);
+  otio = tio;
+  readline_echoing_p = (tio.c_lflag & ECHO);
+  tio.c_lflag &= ~(ICANON | ECHO);
+  tio.c_cc[VMIN] = 1;
+  tio.c_cc[VTIME] = 0;
+  tcsetattr (tty, TCSADRAIN, &tio);
   terminal_prepped = 1;
   return;
 #endif
@@ -611,6 +641,7 @@ void deprep_terminal ()
   }
 
 #ifdef _WIN32
+  tcsetattr (tty, TCSADRAIN, &otio);
   terminal_prepped = 0;
   return;
 #endif
@@ -730,7 +761,7 @@ long key_avail (FILE *stream)
 
 #ifdef _WIN32
   if (stream == stdin && isatty(tty))
-    return _kbhit();
+    return gforth_win32_has_pending_key() || _kbhit();
 #endif
 
 #if defined(FIONREAD)
@@ -775,18 +806,59 @@ Cell getkey(FILE * stream)
 
 #ifdef _WIN32
   if (stream == stdin && isatty(fileno(stream))) {
-    result = _getch();
-    if (result == 0 || result == 0xE0)
-      result = _getch();
-    return result;
+    for (;;) {
+      if (gforth_win32_has_pending_key())
+        result = gforth_win32_take_pending_key();
+      else
+        result = gforth_win32_read_console_key();
+
+      if (gforth_win32_pending_newline >= 0) {
+        if (result == gforth_win32_pending_newline) {
+          gforth_win32_pending_newline = -1;
+          continue;
+        }
+        gforth_win32_pending_newline = -1;
+      }
+
+      if (result == '\r')
+        gforth_win32_pending_newline = '\n';
+      else if (result == '\n')
+        gforth_win32_pending_newline = '\r';
+
+      return result;
+    }
   }
 #endif
 
-  errno=0;
-  result = fread(&c, sizeof(c), 1, stream);
-  if (result>0)
-    gf_regetc(stream);
-  return result==0 ? IOR(1) : c;
+  for (;;) {
+    errno=0;
+    result = fread(&c, sizeof(c), 1, stream);
+    if (result>0)
+      gf_regetc(stream);
+    if (result==0)
+      return IOR(1);
+
+    if (gforth_stream_pending_newline_stream == stream &&
+        gforth_stream_pending_newline >= 0) {
+      if (c == gforth_stream_pending_newline) {
+        gforth_stream_pending_newline_stream = NULL;
+        gforth_stream_pending_newline = -1;
+        continue;
+      }
+      gforth_stream_pending_newline_stream = NULL;
+      gforth_stream_pending_newline = -1;
+    }
+
+    if (c == '\r') {
+      gforth_stream_pending_newline_stream = stream;
+      gforth_stream_pending_newline = '\n';
+    } else if (c == '\n') {
+      gforth_stream_pending_newline_stream = stream;
+      gforth_stream_pending_newline = '\r';
+    }
+
+    return c;
+  }
 }
 #endif
 
