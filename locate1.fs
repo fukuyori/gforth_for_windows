@@ -699,6 +699,17 @@ interpret/compile: s` ( "eval-string" -- addr u )
 
 \ fancy after-l
 
+[IFDEF] ekey
+: win-locate-extended-requested? ( -- flag )
+    s" GFORTH_WIN_LOCATE_EXTENDED" getenv s" 1" str= ;
+
+: locate-extended-input-enabled? ( -- flag )
+    os-type s" win32" str= IF
+	win-locate-extended-requested?
+    ELSE
+	true
+    THEN ;
+
 : fancy-after-l ( c-addr1 u1 lineno1 -- c-addr2 u2 lineno2 )
     \ allow to scroll around right after LOCATE and friends:
     case
@@ -732,4 +743,7 @@ interpret/compile: s` ( "eval-string" -- addr u )
 	    r> located-diff - append-locate-lines contof
     endcase ;
 
-' fancy-after-l is after-l
+locate-extended-input-enabled? [IF]
+    ' fancy-after-l is after-l
+[THEN]
+[THEN]

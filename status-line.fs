@@ -20,6 +20,12 @@
 
 0 Value status-offset
 
+[IFDEF] screenw
+    : status-screenw ( -- addr )  screenw ;
+[ELSE]
+    Variable status-screenw
+[THEN]
+
 Create status-colors
 ' status-color ,
 ' compile-color ,
@@ -73,7 +79,7 @@ DOES> state @ abs translator-max-offset# umin th@ execute ;
 	    r> I - +LOOP  drop
 	THEN
     THEN
-    cr edit-linew @ screenw @ dup 0= IF  $100 +  THEN  mod -1 at-deltaxy
+    cr edit-linew @ status-screenw @ dup 0= IF  $100 +  THEN  mod -1 at-deltaxy
     status$ $@ redraw-status
     status$ $free
     1 to status-offset ;
@@ -86,7 +92,17 @@ DOES> state @ abs translator-max-offset# umin th@ execute ;
     \G Turn off the status bar at the bottom of the screen
     ['] noop is .status ['] noop is .unstatus ;
 
+: win-status-requested? ( -- flag )
+    s" GFORTH_WIN_STATUS" getenv s" 1" str= ;
+
+: status-auto-enabled? ( -- flag )
+    os-type s" win32" str= IF
+	win-status-requested? is-color-terminal? and
+    ELSE
+	is-color-terminal?
+    THEN ;
+
 :noname
     defers bootmessage
-    is-color-terminal? IF  +status  ELSE  -status  THEN ;
+    status-auto-enabled? IF  +status  ELSE  -status  THEN ;
 is bootmessage

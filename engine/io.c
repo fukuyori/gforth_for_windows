@@ -57,6 +57,56 @@ static int gforth_win32_pending_newline = -1;
 static FILE *gforth_stream_pending_newline_stream = NULL;
 static int gforth_stream_pending_newline = -1;
 
+static int gforth_win32_newline_pair_mate(Cell c)
+{
+  if (c == '\r')
+    return '\n';
+  if (c == '\n')
+    return '\r';
+  return -1;
+}
+
+static int gforth_win32_should_skip_newline_pair(int *pending_newline, Cell c)
+{
+  int mate;
+
+  if (*pending_newline >= 0) {
+    if (c == *pending_newline) {
+      *pending_newline = -1;
+      return 1;
+    }
+    *pending_newline = -1;
+  }
+
+  mate = gforth_win32_newline_pair_mate(c);
+  if (mate >= 0)
+    *pending_newline = mate;
+  return 0;
+}
+
+static int gforth_win32_should_skip_stream_newline_pair(FILE *stream, Cell c)
+{
+  int mate;
+
+  if (gforth_stream_pending_newline_stream == stream &&
+      gforth_stream_pending_newline >= 0) {
+    if (c == gforth_stream_pending_newline) {
+      gforth_stream_pending_newline_stream = NULL;
+      gforth_stream_pending_newline = -1;
+      return 1;
+    }
+    gforth_stream_pending_newline_stream = NULL;
+    gforth_stream_pending_newline = -1;
+  }
+
+  mate = gforth_win32_newline_pair_mate(c);
+  if (mate >= 0) {
+    gforth_stream_pending_newline_stream = stream;
+    gforth_stream_pending_newline = mate;
+  }
+  return 0;
+}
+
 static Cell gforth_win32_take_pending_key(void)
 {
   Cell result = gforth_win32_pending_key;
@@ -69,12 +119,35 @@ static int gforth_win32_has_pending_key(void)
   return gforth_win32_pending_key >= 0;
 }
 
+static int gforth_win32_console_key_available(void)
+{
+  return gforth_win32_has_pending_key() || _kbhit();
+}
+
 static Cell gforth_win32_read_console_key(void)
 {
   Cell result = _getch();
   if (result == 0 || result == 0xE0)
     result = _getch();
   return result;
+}
+
+static Cell gforth_win32_read_console_logical_key(void)
+{
+  Cell result;
+
+  for (;;) {
+    if (gforth_win32_has_pending_key())
+      result = gforth_win32_take_pending_key();
+    else
+      result = gforth_win32_read_console_key();
+
+    if (gforth_win32_should_skip_newline_pair(&gforth_win32_pending_newline,
+                                             result))
+      continue;
+
+    return result;
+  }
 }
 #endif
 #if (defined(__sun) || defined(__FreeBSD__)) && !defined(FIONREAD)
@@ -761,7 +834,7 @@ long key_avail (FILE *stream)
 
 #ifdef _WIN32
   if (stream == stdin && isatty(tty))
-    return gforth_win32_has_pending_key() || _kbhit();
+    return gforth_win32_console_key_available();
 #endif
 
 #if defined(FIONREAD)
@@ -805,29 +878,8 @@ Cell getkey(FILE * stream)
     prep_terminal();
 
 #ifdef _WIN32
-  if (stream == stdin && isatty(fileno(stream))) {
-    for (;;) {
-      if (gforth_win32_has_pending_key())
-        result = gforth_win32_take_pending_key();
-      else
-        result = gforth_win32_read_console_key();
-
-      if (gforth_win32_pending_newline >= 0) {
-        if (result == gforth_win32_pending_newline) {
-          gforth_win32_pending_newline = -1;
-          continue;
-        }
-        gforth_win32_pending_newline = -1;
-      }
-
-      if (result == '\r')
-        gforth_win32_pending_newline = '\n';
-      else if (result == '\n')
-        gforth_win32_pending_newline = '\r';
-
-      return result;
-    }
-  }
+  if (stream == stdin && isatty(fileno(stream)))
+    return gforth_win32_read_console_logical_key();
 #endif
 
   for (;;) {
@@ -838,24 +890,10 @@ Cell getkey(FILE * stream)
     if (result==0)
       return IOR(1);
 
-    if (gforth_stream_pending_newline_stream == stream &&
-        gforth_stream_pending_newline >= 0) {
-      if (c == gforth_stream_pending_newline) {
-        gforth_stream_pending_newline_stream = NULL;
-        gforth_stream_pending_newline = -1;
-        continue;
-      }
-      gforth_stream_pending_newline_stream = NULL;
-      gforth_stream_pending_newline = -1;
-    }
-
-    if (c == '\r') {
-      gforth_stream_pending_newline_stream = stream;
-      gforth_stream_pending_newline = '\n';
-    } else if (c == '\n') {
-      gforth_stream_pending_newline_stream = stream;
-      gforth_stream_pending_newline = '\r';
-    }
+#ifdef _WIN32
+    if (gforth_win32_should_skip_stream_newline_pair(stream, c))
+      continue;
+#endif
 
     return c;
   }

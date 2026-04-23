@@ -4,7 +4,7 @@ This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that adds a native
 Windows build, runtime fixes for interactive terminals, and an Inno Setup
 installer flow.  The current fork release is based on `Gforth 0.7.9_20260415`
-and is versioned as `0.7.9_20260415+fukuyori.1.1`.
+and is versioned as `0.7.9_20260415+fukuyori.2.0`.
 
 The goal is to build and package `gforth.exe` on Windows without depending on
 MSYS2 or MinGW at runtime.
@@ -30,6 +30,28 @@ Native build:
 .\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
 ```
 
+Native build with the Phase 6 advanced-interactive readiness checks:
+
+```powershell
+.\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe" -CheckAdvancedInteractive -ProbeAdvancedInteractive
+```
+
+These optional checks do not change the default Windows startup path.  They
+report whether the current native image can see advanced interactive words such
+as `ekey`, `history-cold`, `locate`, `see`, and whether an advanced image build
+path is currently available.
+
+The temporary runtime-loader entrypoint is:
+
+```powershell
+$env:GFORTH_WIN_ADVANCED = "1"
+.\build\native\gforth.exe .\windows-interactive-advanced.fs -e 'bye'
+Remove-Item Env:\GFORTH_WIN_ADVANCED
+```
+
+At this stage it only reports readiness.  It does not activate the advanced
+editor stack.
+
 Installer build from an existing native build:
 
 ```powershell
@@ -50,6 +72,9 @@ The native build produces:
 The installer build produces:
 
 - `build/installer/output/gforth-native-<version>-x64-setup.exe`
+
+For the staged recovery plan for richer Windows interactive behavior, see
+`WINDOWS-INTERACTIVE-PLAN.md`.
 
 ## Port Summary
 
@@ -91,6 +116,9 @@ The script is responsible for:
 - compiling the compatibility layer and engine objects
 - linking `build/native/gforth.exe`
 - copying the generated image to `build/native/gforth.fi`
+- optionally running the Phase 6 advanced-interactive readiness and image
+  probe checks when `-CheckAdvancedInteractive` or `-ProbeAdvancedInteractive`
+  is specified
 
 The build is still partially self-hosted, so a working Gforth remains part of
 the bootstrap path.
@@ -148,6 +176,94 @@ self-echo so terminal emulators do not show a second copy of the typed line.
 
 Together, these changes make the REPL behave as expected in both Windows
 Terminal and WezTerm.
+
+### Current interactive differences from upstream
+
+The current Windows-native path intentionally favors predictable console
+behavior over the full upstream interactive editing stack.
+
+At startup, Windows uses `kernel/saccept.fs` instead of the usual
+`ekey.fs` plus `history.fs` path.  In practice, that means the Windows-native
+REPL currently uses a simpler character-by-character `accept` loop rather than
+the richer upstream command-line editor.
+
+Compared with the normal upstream startup path, the following areas are
+currently reduced or missing on Windows-native builds:
+
+- command history loading, saving, and navigation
+- the higher-level command-line editing layer from `history.fs`
+- VT100/ANSI escape sequence handling from `ekey.fs`
+- arrow-key and other extended-key driven editing behaviors that depend on
+  `ekey.fs`
+- resize-driven terminal UI behavior that depends on `ekey` events such as
+  `k-winch`
+
+This is a deliberate tradeoff in the current port.  The simpler Windows input
+path avoids the double-Enter, double-echo, and newline translation problems
+that showed up when trying to use the upstream interactive stack unchanged in
+Windows Terminal and WezTerm.
+
+The status line is only partially disabled.  Windows-native startup does not
+load `status-line.fs` directly, so the status bar is not part of the default
+Windows startup experience.  However, the file is still present in the tree and
+can still be pulled in indirectly by other source files such as `locate1.fs`.
+
+### Restoration feasibility and rough effort
+
+Based on the current Windows-native implementation, not all of the reduced
+interactive features have the same restoration cost.
+
+Lower-effort candidates:
+
+- restoring `status-line.fs` as an optional or default startup feature
+- small improvements inside `kernel/saccept.fs`
+- making the status line opt-in on Windows while leaving the simpler input path
+  in place
+
+These are comparatively lightweight because `status-line.fs` still exists in
+the tree and `kernel/saccept.fs` is intentionally simple.
+
+Medium-effort candidates:
+
+- restoring some history behavior without restoring the full upstream editor
+- cleaning up the interaction between `locate1.fs` and `status-line.fs` on
+  Windows
+- restoring limited locate-time navigation with simple keys rather than the
+  full `ekey` stack
+
+These are more involved because the upstream locate and history experience is
+partly coupled to the richer editor and key handling layers.
+
+Higher-effort candidates:
+
+- restoring the full upstream `history.fs` line editor on Windows-native builds
+- restoring broad arrow-key, paging-key, and other extended-key behavior from
+  `ekey.fs`
+- restoring resize-driven interactive behavior that depends on `k-winch`
+
+These are the expensive items because the current Windows-native port
+deliberately replaced the upstream `ekey.fs` plus `history.fs` startup path
+with the simpler `kernel/saccept.fs` path in order to avoid double-Enter,
+double-echo, and newline translation problems.
+
+As a rough planning guide:
+
+- low effort: about half a day to two days
+- medium effort: about one to four days
+- high effort: about three to nine days, depending on how much upstream editor
+  behavior needs to be restored and verified
+
+In practice, the safest order is:
+
+1. small `saccept.fs` improvements
+2. optional or limited `status-line.fs` restoration
+3. targeted history or locate improvements
+4. only then, consider restoring larger parts of the `ekey.fs` and
+   `history.fs` editing stack
+
+The longer-term staged recovery plan has since been rewritten around a
+Unix-like terminal contract for Windows.  See
+`WINDOWS-INTERACTIVE-PLAN.md`.
 
 ### Output newline normalization
 

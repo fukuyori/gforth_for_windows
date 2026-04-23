@@ -40,6 +40,15 @@
 #include <time.h>
 
 #ifdef _WIN32
+static int gforth_win32_newline_pair_mate(Cell c)
+{
+  if (c == '\r')
+    return '\n';
+  if (c == '\n')
+    return '\r';
+  return -1;
+}
+
 static int gforth_console_stream(FILE *stream, HANDLE *handlep)
 {
   int fd;
@@ -133,6 +142,8 @@ static struct Cellquad gforth_read_console_line(Char *c_addr, UCell u1, FILE *wf
     }
     if (c == '\n') {
       saw_newline = 1;
+      if (u3 + 1 < chars_read && buffer[u3 + 1] == '\r')
+        u3++;
       break;
     }
     if (u2 < u1)
@@ -671,6 +682,33 @@ struct Cellquad read_line(Char *c_addr, UCell u1, FILE *wfileid)
       break;
     }
     u3++;
+#ifdef _WIN32
+    {
+      int newline_mate = gforth_win32_newline_pair_mate(c);
+      if (newline_mate >= 0) {
+        do{
+          c = getc(wfileid);
+        } while (c == EOF && ferror(wfileid)==EINTR);
+        if (c==EOF) {
+          int err=ferror(wfileid);
+          clearerr(wfileid);
+          wior=FILEIO(err);
+          flag=-1;
+          break;
+        }
+        if (c!=newline_mate) {
+#ifdef LEGACY_GF
+          gf_ungetc(c,wfileid);
+#else
+          ungetc(c,wfileid);
+#endif
+        } else {
+          u3++;
+        }
+        break;
+      }
+    }
+#else
     if (c=='\n') break;
     if (c=='\r') {
       do{
@@ -693,6 +731,7 @@ struct Cellquad read_line(Char *c_addr, UCell u1, FILE *wfileid)
 	u3++;
       } break;
     }
+#endif
     c_addr[u2] = (Char)c;
   }
   r.n1 = u2;

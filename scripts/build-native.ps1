@@ -5,7 +5,9 @@ param(
     [string]$BootstrapImage,
     [string]$BootstrapPrimSpec,
     [string]$M4Exe,
-    [switch]$SyntaxOnly
+    [switch]$SyntaxOnly,
+    [switch]$CheckAdvancedInteractive,
+    [switch]$ProbeAdvancedInteractive
 )
 
 $ErrorActionPreference = "Stop"
@@ -679,6 +681,47 @@ function Invoke-Link {
     }
 }
 
+function Invoke-OptionalPhase6Checks {
+    $nativeExe = Join-Path $RepoRoot "build/native/gforth.exe"
+
+    if (-not (Test-Path $nativeExe)) {
+        Write-Warning "Skipping advanced interactive checks because $nativeExe does not exist."
+        return
+    }
+
+    if ($CheckAdvancedInteractive) {
+        $readinessScript = Join-Path $RepoRoot "scripts/check-advanced-interactive-readiness.ps1"
+        if (Test-Path $readinessScript) {
+            Write-Host ""
+            Write-Host "Running advanced interactive readiness checks..."
+            & $readinessScript -NativeExe $nativeExe
+            if ($LASTEXITCODE -ne 0) {
+                Write-Warning "Advanced interactive readiness checks exited with $LASTEXITCODE."
+            }
+        } else {
+            Write-Warning "Advanced interactive readiness script is missing: $readinessScript"
+        }
+    }
+
+    if ($ProbeAdvancedInteractive) {
+        $probeScript = Join-Path $RepoRoot "scripts/build-advanced-interactive-image.ps1"
+        if (Test-Path $probeScript) {
+            Write-Host ""
+            Write-Host "Probing advanced interactive image build readiness..."
+            if ($script:ResolvedBootstrapExe) {
+                & $probeScript -NativeExe $nativeExe -BootstrapExe $script:ResolvedBootstrapExe -ProbeOnly
+            } else {
+                & $probeScript -NativeExe $nativeExe -ProbeOnly
+            }
+            if ($LASTEXITCODE -ne 0) {
+                Write-Warning "Advanced interactive image probe exited with $LASTEXITCODE."
+            }
+        } else {
+            Write-Warning "Advanced interactive image probe script is missing: $probeScript"
+        }
+    }
+}
+
 Write-NativeConfig
 Write-SupportGeneratedFiles
 
@@ -831,4 +874,8 @@ if ($missing.Count -gt 0) {
     if ($script:ResolvedBootstrapExe -and -not $script:ResolvedBootstrapImage) {
         Write-Host "If your bootstrap gforth needs an explicit image, also pass -BootstrapImage <path-to-gforth.fi>." -ForegroundColor Yellow
     }
+}
+
+if (-not $SyntaxOnly -and ($CheckAdvancedInteractive -or $ProbeAdvancedInteractive)) {
+    Invoke-OptionalPhase6Checks
 }
