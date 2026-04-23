@@ -27,6 +27,44 @@ Variable eof
 Variable echo  -1 echo !
 stdin isatty 0= IF  echo off  THEN
 
+: win-env?
+    getenv dup 0= IF
+	2drop false EXIT
+    THEN
+    2drop true ;
+
+: win-interactive?
+    s" GFORTH_WIN_INTERACTIVE" win-env? ;
+
+: win-history-path
+    s" GFORTH_WIN_HISTORY_FILE" getenv dup 0= IF
+	2drop s" .gforth-history"
+    THEN ;
+
+: win-history-open
+    win-history-path 2dup r/w open-file IF
+	drop w/o create-file
+    ELSE
+	nip nip 0
+    THEN ;
+
+: win-history-add
+    s" GFORTH_WIN_HISTORY" win-env? win-interactive? or 0= IF
+	2drop EXIT
+    THEN
+    win-history-open dup IF
+	drop drop 2drop EXIT
+    THEN
+    drop >r
+    r@ file-size dup IF
+	drop 2drop r> close-file drop 2drop EXIT
+    THEN
+    drop r@ reposition-file dup IF
+	drop r> close-file drop 2drop EXIT
+    THEN
+    drop r@ write-line drop
+    r> close-file drop ;
+
 : accept ( adr len -- len )
   ( xon ) over + over ( start end pnt )  eof off
   BEGIN
@@ -34,7 +72,9 @@ stdin isatty 0= IF  echo off  THEN
    dup bl u< 
    IF
        dup #cr = over #lf = or IF
-	   echo @ IF  space  THEN  drop nip swap - ( xoff ) EXIT THEN
+	   echo @ IF  space  THEN
+	   drop third >r nip swap - dup r> swap win-history-add
+	   ( xoff ) EXIT THEN
        dup #eof = IF  eof on  THEN
        #bs = IF third over <>
 	   IF 1 chars -

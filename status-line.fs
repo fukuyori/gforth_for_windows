@@ -26,83 +26,151 @@
     Variable status-screenw
 [THEN]
 
-Create status-colors
-' status-color ,
-' compile-color ,
-' postpone-color ,
-' error-color 7 0 [DO] dup , [LOOP] drop
-DOES> state @ abs translator-max-offset# umin th@ execute ;
+[IFUNDEF] save-cursor-position
+    Defer save-cursor-position
+    ' noop is save-cursor-position
+    0 Constant status-has-save-cursor?
+[ELSE]
+    -1 Constant status-has-save-cursor?
+[THEN]
 
-: redraw-status ( addr u -- )
-    save-cursor-position
-    0 rows 1 - at-xy
-    status-colors type default-color
-    restore-cursor-position ;
-: .unstatus-line ( -- )
-    0 erase-display
-    0 to status-offset ;
-: replace-char ( c1 c2 addr u -- )
-    bounds U+DO
-	over I c@ = IF  dup I c!  THEN
-    LOOP  2drop ;
+[IFUNDEF] restore-cursor-position
+    Defer restore-cursor-position
+    ' noop is restore-cursor-position
+    0 Constant status-has-restore-cursor?
+[ELSE]
+    -1 Constant status-has-restore-cursor?
+[THEN]
 
-0 Value wide?
+[IFUNDEF] erase-display
+    Defer erase-display
+    ' drop is erase-display
+    0 Constant status-has-erase-display?
+[ELSE]
+    -1 Constant status-has-erase-display?
+[THEN]
 
-: .base ( -- )
-    base @ #10 <> IF  wide? IF  ." base="  ELSE  ." b="  THEN
-	base @ 0 ['] .r #10 base-execute cr  THEN ;
-: .stacks ( -- )
-    f.s-precision >r
-    wide? IF  #14  ELSE  #10  THEN  to f.s-precision
-    ... cr
-    r> to f.s-precision ;
-: .order ( -- )
-    wide? IF  ."  order: " ELSE  ." o:" THEN  order ;
+status-has-save-cursor?
+status-has-restore-cursor? and
+status-has-erase-display? and
+Constant status-terminal-ready?
 
-10 stack: status-xts
-\ status line prints a stack of status words
-' .base ' .stacks ' .order 3 status-xts set-stack
+[IFDEF] {
+    [IFDEF] translator-max-offset#
+	Create status-colors
+	' status-color ,
+	' compile-color ,
+	' postpone-color ,
+	' error-color ,
+	' error-color ,
+	' error-color ,
+	' error-color ,
+	' error-color ,
+	' error-color ,
+	' error-color ,
+	DOES> state @ abs translator-max-offset# umin th@ execute ;
+    [ELSE]
+	Defer status-colors
+	' noop is status-colors
+    [THEN]
 
-: .status-line ( -- ) { | w^ status$ }
-    cols #100 > to wide?
-    [: status-xts $@ cell MEM+DO  I perform  LOOP ;] status$ $exec
-    #lf '|' status$ $@ replace-char
-    cols status$ $@ x-width - dup 0> IF
-	['] spaces $tmp
-	status$ dup $@ '|' -scan nip $ins
-    ELSE  0< IF
-	    0 status$ $@ bounds U+DO
-		I xc@+ swap >r
-		dup #tab = IF  drop 1+ dfaligned  ELSE  xc-width +  THEN
-		dup cols u> IF  rdrop I status$ $@ drop - status$ $!len
-		    leave  THEN
-	    r> I - +LOOP  drop
+    : redraw-status ( addr u -- )
+	save-cursor-position
+	0 rows 1 - at-xy
+	status-colors type default-color
+	restore-cursor-position ;
+    : .unstatus-line ( -- )
+	0 erase-display
+	0 to status-offset ;
+    : replace-char ( c1 c2 addr u -- )
+	bounds U+DO
+	    over I c@ = IF  dup I c!  THEN
+	LOOP  2drop ;
+
+    0 Value wide?
+
+    : .base ( -- )
+	base @ #10 <> IF  wide? IF  ." base="  ELSE  ." b="  THEN
+	    [IFDEF] base-execute
+		base @ 0 ['] .r #10 base-execute
+	    [ELSE]
+		base @ .
+	    [THEN]
+	    cr  THEN ;
+    [IFDEF] f.s-precision
+	: .stacks ( -- )
+	    f.s-precision >r
+	    wide? IF  #14  ELSE  #10  THEN  to f.s-precision
+	    ... cr
+	    r> to f.s-precision ;
+    [ELSE]
+	: .stacks ( -- ) ;
+    [THEN]
+
+    [IFDEF] order
+	: .order ( -- )
+	    wide? IF  ."  order: " ELSE  ." o:" THEN  order ;
+    [ELSE]
+	: .order ( -- ) ;
+    [THEN]
+
+    10 stack: status-xts
+    \ status line prints a stack of status words
+    ' .base ' .stacks ' .order 3 status-xts set-stack
+
+    : .status-line ( -- ) { | w^ status$ }
+	cols #100 > to wide?
+	[: status-xts $@ cell MEM+DO  I perform  LOOP ;] status$ $exec
+	#lf '|' status$ $@ replace-char
+	cols status$ $@ x-width - dup 0> IF
+	    ['] spaces $tmp
+	    status$ dup $@ '|' -scan nip $ins
+	ELSE  0< IF
+		0 status$ $@ bounds U+DO
+		    I xc@+ swap >r
+		    dup #tab = IF  drop 1+ dfaligned  ELSE  xc-width +  THEN
+		    dup cols u> IF  rdrop I status$ $@ drop - status$ $!len
+			leave  THEN
+		r> I - +LOOP  drop
+	    THEN
 	THEN
-    THEN
-    cr edit-linew @ status-screenw @ dup 0= IF  $100 +  THEN  mod -1 at-deltaxy
-    status$ $@ redraw-status
-    status$ $free
-    1 to status-offset ;
+	cr edit-linew @ status-screenw @ dup 0= IF  $100 +  THEN  mod -1 at-deltaxy
+	status$ $@ redraw-status
+	status$ $free
+	1 to status-offset ;
 
-: +status ( -- ) \ gforth
-    \G Turn on the status bar at the bottom of the screen
-    ['] .status-line is .status ['] .unstatus-line is .unstatus ;
+    : +status ( -- ) \ gforth
+	\G Turn on the status bar at the bottom of the screen
+	['] .status-line is .status ['] .unstatus-line is .unstatus ;
+[ELSE]
+    ' noop Alias +status ( -- ) \ gforth
+[THEN]
 
-: -status ( -- ) \ gforth
-    \G Turn off the status bar at the bottom of the screen
-    ['] noop is .status ['] noop is .unstatus ;
+[IFDEF] {
+    : -status ( -- ) \ gforth
+	\G Turn off the status bar at the bottom of the screen
+	['] noop is .status ['] noop is .unstatus ;
+[ELSE]
+    ' noop Alias -status ( -- ) \ gforth
+[THEN]
 
-: win-status-requested? ( -- flag )
-    s" GFORTH_WIN_STATUS" getenv s" 1" str= ;
+[IFDEF] os-type
+    : win-status-requested? ( -- flag )
+	s" GFORTH_WIN_STATUS" getenv s" 1" str= ;
 
-: status-auto-enabled? ( -- flag )
-    os-type s" win32" str= IF
-	win-status-requested? is-color-terminal? and
-    ELSE
-	is-color-terminal?
-    THEN ;
+    : status-auto-enabled? ( -- flag )
+	os-type s" win32" str= IF
+	    win-status-requested? is-color-terminal? and status-terminal-ready? and
+	ELSE
+	    is-color-terminal?
+	THEN ;
+[ELSE]
+    0 Constant status-auto-enabled?
+[THEN]
 
-:noname
-    defers bootmessage
-    status-auto-enabled? IF  +status  ELSE  -status  THEN ;
-is bootmessage
+[IFDEF] os-type
+    :noname
+	defers bootmessage
+	status-auto-enabled? IF  +status  ELSE  -status  THEN ;
+    is bootmessage
+[THEN]

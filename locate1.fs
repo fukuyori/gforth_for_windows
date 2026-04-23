@@ -20,6 +20,8 @@
 
 require status-line.fs
 
+[IFDEF] set-located-view
+
 $variable where-results
 \ addresses in WHERES that contain the results of the last WHERE
 variable where-index -1 where-index !
@@ -746,4 +748,6 @@ interpret/compile: s` ( "eval-string" -- addr u )
 locate-extended-input-enabled? [IF]
     ' fancy-after-l is after-l
 [THEN]
+[THEN]
+
 [THEN]

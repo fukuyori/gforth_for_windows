@@ -72,11 +72,54 @@ function Test-AdvancedLoaderOptIn {
     }
 }
 
+function Invoke-AdvancedLoaderCheck {
+    param(
+        [string]$Name,
+        [string]$Code
+    )
+
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = (Resolve-Path $NativeExe).Path
+    $psi.ArgumentList.Add("windows-interactive-advanced.fs")
+    $psi.ArgumentList.Add("-e")
+    $psi.ArgumentList.Add($Code)
+    $psi.Environment["GFORTH_WIN_ADVANCED"] = "1"
+    $psi.Environment["GFORTH_WIN_ADVANCED_QUIET"] = "1"
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.UseShellExecute = $false
+
+    $p = [System.Diagnostics.Process]::Start($psi)
+    $stdout = $p.StandardOutput.ReadToEnd()
+    $stderr = $p.StandardError.ReadToEnd()
+    $p.WaitForExit()
+
+    [pscustomobject]@{
+        Name = $Name
+        ExitCode = $p.ExitCode
+        Stdout = $stdout.Trim()
+        Stderr = $stderr.Trim()
+        Passed = ($p.ExitCode -eq 0)
+    }
+}
+
+function Test-AdvancedLoaderWord {
+    param(
+        [string]$Word,
+        [bool]$ExpectedPresent
+    )
+
+    $result = Invoke-AdvancedLoaderCheck -Name "advanced-loader:word:$Word" -Code "s`" $Word`" find-name dup . cr bye"
+    $isPresent = ($result.ExitCode -eq 0 -and ($result.Stdout -split "\s+")[-1] -ne "0")
+    $result.Passed = ($result.ExitCode -eq 0 -and $isPresent -eq $ExpectedPresent)
+    return $result
+}
+
 $checks = @()
 
 $checks += Invoke-GforthCheck -Name "smoke:-e" -Code "1 2 + . cr bye"
 
-foreach ($word in @("require", "included", "os-type", "ekey", "history-cold", "locate", "see", "+status")) {
+foreach ($word in @("require", "included", "os-type", "ekey", "history-cold", "locate", "see", "+status", "k-winch", "winch?", "form")) {
     $checks += Test-Word -Word $word
 }
 
@@ -85,6 +128,10 @@ foreach ($file in @("windows-interactive-advanced.fs", "ekey.fs", "history.fs", 
 }
 
 $checks += Test-AdvancedLoaderOptIn
+$checks += Test-AdvancedLoaderWord -Word "+status" -ExpectedPresent $true
+$checks += Test-AdvancedLoaderWord -Word "locate" -ExpectedPresent $false
+$checks += Test-AdvancedLoaderWord -Word "ekey" -ExpectedPresent $false
+$checks += Test-AdvancedLoaderWord -Word "history-cold" -ExpectedPresent $false
 
 $missingOrFailing = $false
 

@@ -8,6 +8,10 @@
 \ not stable enough to use as a startup contract yet.
 
 s" GFORTH_WIN_ADVANCED" getenv s" 1" compare 0= [IF]
+    require status-line.fs
+    require locate1.fs
+
+s" GFORTH_WIN_ADVANCED_QUIET" getenv s" 1" compare 0= 0= [IF]
     ." Windows advanced interactive readiness:" cr
 
     s" ekey" find-name 0= [IF]
@@ -39,4 +43,5 @@ s" GFORTH_WIN_ADVANCED" getenv s" 1" compare 0= [IF]
     [ELSE]
         ." +status present" cr
     [THEN]
+[THEN]
 [THEN]

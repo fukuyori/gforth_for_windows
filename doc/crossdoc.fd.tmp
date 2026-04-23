@@ -2568,47 +2568,134 @@ make-doc altkeys )
 make-doc edit-linew )
 
 #line 34 "kernel/accept.fs"
-make-doc (ins) max span addr pos1 key -- max span addr pos2  )
+make-doc k-winch )
 
-#line 37 "kernel/accept.fs"
-make-doc (ins-string) max span addr pos1 addr1 u1 -- max span addr pos2  )
+#line 36 "kernel/accept.fs"
+make-doc win-env? )
 
-#line 40 "kernel/accept.fs"
-make-doc (bs) max span addr pos1 -- max span addr pos2 flag  )
+#line 42 "kernel/accept.fs"
+make-doc win-interactive? )
 
-#line 44 "kernel/accept.fs"
-make-doc (ret) max span addr pos1 -- max span addr pos2 flag  )
+#line 45 "kernel/accept.fs"
+make-doc win-history-line-max )
 
 #line 46 "kernel/accept.fs"
-make-doc (edit-control) max span addr pos1 ctrl-key -- max span addr pos2 flag  )
+make-doc win-history-line )
+
+#line 47 "kernel/accept.fs"
+make-doc win-history-line-len )
+
+#line 48 "kernel/accept.fs"
+make-doc win-history-edit-max )
 
 #line 49 "kernel/accept.fs"
-make-doc std-ctrlkeys )
+make-doc win-history-edit-addr )
+
+#line 50 "kernel/accept.fs"
+make-doc win-history-edit-len )
+
+#line 51 "kernel/accept.fs"
+make-doc win-history-index )
+
+#line 52 "kernel/accept.fs"
+make-doc win-history-count )
+
+#line 53 "kernel/accept.fs"
+make-doc win-history-target )
+
+#line 54 "kernel/accept.fs"
+make-doc win-history-seen )
+
+#line 56 "kernel/accept.fs"
+make-doc (ins) max span addr pos1 key -- max span addr pos2  )
+
+#line 59 "kernel/accept.fs"
+make-doc (ins-string) max span addr pos1 addr1 u1 -- max span addr pos2  )
 
 #line 62 "kernel/accept.fs"
-make-doc (edit-update) span addr pos -- span addr pos  )
+make-doc (bs) max span addr pos1 -- max span addr pos2 flag  )
 
-#line 65 "kernel/accept.fs"
-make-doc (edit-everyline) --  )
+#line 66 "kernel/accept.fs"
+make-doc (ret) max span addr pos1 -- max span addr pos2 flag  )
 
-#line 77 "kernel/accept.fs"
-make-doc kernel-editor )
+#line 68 "kernel/accept.fs"
+make-doc (edit-control) max span addr pos1 ctrl-key -- max span addr pos2 flag  )
 
-#line 80 "kernel/accept.fs"
-make-doc >control key -- ctrl-key  )
+#line 71 "kernel/accept.fs"
+make-doc std-ctrlkeys )
 
 #line 84 "kernel/accept.fs"
+make-doc (edit-update) span addr pos -- span addr pos  )
+
+#line 87 "kernel/accept.fs"
+make-doc (edit-everyline) --  )
+
+#line 99 "kernel/accept.fs"
+make-doc kernel-editor )
+
+#line 102 "kernel/accept.fs"
+make-doc >control key -- ctrl-key  )
+
+#line 106 "kernel/accept.fs"
+make-doc win-ekey? )
+
+#line 109 "kernel/accept.fs"
+make-doc win-ekey-dispatch )
+
+#line 132 "kernel/accept.fs"
 make-doc decode max span addr pos1 key -- max span addr pos2 flag  )
 
-#line 95 "kernel/accept.fs"
+#line 149 "kernel/accept.fs"
 make-doc edit-key )
 
-#line 97 "kernel/accept.fs"
+#line 151 "kernel/accept.fs"
+make-doc win-winch? )
+
+#line 154 "kernel/accept.fs"
+make-doc win-edit-key )
+
+#line 162 "kernel/accept.fs"
+make-doc win-handle-winch )
+
+#line 165 "kernel/accept.fs"
 make-doc edit-line c-addr n1 n2 -- n3  ) gforth
 edit the string with length @var{n2} in the buffer @var{c-addr
 n1}, like @code{accept}.
 
-#line 104 "kernel/accept.fs"
+#line 173 "kernel/accept.fs"
+make-doc win-history-path )
+
+#line 178 "kernel/accept.fs"
+make-doc win-history-open )
+
+#line 185 "kernel/accept.fs"
+make-doc win-history-add )
+
+#line 202 "kernel/accept.fs"
+make-doc win-history-nav? )
+
+#line 205 "kernel/accept.fs"
+make-doc win-history-read-last )
+
+#line 229 "kernel/accept.fs"
+make-doc win-history-clear-display )
+
+#line 234 "kernel/accept.fs"
+make-doc win-history-count-lines )
+
+#line 251 "kernel/accept.fs"
+make-doc win-history-read-index )
+
+#line 283 "kernel/accept.fs"
+make-doc win-history-replace-line )
+
+#line 298 "kernel/accept.fs"
+make-doc win-history-prev-line )
+
+#line 312 "kernel/accept.fs"
+make-doc win-history-next-line )
+
+#line 332 "kernel/accept.fs"
 make-doc accept c-addr +n1 -- +n2  ) core
 Get a string of up to @var{n1} characters from the user input
 device and store it at @var{c-addr}.  @var{n2} is the length of

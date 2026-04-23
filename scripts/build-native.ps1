@@ -7,7 +7,8 @@ param(
     [string]$M4Exe,
     [switch]$SyntaxOnly,
     [switch]$CheckAdvancedInteractive,
-    [switch]$ProbeAdvancedInteractive
+    [switch]$ProbeAdvancedInteractive,
+    [switch]$CheckWindowsInteractiveRelease
 )
 
 $ErrorActionPreference = "Stop"
@@ -720,6 +721,20 @@ function Invoke-OptionalPhase6Checks {
             Write-Warning "Advanced interactive image probe script is missing: $probeScript"
         }
     }
+
+    if ($CheckWindowsInteractiveRelease) {
+        $releaseScript = Join-Path $RepoRoot "scripts/check-windows-interactive-release.ps1"
+        if (Test-Path $releaseScript) {
+            Write-Host ""
+            Write-Host "Running Windows interactive release checks..."
+            & $releaseScript -NativeExe $nativeExe
+            if ($LASTEXITCODE -ne 0) {
+                Write-Warning "Windows interactive release checks exited with $LASTEXITCODE."
+            }
+        } else {
+            Write-Warning "Windows interactive release check script is missing: $releaseScript"
+        }
+    }
 }
 
 Write-NativeConfig
@@ -876,6 +891,6 @@ if ($missing.Count -gt 0) {
     }
 }
 
-if (-not $SyntaxOnly -and ($CheckAdvancedInteractive -or $ProbeAdvancedInteractive)) {
+if (-not $SyntaxOnly -and ($CheckAdvancedInteractive -or $ProbeAdvancedInteractive -or $CheckWindowsInteractiveRelease)) {
     Invoke-OptionalPhase6Checks
 }

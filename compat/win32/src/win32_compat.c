@@ -15,6 +15,10 @@
 #include <termios.h>
 #include <unistd.h>
 
+#ifndef ENABLE_VIRTUAL_TERMINAL_INPUT
+#define ENABLE_VIRTUAL_TERMINAL_INPUT 0x0200
+#endif
+
 static HANDLE gforth_handle_from_fd(int fd) {
   intptr_t osf = _get_osfhandle(fd);
   if (osf == -1) {
@@ -433,8 +437,10 @@ int tcsetattr(int fd, int action, const struct termios *tio) {
   }
   if ((tio->c_lflag & ICANON) != 0) {
     mode |= ENABLE_LINE_INPUT;
+    mode &= ~ENABLE_VIRTUAL_TERMINAL_INPUT;
   } else {
     mode &= ~ENABLE_LINE_INPUT;
+    mode |= ENABLE_VIRTUAL_TERMINAL_INPUT;
   }
   if ((tio->c_lflag & ISIG) == 0) {
     mode &= ~ENABLE_PROCESSED_INPUT;

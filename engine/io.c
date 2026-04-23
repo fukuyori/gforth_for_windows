@@ -51,8 +51,14 @@ typedef unsigned int uint32_t;
 #include <sys/file.h>
 #ifdef _WIN32
 #include <conio.h>
+#include <windows.h>
 
-static int gforth_win32_pending_key = -1;
+#ifndef ENABLE_VIRTUAL_TERMINAL_INPUT
+#define ENABLE_VIRTUAL_TERMINAL_INPUT 0x0200
+#endif
+
+static int gforth_win32_pending_keys[8];
+static int gforth_win32_pending_key_count = 0;
 static int gforth_win32_pending_newline = -1;
 static FILE *gforth_stream_pending_newline_stream = NULL;
 static int gforth_stream_pending_newline = -1;
@@ -109,26 +115,146 @@ static int gforth_win32_should_skip_stream_newline_pair(FILE *stream, Cell c)
 
 static Cell gforth_win32_take_pending_key(void)
 {
-  Cell result = gforth_win32_pending_key;
-  gforth_win32_pending_key = -1;
+  int i;
+  Cell result = gforth_win32_pending_keys[0];
+  for (i = 1; i < gforth_win32_pending_key_count; i++)
+    gforth_win32_pending_keys[i - 1] = gforth_win32_pending_keys[i];
+  gforth_win32_pending_key_count--;
   return result;
 }
 
 static int gforth_win32_has_pending_key(void)
 {
-  return gforth_win32_pending_key >= 0;
+  return gforth_win32_pending_key_count > 0;
+}
+
+static void gforth_win32_queue_pending_key(int key)
+{
+  if (gforth_win32_pending_key_count <
+      (int)(sizeof(gforth_win32_pending_keys) / sizeof(gforth_win32_pending_keys[0])))
+    gforth_win32_pending_keys[gforth_win32_pending_key_count++] = key;
+}
+
+static Cell gforth_win32_queue_ansi_sequence(const char *sequence)
+{
+  const char *p;
+
+  for (p = sequence + 1; *p; p++)
+    gforth_win32_queue_pending_key((unsigned char)*p);
+  return (unsigned char)sequence[0];
+}
+
+static int gforth_win32_vt_input_enabled(HANDLE input)
+{
+  DWORD mode = 0;
+
+  return input != INVALID_HANDLE_VALUE && input != NULL &&
+    GetConsoleMode(input, &mode) &&
+    (mode & ENABLE_VIRTUAL_TERMINAL_INPUT) != 0;
+}
+
+static int gforth_win32_read_input_byte(HANDLE input)
+{
+  unsigned char c;
+  DWORD read = 0;
+
+  if (!ReadFile(input, &c, 1, &read, NULL) || read != 1)
+    return -1;
+  return c;
+}
+
+static int gforth_win32_console_event_key(const KEY_EVENT_RECORD *key_event)
+{
+  if (!key_event->bKeyDown)
+    return -1;
+
+  switch (key_event->wVirtualKeyCode) {
+  case VK_UP:
+    return gforth_win32_queue_ansi_sequence("\x1b[A");
+  case VK_DOWN:
+    return gforth_win32_queue_ansi_sequence("\x1b[B");
+  case VK_PRIOR:
+    return gforth_win32_queue_ansi_sequence("\x1b[5~");
+  case VK_NEXT:
+    return gforth_win32_queue_ansi_sequence("\x1b[6~");
+  }
+
+  if (key_event->uChar.UnicodeChar != 0)
+    return (unsigned char)key_event->uChar.UnicodeChar;
+
+  return -1;
 }
 
 static int gforth_win32_console_key_available(void)
 {
-  return gforth_win32_has_pending_key() || _kbhit();
+  HANDLE input;
+  INPUT_RECORD records[32];
+  DWORD read = 0;
+  DWORD i;
+
+  if (gforth_win32_has_pending_key())
+    return 1;
+
+  input = GetStdHandle(STD_INPUT_HANDLE);
+  if (input == INVALID_HANDLE_VALUE || input == NULL)
+    return _kbhit();
+
+  if (gforth_win32_vt_input_enabled(input))
+    return 1;
+
+  if (!PeekConsoleInputW(input, records,
+                         sizeof(records) / sizeof(records[0]), &read))
+    return _kbhit();
+
+  for (i = 0; i < read; i++) {
+    if (records[i].EventType == KEY_EVENT &&
+        gforth_win32_console_event_key(&records[i].Event.KeyEvent) >= 0)
+      return 1;
+  }
+
+  return 0;
 }
 
 static Cell gforth_win32_read_console_key(void)
 {
-  Cell result = _getch();
-  if (result == 0 || result == 0xE0)
+  HANDLE input;
+  INPUT_RECORD record;
+  DWORD read = 0;
+  int mapped;
+  Cell result;
+
+  input = GetStdHandle(STD_INPUT_HANDLE);
+  if (input != INVALID_HANDLE_VALUE && input != NULL) {
+    if (gforth_win32_vt_input_enabled(input)) {
+      mapped = gforth_win32_read_input_byte(input);
+      if (mapped >= 0)
+        return mapped;
+    }
+
+    for (;;) {
+      if (ReadConsoleInputW(input, &record, 1, &read) && read == 1 &&
+          record.EventType == KEY_EVENT) {
+        mapped = gforth_win32_console_event_key(&record.Event.KeyEvent);
+        if (mapped >= 0)
+          return mapped;
+      }
+    }
+  }
+
+  result = _getch();
+  if (result == 0 || result == 0xE0) {
     result = _getch();
+    switch (result) {
+    case 72: /* Up */
+      return gforth_win32_queue_ansi_sequence("\x1b[A");
+    case 80: /* Down */
+      return gforth_win32_queue_ansi_sequence("\x1b[B");
+    case 73: /* PageUp */
+      return gforth_win32_queue_ansi_sequence("\x1b[5~");
+    case 81: /* PageDown */
+      return gforth_win32_queue_ansi_sequence("\x1b[6~");
+    }
+  }
   return result;
 }
 

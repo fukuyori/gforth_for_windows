@@ -144,3 +144,8 @@ logs
 /build/installer/stage/
 /build/installer/output/
 /.tmp-stagecheck/
+/.gforth-history
+/.tmp-history-*.txt
+/.tmp-ekey-history.txt
+/.tmp-nav-history.txt
+/.tmp-debug-history.txt

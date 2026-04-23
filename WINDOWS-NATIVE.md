@@ -4,7 +4,7 @@ This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that adds a native
 Windows build, runtime fixes for interactive terminals, and an Inno Setup
 installer flow.  The current fork release is based on `Gforth 0.7.9_20260415`
-and is versioned as `0.7.9_20260415+fukuyori.2.0`.
+and is versioned as `0.7.9_20260415+fukuyori.2.1`.
 
 The goal is to build and package `gforth.exe` on Windows without depending on
 MSYS2 or MinGW at runtime.
@@ -36,10 +36,17 @@ Native build with the Phase 6 advanced-interactive readiness checks:
 .\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe" -CheckAdvancedInteractive -ProbeAdvancedInteractive
 ```
 
+Native build with the reduced Windows interactive release checks:
+
+```powershell
+.\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe" -CheckWindowsInteractiveRelease
+```
+
 These optional checks do not change the default Windows startup path.  They
 report whether the current native image can see advanced interactive words such
-as `ekey`, `history-cold`, `locate`, `see`, and whether an advanced image build
-path is currently available.
+as `ekey`, `history-cold`, `locate`, `see`, whether an advanced image build
+path is currently available, and whether the reduced interactive release stack
+still passes.
 
 The temporary runtime-loader entrypoint is:
 
@@ -50,7 +57,23 @@ Remove-Item Env:\GFORTH_WIN_ADVANCED
 ```
 
 At this stage it only reports readiness.  It does not activate the advanced
-editor stack.
+editor stack.  With `GFORTH_WIN_ADVANCED=1`, it also loads the reduced-safe
+`status-line.fs` and `locate1.fs` paths before reporting.
+Set `GFORTH_WIN_ADVANCED_QUIET=1` when a script needs to inspect post-loader
+words without the human-readable readiness report.
+
+To classify the current advanced-interactive blockers:
+
+```powershell
+.\scripts\classify-advanced-interactive-blockers.ps1 -RepeatCount 3
+```
+
+This reports whether failures are missing words, startup/build-context
+dependencies, image-builder mismatches, or compact-image compile limitations.
+In the current `fukuyori.2.1` follow-up state, `status-line.fs` and
+`locate1.fs` are safe to `require` in the compact image, but the `locate` word
+itself is still absent until the full locate startup context or an advanced
+image is available.
 
 Installer build from an existing native build:
 
@@ -119,6 +142,8 @@ The script is responsible for:
 - optionally running the Phase 6 advanced-interactive readiness and image
   probe checks when `-CheckAdvancedInteractive` or `-ProbeAdvancedInteractive`
   is specified
+- optionally running the reduced Windows interactive release checks when
+  `-CheckWindowsInteractiveRelease` is specified
 
 The build is still partially self-hosted, so a working Gforth remains part of
 the bootstrap path.
@@ -354,6 +379,112 @@ Basic smoke test:
 ```powershell
 .\build\native\gforth.exe -e '1 2 + . cr bye'
 ```
+
+Reduced interactive probe:
+
+```powershell
+.\scripts\probe-reduced-interactive.ps1
+```
+
+The older `.\scripts\probe-saccept-history-persistence.ps1` name remains
+available as a compatibility entrypoint.
+
+Reduced interactive release check:
+
+```powershell
+.\scripts\check-windows-interactive-release.ps1
+```
+
+To include a native rebuild first:
+
+```powershell
+.\scripts\check-windows-interactive-release.ps1 -Build
+```
+
+Alternatively, request the same release checks from the native build entrypoint:
+
+```powershell
+.\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe" -CheckWindowsInteractiveRelease
+```
+
+To print only the manual Windows Terminal and WezTerm checklist:
+
+```powershell
+.\scripts\check-windows-interactive-release.ps1 -ManualChecklistOnly
+```
+
+To inspect how real console keys reach the native engine:
+
+```powershell
+.\scripts\show-win-key-codes.ps1
+```
+
+Press Up, Down, PageUp, and PageDown.  With the Windows console extended-key
+translation active, Up should begin with `27 91 65`, Down with `27 91 66`,
+PageUp with `27 91 53 126`, and PageDown with `27 91 54 126`.
+If normal keys such as `a` print but the arrow keys do not, the console-input
+translation layer is not receiving KEY_EVENT records in that terminal session.
+The default probe count is `15`, enough to consume `a`, Up, Down, PageUp, and
+PageDown without leaving trailing escape bytes in the parent shell.
+
+Opt-in reduced history persistence:
+
+```powershell
+$env:GFORTH_WIN_HISTORY = "1"
+$env:GFORTH_WIN_HISTORY_FILE = ".gforth-history"
+.\build\native\gforth.exe
+```
+
+When `GFORTH_WIN_HISTORY` is unset, the default Windows interactive path does
+not write a history file.
+
+Opt-in reduced history navigation:
+
+```powershell
+$env:GFORTH_WIN_HISTORY_NAV = "1"
+$env:GFORTH_WIN_HISTORY_FILE = ".gforth-history"
+.\build\native\gforth.exe
+```
+
+In this reduced mode, `Ctrl-P` on an empty input line recalls the last line from
+the selected history file.  Full multi-entry history navigation is still
+reserved for a later phase.
+
+Opt-in selected `ekey` escape sequences:
+
+```powershell
+$env:GFORTH_WIN_EKEY = "1"
+$env:GFORTH_WIN_HISTORY_NAV = "1"
+$env:GFORTH_WIN_HISTORY_FILE = ".gforth-history"
+.\build\native\gforth.exe
+```
+
+In this mode, ANSI Up recalls the last history line.  ANSI Down, PageUp, and
+PageDown are consumed safely as placeholders instead of being inserted as
+literal escape text.
+
+Opt-in compact resize marker:
+
+```powershell
+$env:GFORTH_WIN_WINCH = "1"
+.\build\native\gforth.exe
+```
+
+In this mode, a pending `winch?` flag is surfaced internally as `k-winch`,
+consumed by the compact editor path, and used to refresh `form` without
+inserting text into the input buffer.
+
+Integrated reduced interactive mode:
+
+```powershell
+$env:GFORTH_WIN_INTERACTIVE = "1"
+$env:GFORTH_WIN_HISTORY_FILE = ".gforth-history"
+.\build\native\gforth.exe
+```
+
+This single opt-in enables the reduced history persistence, `Ctrl-P`/ANSI Up
+history recall, selected escape-sequence handling, and compact `k-winch`
+handling.  The individual flags remain available for narrower testing.
 
 Interactive startup:
 

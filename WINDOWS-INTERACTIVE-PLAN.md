@@ -297,18 +297,35 @@ define a safe advanced-interactive image or loading path.
 
 Use `scripts/check-advanced-interactive-readiness.ps1` to repeat the current
 readiness checks before changing the image/loading path.
+Use `scripts/classify-advanced-interactive-blockers.ps1` to classify the
+current blockers by missing word, startup/build-context dependency, image
+builder mismatch, or compact-image compile limitation.
 Use `scripts/build-advanced-interactive-image.ps1 -ProbeOnly` to check whether
 the local native image and bootstrap Gforth can currently build a separate
 advanced-interactive image.
 Use `windows-interactive-advanced.fs` as the conservative runtime-loader
 entrypoint while the image-builder path is unresolved.  In the current compact
-image it only performs top-level opt-in reporting when
-`GFORTH_WIN_ADVANCED=1`; it does not define or activate advanced editor
-behavior.
+image it performs top-level opt-in reporting when `GFORTH_WIN_ADVANCED=1` and
+loads only reduced-safe modules such as `status-line.fs` and `locate1.fs`; it
+does not activate the full advanced editor behavior.
+Use `GFORTH_WIN_ADVANCED_QUIET=1` for scripted post-loader checks.
+Use `scripts/probe-reduced-interactive.ps1` to verify the reduced interactive
+path.  The current implementation records accepted lines
+only when `GFORTH_WIN_HISTORY=1` is set, writes to `GFORTH_WIN_HISTORY_FILE`
+when provided, supports opt-in `Ctrl-P` previous-line recall with
+`GFORTH_WIN_HISTORY_NAV=1`, supports selected opt-in ANSI escape sequences
+with `GFORTH_WIN_EKEY=1`, surfaces compact opt-in `k-winch` handling with
+`GFORTH_WIN_WINCH=1`, can enable the reduced group with
+`GFORTH_WIN_INTERACTIVE=1`, and still keeps full `history.fs` disabled.
+`scripts/probe-saccept-history-persistence.ps1` remains as the compatibility
+entrypoint for the same check.
+Use `scripts/check-windows-interactive-release.ps1` as the release-facing
+entrypoint for the reduced stack; it runs the automated checks and prints the
+manual Windows Terminal / WezTerm checklist.
 The same checks can also be requested after a native build with:
 
 ```powershell
-.\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe" -CheckAdvancedInteractive -ProbeAdvancedInteractive
+.\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe" -CheckWindowsInteractiveRelease
 ```
 
 These switches are intentionally opt-in and must not change the default
@@ -316,12 +333,18 @@ These switches are intentionally opt-in and must not change the default
 
 Suggested order:
 
-1. define the advanced-interactive image/loading path
-2. history persistence only
-3. limited history navigation
-4. selected `ekey` support for arrows and paging keys
-5. resize events surfaced as `k-winch`
-6. broader editor parity with upstream
+1. classify advanced stack blockers and keep the report repeatable
+2. make reduced `status-line.fs` and `locate1.fs` safe to load in the compact
+   image
+3. define the advanced-interactive image/loading path
+4. probe reduced `saccept.fs` history persistence primitives
+5. history persistence only, without full `history.fs`
+6. limited history navigation with opt-in `Ctrl-P` recall
+7. selected `ekey` support for Up, safe Down, and safe PageUp/PageDown
+8. resize events surfaced as compact opt-in `k-winch`
+9. integrated reduced interactive opt-in flag and manual test path
+10. release-facing automated and manual check entrypoint
+11. broader editor parity with upstream
 
 This order keeps the riskiest integration work last.
 
