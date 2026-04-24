@@ -4,7 +4,7 @@ This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that has been modified so
 Gforth can be built, run, and packaged natively on Windows.  It is currently
 based on `Gforth 0.7.9_20260415` and this fork's current release version is
-`0.7.9_20260415+fukuyori.2.2`.
+`0.7.9_20260415+fukuyori.2.3`.
 
 Gforth is a fast and portable implementation of ANS Forth and Forth 200x.  The
 upstream project remains the base of this repository; this fork adds a native
@@ -18,7 +18,7 @@ Compared with the upstream repository, this fork currently focuses on:
 - native Windows builds without requiring MSYS2 or MinGW at runtime
 - a usable interactive REPL in Windows Terminal and WezTerm
 - Windows packaging with a per-user Inno Setup installer
-- PowerShell scripts for native build, staging, and installer creation
+- PowerShell scripts for native build, release staging, and installer creation
 
 For the Windows-specific implementation details, see `WINDOWS-NATIVE.md`.
 
@@ -51,16 +51,23 @@ Smoke test:
 
 ### Windows installer
 
-Create the installer from an existing native build:
+Create the release build first:
+
+```powershell
+.\scripts\build-release.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
+```
+
+This produces the native runtime files and stages the installer input tree:
+
+- `build/native/gforth.exe`
+- `build/native/gforth.fi`
+- `build/native/gforth-advanced.fi`
+- `build/installer/stage/`
+
+Create the installer from the staged release build:
 
 ```powershell
 .\scripts\build-installer.ps1
-```
-
-If you explicitly want the script to run the native build first:
-
-```powershell
-.\scripts\build-installer.ps1 -BuildNative -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
 ```
 
 The installer output is written to:
@@ -94,8 +101,9 @@ The files most relevant to the Windows-native fork are:
 - `engine/`: runtime and terminal handling code
 - `kernel/`: Forth kernel sources, including interactive input handling
 - `scripts/build-native.ps1`: native Windows build entry point
+- `scripts/build-release.ps1`: release build and staging entry point
 - `scripts/stage-native-dist.ps1`: installer staging step
-- `scripts/build-installer.ps1`: Inno Setup wrapper
+- `scripts/build-installer.ps1`: Inno Setup wrapper for an existing staged release
 - `installer/gforth-native.iss`: Windows installer definition
 
 The wider tree still contains the upstream Gforth sources, examples, add-ons,

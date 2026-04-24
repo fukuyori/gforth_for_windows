@@ -21,6 +21,25 @@ function Copy-StageFile {
     Copy-Item -LiteralPath $SourcePath -Destination $DestinationPath -Force
 }
 
+function Remove-ItemWithRetry {
+    param(
+        [string]$Path,
+        [int]$RetryCount = 10
+    )
+
+    for ($attempt = 1; $attempt -le $RetryCount; $attempt++) {
+        try {
+            Remove-Item -LiteralPath $Path -Recurse -Force
+            return
+        } catch [System.IO.IOException] {
+            if ($attempt -eq $RetryCount) {
+                throw
+            }
+            Start-Sleep -Milliseconds (100 * $attempt)
+        }
+    }
+}
+
 function Copy-RootPattern {
     param(
         [string]$Pattern,
@@ -80,13 +99,18 @@ if (-not (Test-Path (Join-Path $NativeDir "gforth.fi"))) {
 }
 
 if ($Clean -and (Test-Path $StageDir)) {
-    Remove-Item -LiteralPath $StageDir -Recurse -Force
+    Remove-ItemWithRetry -Path $StageDir
 }
 
 New-Item -ItemType Directory -Force -Path $StageDir | Out-Null
 
 Copy-StageFile -SourcePath (Join-Path $NativeDir "gforth.exe") -DestinationPath (Join-Path $StageDir "gforth.exe")
 Copy-StageFile -SourcePath (Join-Path $NativeDir "gforth.fi") -DestinationPath (Join-Path $StageDir "gforth.fi")
+
+$advancedImage = Join-Path $NativeDir "gforth-advanced.fi"
+if (Test-Path $advancedImage) {
+    Copy-StageFile -SourcePath $advancedImage -DestinationPath (Join-Path $StageDir "gforth-advanced.fi")
+}
 
 $rootPatterns = @(
     "*.fs",

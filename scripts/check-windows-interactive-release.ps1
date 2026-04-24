@@ -53,6 +53,7 @@ function Write-ManualChecklist {
     Write-Host "Run the advanced image path in Windows Terminal and WezTerm:"
     Write-Host ""
     Write-Host '  $env:GFORTHHIST = ".gforth-advanced-history"'
+    Write-Host '  $env:GFORTH_WIN_STATUS = "1"'
     Write-Host '  .\build\native\gforth.exe -i .\build\native\gforth-advanced.fi'
     Write-Host ""
     Write-Host "Then check:"
@@ -61,10 +62,13 @@ function Write-ManualChecklist {
     Write-Host "- Restart, press Up on an empty line, then Enter; the last advanced-history line is recalled."
     Write-Host "- Press Up or PageUp repeatedly to walk to older advanced-history entries, then Down or PageDown to return."
     Write-Host '- `see +` and `locate +` produce useful output without crashing.'
+    Write-Host '- A single status bar is drawn after startup and remains usable during input, history navigation, `see`, and `locate`.'
+    Write-Host '- Stack values appear in the status bar, e.g. entering `1 2` updates the bar to include `<2> 1 2` without exiting.'
     Write-Host ""
     Write-Host "Unset after testing:"
     Write-Host ""
     Write-Host "  Remove-Item Env:\GFORTHHIST -ErrorAction SilentlyContinue"
+    Write-Host "  Remove-Item Env:\GFORTH_WIN_STATUS -ErrorAction SilentlyContinue"
     Write-Host ""
     Write-Host "To automate the advanced PageUp/PageDown console-input check from an interactive terminal:"
     Write-Host ""

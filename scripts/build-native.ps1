@@ -45,6 +45,31 @@ function Convert-ToBootstrapArgumentPath {
     return Convert-ToGforthPath $candidate
 }
 
+function Set-ContentWithRetry {
+    param(
+        [string]$Path,
+        [string]$Value,
+        [switch]$NoNewline,
+        [int]$RetryCount = 10
+    )
+
+    for ($attempt = 1; $attempt -le $RetryCount; $attempt++) {
+        try {
+            if ($NoNewline) {
+                Set-Content -Path $Path -Value $Value -NoNewline
+            } else {
+                Set-Content -Path $Path -Value $Value
+            }
+            return
+        } catch [System.IO.IOException] {
+            if ($attempt -eq $RetryCount) {
+                throw
+            }
+            Start-Sleep -Milliseconds (100 * $attempt)
+        }
+    }
+}
+
 function Get-PackageVersion {
     $line = Select-String -Path "configure.ac" -Pattern "AC_INIT\(\[gforth\],\[([^\]]+)\]" | Select-Object -First 1
     if (-not $line) {
@@ -610,7 +635,7 @@ function Generate-BootstrapArtifacts {
     Remove-Item "kernel/prim.fs.generated"
     $kernelPrimText = Get-Content "kernel/prim.fs" -Raw
     $kernelPrimText = $kernelPrimText.Replace('Create "newline e? crlf [IF] 2 c, $0D c, [ELSE] 1 c, [THEN] $0A c,', 'Create "newline 2 c, $0D c, $0A c,')
-    Set-Content -Path "kernel/prim.fs" -Value $kernelPrimText -NoNewline
+    Set-ContentWithRetry -Path "kernel/prim.fs" -Value $kernelPrimText -NoNewline
 
     if (Test-Path "prim.b") {
         $primText = Get-Content "prim.b" -Raw
@@ -620,7 +645,7 @@ function Generate-BootstrapArtifacts {
             $primText,
             "(winch\? \( -- a_addr \)\s+gforth-internal winch_query\s+)a_addr = &winch_addr;",
             '$1#ifdef SIGWINCH`r`na_addr = &winch_addr;`r`n#else`r`na_addr = NULL;`r`n#endif')
-        Set-Content -Path "prim.b" -Value $primText -NoNewline
+        Set-ContentWithRetry -Path "prim.b" -Value $primText -NoNewline
     }
 
     $binaryName = "$(Convert-ToGforthPath (Join-Path $RepoRoot 'build/native/gforth.exe'))"

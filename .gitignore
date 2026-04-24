@@ -150,6 +150,7 @@ logs
 /.tmp-advanced-page-console-history.txt
 /.tmp-advanced-page-console-probe.out.txt
 /.tmp-advanced-page-console-probe.err.txt
+/.tmp-advanced-see-locate-runtime.fs
 /.tmp-ekey-history.txt
 /.tmp-nav-history.txt
 /.tmp-debug-history.txt

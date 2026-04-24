@@ -1,10 +1,7 @@
 param(
-    [string]$BootstrapExe,
     [string]$StageDir = "$(Join-Path (Get-Location) 'build/installer/stage')",
     [string]$OutputDir = "$(Join-Path (Get-Location) 'build/installer/output')",
-    [string]$InnoCompiler,
-    [switch]$BuildNative,
-    [switch]$StageOnly
+    [string]$InnoCompiler
 )
 
 $ErrorActionPreference = "Stop"
@@ -33,25 +30,17 @@ function Resolve-InnoCompiler {
     return $candidates | Select-Object -First 1
 }
 
-if ($BuildNative) {
-    $nativeArgs = @{}
-    if ($BootstrapExe) {
-        $nativeArgs.BootstrapExe = $BootstrapExe
-    }
-    & (Join-Path $RepoRoot "scripts/build-native.ps1") @nativeArgs
-} else {
-    $nativeExe = Join-Path $RepoRoot "build/native/gforth.exe"
-    $nativeImage = Join-Path $RepoRoot "build/native/gforth.fi"
-    if (-not (Test-Path $nativeExe) -or -not (Test-Path $nativeImage)) {
-        throw "Missing build/native/gforth.exe or build/native/gforth.fi. Run scripts/build-native.ps1 first, or rerun this script with -BuildNative."
-    }
-}
+$requiredStageFiles = @(
+    "gforth.exe",
+    "gforth.fi",
+    "gforth-advanced.fi"
+)
 
-& (Join-Path $RepoRoot "scripts/stage-native-dist.ps1") -StageDir $StageDir -Clean
-
-if ($StageOnly) {
-    Write-Host "Stage-only mode complete: $StageDir" -ForegroundColor Green
-    exit 0
+foreach ($file in $requiredStageFiles) {
+    $path = Join-Path $StageDir $file
+    if (-not (Test-Path $path)) {
+        throw "Missing staged release file: $path. Run scripts/build-release.ps1 first."
+    }
 }
 
 $iscc = Resolve-InnoCompiler -ExplicitPath $InnoCompiler

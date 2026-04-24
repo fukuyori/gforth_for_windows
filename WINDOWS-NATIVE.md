@@ -4,7 +4,7 @@ This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that adds a native
 Windows build, runtime fixes for interactive terminals, and an Inno Setup
 installer flow.  The current fork release is based on `Gforth 0.7.9_20260415`
-and is versioned as `0.7.9_20260415+fukuyori.2.2`.
+and is versioned as `0.7.9_20260415+fukuyori.2.3`.
 
 The goal is to build and package `gforth.exe` on Windows without depending on
 MSYS2 or MinGW at runtime.
@@ -104,14 +104,26 @@ To classify the current advanced-interactive blockers:
 
 This reports whether failures are missing words, startup/build-context
 dependencies, image-builder mismatches, or compact-image compile limitations.
-In the current `fukuyori.2.2` follow-up state, `status-line.fs` and
+In the current `fukuyori.2.3` follow-up state, `status-line.fs` and
 `locate1.fs` are safe to `require` in the compact image, but the `locate` word
 itself is still absent until the full locate startup context or the advanced
 image is used.  The advanced image built with `-IncludeHistory` currently
 exposes `savesystem`, `ekey`, `k-left`, `k-f1`, `k-winch`, `history-cold`,
-`edit-terminal`, `bindkey`, `see`, `locate`, and `+status`; status-bar
-activation remains a later advanced-path target and should not be enabled
-directly from the compact image.
+`edit-terminal`, `bindkey`, `see`, `locate`, and `+status`.  The advanced
+runtime probe also checks `see interpret`, `see dup`, `locate interpret`,
+`locate +`, and `see` / `locate` on a temporary file-sourced definition.
+It also checks the first status-bar contract in the advanced image:
+`status-terminal-ready?`, `GFORTH_WIN_STATUS=1` bootmessage opt-in,
+explicit `+status .status .unstatus -status`, stack-value redraw without the
+smart-stack crash, and status redraw after `see` / `locate`.  The advanced
+PageUp/PageDown console probe also enables `+status` and injects real
+`VK_PRIOR` / `VK_NEXT` key events to verify that status redraw does not break
+history navigation.
+The status line normalizes embedded `LF` and `CR` from status producers before
+padding, so Windows `CRLF` output from `.s` does not erase the left-side stack
+display.
+Status-bar activation remains an advanced-path opt-in target and should not be
+enabled directly from the compact image.
 
 The advanced image build restores `kernel/accept.fs` before loading
 `ekey.fs` and `history.fs`; this is required so arrow and paging keys use the
@@ -129,22 +141,24 @@ in `fukuyori.2.2`; the current advanced image fix is the separate full
 `.gforth-advanced-history` as a directory, remove that stale directory before
 testing the advanced image; the history path must be a file.
 
-Installer build from an existing native build:
+Release build:
+
+```powershell
+.\scripts\build-release.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
+```
+
+The release build step produces:
+
+- `build/native/gforth.exe`
+- `build/native/gforth.fi`
+- `build/native/gforth-advanced.fi`
+- `build/installer/stage/`
+
+Create the installer from the staged release build:
 
 ```powershell
 .\scripts\build-installer.ps1
 ```
-
-If you explicitly want one command to run both stages:
-
-```powershell
-.\scripts\build-installer.ps1 -BuildNative -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
-```
-
-The native build produces:
-
-- `build/native/gforth.exe`
-- `build/native/gforth.fi`
 
 The installer build produces:
 
@@ -365,14 +379,17 @@ handling and makes terminal output land as plain `CRLF`.
 
 The Windows-native packaging flow is built around these files:
 
+- `scripts/build-release.ps1`
 - `scripts/stage-native-dist.ps1`
 - `scripts/build-installer.ps1`
 - `installer/gforth-native.iss`
 
 ### Staging
 
-`scripts/stage-native-dist.ps1` creates `build/installer/stage` from the native
-build output.
+`scripts/build-release.ps1` creates the native runtime outputs, builds the
+advanced interactive image, and creates `build/installer/stage`.
+`scripts/stage-native-dist.ps1` is the lower-level staging helper used by the
+release build.
 
 The staged tree focuses on runtime content:
 
@@ -414,6 +431,7 @@ The core Windows-native work is concentrated in:
 - `engine/main.c`
 - `kernel/saccept.fs`
 - `scripts/build-native.ps1`
+- `scripts/build-release.ps1`
 - `scripts/stage-native-dist.ps1`
 - `scripts/build-installer.ps1`
 - `installer/gforth-native.iss`
@@ -570,5 +588,6 @@ Interactive startup:
 Recreate the installer from an existing native build:
 
 ```powershell
+.\scripts\build-release.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
 .\scripts\build-installer.ps1
 ```

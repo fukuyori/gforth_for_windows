@@ -55,6 +55,10 @@ status-has-restore-cursor? and
 status-has-erase-display? and
 Constant status-terminal-ready?
 
+[IFUNDEF] is-color-terminal?
+    0 Constant is-color-terminal?
+[THEN]
+
 [IFDEF] {
     [IFDEF] translator-max-offset#
 	Create status-colors
@@ -103,6 +107,10 @@ Constant status-terminal-ready?
 		base @ .
 	    [THEN]
 	    cr  THEN ;
+    [IFDEF] .s
+	: .stacks ( -- )
+	    .s cr ;
+    [ELSE]
     [IFDEF] f.s-precision
 	: .stacks ( -- )
 	    f.s-precision >r
@@ -111,6 +119,7 @@ Constant status-terminal-ready?
 	    r> to f.s-precision ;
     [ELSE]
 	: .stacks ( -- ) ;
+    [THEN]
     [THEN]
 
     [IFDEF] order
@@ -128,6 +137,7 @@ Constant status-terminal-ready?
 	cols #100 > to wide?
 	[: status-xts $@ cell MEM+DO  I perform  LOOP ;] status$ $exec
 	#lf '|' status$ $@ replace-char
+	#cr bl status$ $@ replace-char
 	cols status$ $@ x-width - dup 0> IF
 	    ['] spaces $tmp
 	    status$ dup $@ '|' -scan nip $ins
@@ -160,21 +170,22 @@ Constant status-terminal-ready?
     ' noop Alias -status ( -- ) \ gforth
 [THEN]
 
-[IFDEF] os-type
+[IFDEF] getenv
     : win-status-requested? ( -- flag )
 	s" GFORTH_WIN_STATUS" getenv s" 1" str= ;
 
     : status-auto-enabled? ( -- flag )
-	os-type s" win32" str= IF
-	    win-status-requested? is-color-terminal? and status-terminal-ready? and
+	win-status-requested? IF
+	    status-terminal-ready?
 	ELSE
 	    is-color-terminal?
 	THEN ;
 [ELSE]
-    0 Constant status-auto-enabled?
+    : status-auto-enabled? ( -- flag )
+	is-color-terminal? ;
 [THEN]
 
-[IFDEF] os-type
+[IFDEF] getenv
     :noname
 	defers bootmessage
 	status-auto-enabled? IF  +status  ELSE  -status  THEN ;

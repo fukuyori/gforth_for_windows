@@ -11,7 +11,7 @@ Manual interactive checks confirmed: 2026-04-23
 Tested executable:
 
 - `build/native/gforth.exe`
-- version: `gforth 0.7.9_20260415+fukuyori.2.2 amd64`
+- version: `gforth 0.7.9_20260415+fukuyori.2.3 amd64`
 
 ## Baseline Expectations
 
@@ -743,7 +743,7 @@ Current scope:
 Date checked: 2026-04-24
 
 The Windows interactive release manual checklist has been completed for the
-`0.7.9_20260415+fukuyori.2.2` native build.
+`0.7.9_20260415+fukuyori.2.3` native build.
 
 Confirmed:
 
@@ -1115,3 +1115,85 @@ Remaining Phase 9 / Phase 10 boundary:
 - Phase 9 is now complete enough to hand off to Phase 10: verify `see.fs` and
   full locate behavior in the advanced image, then leave visible status-bar
   activation for the final phase
+
+## Phase 10 Initial `see.fs` / Locate Runtime Check
+
+The advanced image runtime probe now verifies behavior beyond word presence for
+`see` and `locate`.
+
+Observed result:
+
+- `scripts/check-advanced-image-runtime.ps1` passes `runtime:see-colon-existing`
+  with `see interpret`
+- `scripts/check-advanced-image-runtime.ps1` passes `runtime:see-primitive`
+  with `see dup`; on Windows the primitive path still prints the upstream
+  gdb/disassembler fallback notice, but the command exits successfully and
+  produces the expected `Code dup` header
+- `scripts/check-advanced-image-runtime.ps1` passes `runtime:locate-existing`
+  with `locate interpret`
+- `scripts/check-advanced-image-runtime.ps1` passes `runtime:locate-primitive`
+  with `locate +`
+- `scripts/check-advanced-image-runtime.ps1` creates a temporary
+  `.tmp-advanced-see-locate-runtime.fs` file, loads `phase10_square`, and
+  verifies both `see phase10_square` and `locate phase10_square`
+
+Remaining Phase 10 / Phase 11 boundary:
+
+- the current checks cover non-interactive `see` and simple source navigation
+  in the advanced image
+- fancy locate navigation is still gated behind the full advanced input path
+  and should be tested with the visible status-bar work instead of enabled in
+  the reduced path
+- status-bar activation remains deferred until full history redraw, `see`,
+  locate, and resize behavior coexist cleanly
+
+## Phase 11 Initial Status-Bar Runtime Check
+
+The advanced image runtime probe now verifies the first status-bar redraw
+contract without making the status bar default-on.
+
+Observed result:
+
+- generated version artifacts were refreshed through `scripts/build-native.ps1`
+  after the `fukuyori.2.3` version bump; `build/native/gforth.exe --version`
+  and `version-string` in `build/native/gforth-advanced.fi` both report
+  `0.7.9_20260415+fukuyori.2.3`
+- `scripts/check-advanced-image-runtime.ps1` now checks
+  `status-terminal-ready?`, `.status`, `.unstatus`, `+status`, `-status`,
+  `win-status-requested?`, and `status-auto-enabled?` word presence
+- `runtime:status-terminal-ready` passes with `-1`, confirming that
+  `save-cursor-position`, `restore-cursor-position`, and `erase-display` are
+  real in the advanced image
+- `runtime:status-basic-redraw` passes with explicit `+status .status
+  .unstatus -status`
+- `runtime:status-auto-opt-in` passes with `GFORTH_WIN_STATUS=1`, confirming
+  that `bootmessage` enables `+status`; the first redraw is left to the normal
+  REPL `.status` path to avoid a duplicate status bar
+- `runtime:status-stack-redraw` passes with `1 2 3` on the data stack,
+  confirming that the status bar shows `<3> 1 2 3` and no longer exits through
+  the previous smart-stack display crash
+- `runtime:status-see-locate-coexist` passes after arithmetic,
+  `see interpret`, `locate interpret`, and status redraw
+- `scripts/probe-advanced-page-keys-console.ps1` now passes
+  `console:status-vk-page-up-recalls-history` and
+  `console:status-vk-page-down-clears-history`, confirming that real
+  PageUp/PageDown virtual-key history navigation still works when `+status`
+  is active
+- the runtime probe uses a relative temporary source file for
+  `runtime:see-locate-file-source` and a `Variable` definition; colon
+  definitions used as command-line source files can still trigger a compiler
+  flush failure, so they are not part of the accepted status-bar probe path
+- `status-line.fs` now uses direct `getenv` opt-in for
+  `GFORTH_WIN_STATUS=1`; the previous `os-type`-guarded path did not activate
+  in the advanced image because `os-type` is not present there
+- manual advanced-image testing with `GFORTH_WIN_STATUS=1` confirmed that the
+  status bar is visible as a single line, stack values appear in the left side
+  of the bar, and continued input no longer exits unexpectedly
+
+Remaining Phase 11 boundary:
+
+- status-bar display should still be rechecked in the second terminal host
+  before default-on or broader support decisions
+- resize while the status bar is enabled still needs real-console testing
+- default Windows startup remains reduced and should stay status-bar-off unless
+  a later release decision changes the opt-in policy

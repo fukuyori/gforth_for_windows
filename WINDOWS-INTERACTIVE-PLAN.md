@@ -287,7 +287,7 @@ Deliverables:
 
 Only after the terminal contract, wrapper, and status-line integration are
 stable should larger parts of the upstream editor stack be considered.  The
-current `fukuyori.2.2` state has completed the reduced opt-in path, but the
+current `fukuyori.2.3` state has completed the reduced opt-in path, but the
 full upstream stack is still intentionally absent from the compact Windows
 image.
 
@@ -631,6 +631,13 @@ For `see.fs`:
 - resolve the `stuff.fs` and table/startup-context blockers in the advanced
   image
 - verify `see` on representative colon definitions and primitives
+- current checkpoint: `scripts/check-advanced-image-runtime.ps1` verifies
+  `see interpret` for an existing colon definition, `see dup` for a primitive,
+  and `see phase10_square` for a temporary file-sourced definition in the
+  advanced image
+- Windows primitive `see` still prints the upstream gdb/disassembler fallback
+  notice, but it exits successfully and produces the expected `Code dup`
+  decompilation header
 
 For `locate`:
 
@@ -638,12 +645,26 @@ For `locate`:
 - make the base `locate` word available only when the full locate context is
   present
 - enable fancy locate scrolling only when full `ekey` is available
+- current checkpoint: `scripts/check-advanced-image-runtime.ps1` verifies
+  `locate interpret`, `locate +`, and `locate phase10_square` in the advanced
+  image
+- the temporary file-sourced check confirms that `locate` can show source for
+  a user-loaded file when the definition has an actual source file view
 
 Completion criteria:
 
 - `see` and `locate` exist in the advanced path
 - simple source navigation works without enabling the status bar
 - fancy locate navigation works only in full advanced input mode
+
+Phase 10 handoff:
+
+- non-interactive `see` and simple `locate` behavior are now covered by the
+  advanced image runtime probe
+- interactive/fancy locate navigation remains deferred until full advanced
+  input and status redraw behavior are tested together
+- proceed toward Phase 11 only after the status-bar redraw contract is checked
+  against full history, `see`, and `locate`
 
 ### Phase 11: Restore the status bar
 
@@ -662,9 +683,40 @@ Requirements before visible status-bar enablement:
 - `.status` and `.unstatus` do not corrupt the current input line
 - resize updates width state before status redraw
 
+Current checkpoint:
+
+- `scripts/check-advanced-image-runtime.ps1` now verifies that
+  `status-terminal-ready?`, `.status`, `.unstatus`, `+status`, and `-status`
+  exist in the advanced image
+- `runtime:status-terminal-ready` verifies that cursor save/restore and erase
+  support are real in the advanced image
+- `runtime:status-auto-opt-in` verifies that `GFORTH_WIN_STATUS=1` enables the
+  advanced status bar during `bootmessage`; the first redraw is then left to
+  the normal REPL `.status` path so startup does not create a duplicate bar
+- `runtime:status-basic-redraw` explicitly calls `+status .status .unstatus
+  -status` and checks that the redraw path exits successfully
+- `runtime:status-stack-redraw` verifies that stack values such as `1 2 3`
+  appear in the status bar as `<3> 1 2 3` without crashing
+- `runtime:status-see-locate-coexist` verifies that status redraw still works
+  after arithmetic, `see interpret`, and `locate interpret`
+- `scripts/probe-advanced-page-keys-console.ps1` now also runs
+  `console:status-vk-page-up-recalls-history` and
+  `console:status-vk-page-down-clears-history`, which enable status redraw and
+  then inject real `VK_PRIOR` / `VK_NEXT` PageUp/PageDown events
+- `runtime:see-locate-file-source` uses a relative temporary source filename;
+  absolute Windows paths used as command-line source files can still hit a
+  startup/compiler flush failure and are not used as the Phase 11 probe shape
+- `status-line.fs` no longer depends on `os-type` for this opt-in path; the
+  advanced image does not expose `os-type`, so `GFORTH_WIN_STATUS=1` is checked
+  directly through `getenv` and `status-terminal-ready?`
+- manual advanced-image testing confirmed single-line status-bar display,
+  visible stack values on the left side, and no unexpected exit while input
+  continues
+
 Activation order:
 
-1. keep `GFORTH_WIN_STATUS=1` as the explicit opt-in
+1. keep `GFORTH_WIN_STATUS=1` as the explicit opt-in and let the REPL input
+   loop perform the first status redraw
 2. allow status-bar testing only in the advanced path
 3. verify coexistence with full history, `see`, `locate`, and resize handling
 4. consider making the advanced status bar a supported opt-in
@@ -673,7 +725,9 @@ Activation order:
 
 Completion criteria:
 
-- the status bar displays in Windows Terminal and WezTerm under advanced opt-in
+- the status bar displays as a single line under advanced opt-in
+- stack values are visible in the status bar and do not shrink only the right
+  side
 - normal input, history navigation, `see`, `locate`, and resize all remain
   usable while the status bar is enabled
 - default Windows startup still works without the advanced path

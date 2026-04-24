@@ -243,7 +243,7 @@ $replRun = Invoke-GforthConsoleInput `
 
 $replPassed = (
     $replRun.ExitCode -eq 0 -and
-    $replRun.Stdout -match "\b3\s+ok\b" -and
+    $replRun.Stdout -match "3\s+ok" -and
     $replRun.Stdout -notmatch "5~|6~"
 )
 Write-Check -Name "console:page-up-recalls-history" -Passed $replPassed -Detail (($replRun.Stdout + " " + $replRun.Stderr).Trim() -replace "`r?`n", " | ")
@@ -257,7 +257,7 @@ $pageDownRun = Invoke-GforthConsoleInput `
 
 $pageDownPassed = (
     $pageDownRun.ExitCode -eq 0 -and
-    $pageDownRun.Stdout -notmatch "\b3\s+ok\b" -and
+    $pageDownRun.Stdout -notmatch "3\s+ok" -and
     $pageDownRun.Stdout -notmatch "5~|6~"
 )
 Write-Check -Name "console:page-down-clears-history" -Passed $pageDownPassed -Detail (($pageDownRun.Stdout + " " + $pageDownRun.Stderr).Trim() -replace "`r?`n", " | ")
@@ -272,7 +272,7 @@ $splitPageUpRun = Invoke-GforthConsoleInput `
 
 $splitPageUpPassed = (
     $splitPageUpRun.ExitCode -eq 0 -and
-    $splitPageUpRun.Stdout -match "\b3\s+ok\b" -and
+    $splitPageUpRun.Stdout -match "3\s+ok" -and
     $splitPageUpRun.Stdout -notmatch "5~|6~"
 )
 Write-Check -Name "console:split-page-up-recalls-history" -Passed $splitPageUpPassed -Detail (($splitPageUpRun.Stdout + " " + $splitPageUpRun.Stderr).Trim() -replace "`r?`n", " | ")
@@ -287,7 +287,7 @@ $splitPageDownRun = Invoke-GforthConsoleInput `
 
 $splitPageDownPassed = (
     $splitPageDownRun.ExitCode -eq 0 -and
-    $splitPageDownRun.Stdout -notmatch "\b3\s+ok\b" -and
+    $splitPageDownRun.Stdout -notmatch "3\s+ok" -and
     $splitPageDownRun.Stdout -notmatch "5~|6~"
 )
 Write-Check -Name "console:split-page-down-clears-history" -Passed $splitPageDownPassed -Detail (($splitPageDownRun.Stdout + " " + $splitPageDownRun.Stderr).Trim() -replace "`r?`n", " | ")
@@ -303,7 +303,7 @@ $vkPageUpRun = Invoke-GforthConsoleInput `
 
 $vkPageUpPassed = (
     $vkPageUpRun.ExitCode -eq 0 -and
-    $vkPageUpRun.Stdout -match "\b3\s+ok\b" -and
+    $vkPageUpRun.Stdout -match "3\s+ok" -and
     $vkPageUpRun.Stdout -notmatch "5~|6~"
 )
 Write-Check -Name "console:vk-page-up-recalls-history" -Passed $vkPageUpPassed -Detail (($vkPageUpRun.Stdout + " " + $vkPageUpRun.Stderr).Trim() -replace "`r?`n", " | ")
@@ -319,11 +319,43 @@ $vkPageDownRun = Invoke-GforthConsoleInput `
 
 $vkPageDownPassed = (
     $vkPageDownRun.ExitCode -eq 0 -and
-    $vkPageDownRun.Stdout -notmatch "\b3\s+ok\b" -and
+    $vkPageDownRun.Stdout -notmatch "3\s+ok" -and
     $vkPageDownRun.Stdout -notmatch "5~|6~"
 )
 Write-Check -Name "console:vk-page-down-clears-history" -Passed $vkPageDownPassed -Detail (($vkPageDownRun.Stdout + " " + $vkPageDownRun.Stderr).Trim() -replace "`r?`n", " | ")
 $allPassed = $allPassed -and $vkPageDownPassed
+
+Reset-TestHistory
+$statusVkPageUpRun = Invoke-GforthConsoleInput `
+    -Arguments @("-i", $advancedImagePath, "-e", "+status") `
+    -Environment @{ GFORTHHIST = $historyPath.Replace("\", "/") } `
+    -InjectedText "" `
+    -InjectedVirtualKeys @([ushort]0x21) `
+    -SecondInjectedText "`rbye`r"
+
+$statusVkPageUpPassed = (
+    $statusVkPageUpRun.ExitCode -eq 0 -and
+    $statusVkPageUpRun.Stdout -match "3\s+ok" -and
+    $statusVkPageUpRun.Stdout -notmatch "5~|6~"
+)
+Write-Check -Name "console:status-vk-page-up-recalls-history" -Passed $statusVkPageUpPassed -Detail (($statusVkPageUpRun.Stdout + " " + $statusVkPageUpRun.Stderr).Trim() -replace "`r?`n", " | ")
+$allPassed = $allPassed -and $statusVkPageUpPassed
+
+Reset-TestHistory
+$statusVkPageDownRun = Invoke-GforthConsoleInput `
+    -Arguments @("-i", $advancedImagePath, "-e", "+status") `
+    -Environment @{ GFORTHHIST = $historyPath.Replace("\", "/") } `
+    -InjectedText "" `
+    -InjectedVirtualKeys @([ushort]0x21, [ushort]0x22) `
+    -SecondInjectedText "`rbye`r"
+
+$statusVkPageDownPassed = (
+    $statusVkPageDownRun.ExitCode -eq 0 -and
+    $statusVkPageDownRun.Stdout -notmatch "3\s+ok" -and
+    $statusVkPageDownRun.Stdout -notmatch "5~|6~"
+)
+Write-Check -Name "console:status-vk-page-down-clears-history" -Passed $statusVkPageDownPassed -Detail (($statusVkPageDownRun.Stdout + " " + $statusVkPageDownRun.Stderr).Trim() -replace "`r?`n", " | ")
+$allPassed = $allPassed -and $statusVkPageDownPassed
 
 if (Test-Path $historyPath) {
     Remove-Item -LiteralPath $historyPath -Force
