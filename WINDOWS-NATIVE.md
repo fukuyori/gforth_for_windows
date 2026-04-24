@@ -4,7 +4,7 @@ This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that adds a native
 Windows build, runtime fixes for interactive terminals, and an Inno Setup
 installer flow.  The current fork release is based on `Gforth 0.7.9_20260415`
-and is versioned as `0.7.9_20260415+fukuyori.2.1`.
+and is versioned as `0.7.9_20260415+fukuyori.2.2`.
 
 The goal is to build and package `gforth.exe` on Windows without depending on
 MSYS2 or MinGW at runtime.
@@ -48,6 +48,40 @@ as `ekey`, `history-cold`, `locate`, `see`, whether an advanced image build
 path is currently available, and whether the reduced interactive release stack
 still passes.
 
+To build the current advanced-image candidate after a native build:
+
+```powershell
+.\scripts\build-advanced-interactive-image.ps1
+```
+
+The script writes `build/native/gforth-advanced.fi` only after the generated
+image passes a smoke test.  The default `build/native/gforth.fi` remains on the
+reduced `kernel/saccept.fs` path.
+
+To include full upstream `ekey.fs` in the advanced image:
+
+```powershell
+.\scripts\build-advanced-interactive-image.ps1 -IncludeEkey
+```
+
+To include full upstream `ekey.fs` and `history.fs` in the advanced image:
+
+```powershell
+.\scripts\build-advanced-interactive-image.ps1 -IncludeHistory
+```
+
+To check the generated advanced image directly:
+
+```powershell
+.\scripts\check-advanced-image-runtime.ps1
+```
+
+The advanced runtime check verifies both absolute forward-slash
+`GFORTHHIST` paths and relative names such as `.gforth-advanced-history`.
+`history.fs` creates parent directories only when the selected history path has
+a parent component, so a relative history filename is created as a file, not as
+a same-named directory.
+
 The temporary runtime-loader entrypoint is:
 
 ```powershell
@@ -70,10 +104,30 @@ To classify the current advanced-interactive blockers:
 
 This reports whether failures are missing words, startup/build-context
 dependencies, image-builder mismatches, or compact-image compile limitations.
-In the current `fukuyori.2.1` follow-up state, `status-line.fs` and
+In the current `fukuyori.2.2` follow-up state, `status-line.fs` and
 `locate1.fs` are safe to `require` in the compact image, but the `locate` word
-itself is still absent until the full locate startup context or an advanced
-image is available.
+itself is still absent until the full locate startup context or the advanced
+image is used.  The advanced image built with `-IncludeHistory` currently
+exposes `savesystem`, `ekey`, `k-left`, `k-f1`, `k-winch`, `history-cold`,
+`edit-terminal`, `bindkey`, `see`, `locate`, and `+status`; status-bar
+activation remains a later advanced-path target and should not be enabled
+directly from the compact image.
+
+The advanced image build restores `kernel/accept.fs` before loading
+`ekey.fs` and `history.fs`; this is required so arrow and paging keys use the
+full editor path instead of the reduced `kernel/saccept.fs` path.  Native
+Windows console input maps Left, Right, Home, End, Up, Down, PageUp, and
+PageDown into full-editor navigation.  For real Windows console key events,
+the native engine returns Gforth ekey codes directly for cursor and paging
+keys; for VT/raw escape input, PageUp and PageDown are normalized to the same
+short history-navigation sequences as Up and Down.  Full-history navigation in
+this path depends on `GFORTHHIST` pointing at a writable file; relative
+filenames without a slash are supported.  The reduced
+`GFORTH_WIN_INTERACTIVE=1` Up/Down/PageUp/PageDown behavior was already fixed
+in `fukuyori.2.2`; the current advanced image fix is the separate full
+`ekey.fs` / `history.fs` path.  If an older run created
+`.gforth-advanced-history` as a directory, remove that stale directory before
+testing the advanced image; the history path must be a file.
 
 Installer build from an existing native build:
 
@@ -240,13 +294,12 @@ interactive features have the same restoration cost.
 
 Lower-effort candidates:
 
-- restoring `status-line.fs` as an optional or default startup feature
 - small improvements inside `kernel/saccept.fs`
-- making the status line opt-in on Windows while leaving the simpler input path
-  in place
+- keeping the reduced interactive release checks and documentation current
+- small polish to the existing opt-in reduced history and key handling
 
-These are comparatively lightweight because `status-line.fs` still exists in
-the tree and `kernel/saccept.fs` is intentionally simple.
+These are comparatively lightweight because they stay on the current
+`kernel/saccept.fs` path and do not require the full upstream editor stack.
 
 Medium-effort candidates:
 
@@ -261,9 +314,15 @@ partly coupled to the richer editor and key handling layers.
 
 Higher-effort candidates:
 
+- restoring the advanced image or advanced startup foundation needed by the
+  full upstream stack
 - restoring the full upstream `history.fs` line editor on Windows-native builds
 - restoring broad arrow-key, paging-key, and other extended-key behavior from
   `ekey.fs`
+- restoring `see.fs` and the base `locate` word with their full startup
+  context
+- enabling a visible, useful status bar that coexists with full history redraw,
+  locate, and resize handling
 - restoring resize-driven interactive behavior that depends on `k-winch`
 
 These are the expensive items because the current Windows-native port
@@ -281,10 +340,12 @@ As a rough planning guide:
 In practice, the safest order is:
 
 1. small `saccept.fs` improvements
-2. optional or limited `status-line.fs` restoration
-3. targeted history or locate improvements
-4. only then, consider restoring larger parts of the `ekey.fs` and
-   `history.fs` editing stack
+2. reduced interactive opt-in checks and release hygiene
+3. advanced image/startup foundation
+4. full `ekey.fs` in the advanced path
+5. full `history.fs` in the advanced path
+6. `see.fs` and full `locate` in the advanced path
+7. visible status-bar restoration after full editor redraw is stable
 
 The longer-term staged recovery plan has since been rewritten around a
 Unix-like terminal contract for Windows.  See
@@ -426,6 +487,20 @@ If normal keys such as `a` print but the arrow keys do not, the console-input
 translation layer is not receiving KEY_EVENT records in that terminal session.
 The default probe count is `15`, enough to consume `a`, Up, Down, PageUp, and
 PageDown without leaving trailing escape bytes in the parent shell.
+
+To automate the advanced-image PageUp/PageDown check from an interactive
+Windows Terminal or WezTerm session:
+
+```powershell
+.\scripts\probe-advanced-page-keys-console.ps1
+```
+
+This probe launches the advanced image without redirecting stdin, injects
+`ESC [ 5 ~`, split CSI tails, and real `VK_PRIOR` / `VK_NEXT` console key
+events into the console input buffer with `WriteConsoleInputW`, and fails if
+PageUp/PageDown do not recall or clear history or if `5~` / `6~` leaks into the
+output.  It must be run from a real interactive console host; redirected or
+API-hosted shells cannot provide a writable console input handle.
 
 Opt-in reduced history persistence:
 

@@ -54,10 +54,10 @@ is 'clean-maintask
     'clean-maintask ;
 
 : preamble-start ( -- addr )
-    \ dump the part from "#! /..." to FORTHSTART
+    \ dump the part from "#! ..." to FORTHSTART
     forthstart begin \ search for start of file ("#! " at a multiple of 8)
 	8 -
-	dup 4 s" #! /" str=
+	dup 3 s" #! " str=
     until ( imagestart ) ;
 
 [IFUNDEF] dump-sections

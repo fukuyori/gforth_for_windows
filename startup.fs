@@ -64,9 +64,9 @@ require table.fs
 require quotes.fs
 require vt100.fs
 require ansi.fs
-os-type s" win32" str=
+also environment os-type s" win32" str= previous
 [IF]
-require saccept.fs
+require kernel/saccept.fs
 [ELSE]
 require ekey.fs
 require history.fs
@@ -90,7 +90,7 @@ require gforthrc.fs
 \ require colorize.fs
 require mwords.fs
 require locate1.fs
-os-type s" win32" str= 0=
+also environment os-type s" win32" str= previous 0=
 [IF]
 require status-line.fs
 [THEN]

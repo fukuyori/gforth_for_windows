@@ -87,6 +87,12 @@ Constant status-terminal-ready?
 	    over I c@ = IF  dup I c!  THEN
 	LOOP  2drop ;
 
+    [IFUNDEF] -scan
+	: -scan ( addr u char -- addr' u' )
+	    >r  BEGIN  dup  WHILE  1- 2dup + c@ r@ =  UNTIL  THEN
+	    rdrop ;
+    [THEN]
+
     0 Value wide?
 
     : .base ( -- )

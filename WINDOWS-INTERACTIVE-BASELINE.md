@@ -11,7 +11,7 @@ Manual interactive checks confirmed: 2026-04-23
 Tested executable:
 
 - `build/native/gforth.exe`
-- version: `gforth 0.7.9_20260415+fukuyori.2.1 amd64`
+- version: `gforth 0.7.9_20260415+fukuyori.2.2 amd64`
 
 ## Baseline Expectations
 
@@ -737,3 +737,381 @@ Current scope:
 
 - this only affects working-tree hygiene
 - it does not change runtime behavior
+
+## Manual Release Checklist Completion
+
+Date checked: 2026-04-24
+
+The Windows interactive release manual checklist has been completed for the
+`0.7.9_20260415+fukuyori.2.2` native build.
+
+Confirmed:
+
+- Windows Terminal manual checklist completed
+- WezTerm manual checklist completed
+- `GFORTH_WIN_INTERACTIVE=1` reduced interactive mode was included in the
+  manual checks
+
+## Phase 7 Initial Advanced Image Probe
+
+Date checked: 2026-04-24
+
+The advanced image probe has been extended to check image layout and the first
+advanced-startup blockers before any image is written.
+
+Confirmed:
+
+- `build/native/gforth-advanced.fi` is treated as a separate output from the
+  default `build/native/gforth.fi`
+- the advanced image output directory exists
+- the default image `build/native/gforth.fi` matches the cross-built
+  `kernl64l.fi` compact image by size
+- `windows-interactive-advanced.fs` and the expected full-stack source files
+  are present
+- the native compact image still runs the basic `1 2 + . cr bye` smoke test
+- the native compact image still does not expose `savesystem` or `comp-image`
+- `windows-interactive-advanced.fs`, `status-line.fs`, and `locate1.fs` remain
+  safe to require from the compact image
+- direct compact-image requires of `ekey.fs`, `history.fs`, and `see.fs` still
+  fail and should stay out of default startup
+- the installed bootstrap Gforth can run and exposes `savesystem`, but still
+  cannot load this tree's `comp-i.fs` because of the `$Variable` mismatch
+
+Current scope:
+
+- this is a probe and planning checkpoint only
+- no advanced image is produced yet
+- the default Windows startup path remains the reduced `kernel/saccept.fs`
+  path
+
+## Phase 7 Image Builder Surface Check
+
+Date checked: 2026-04-24
+
+The advanced image probe now reports the image-builder word surface for both
+the native compact image and the installed bootstrap Gforth.
+
+Native compact image:
+
+- has `current-section`, `section-dp`, and `$Variable`
+- does not expose `savesystem`, `comp-image`, `dump-fi`, `slurp-file`,
+  `sections`, `MEM+DO`, `{`, `{:`, `nocov[`, or `base-execute`
+- can handle a minimal new colon definition, but direct full-source loading
+  still fails on later startup/build dependencies
+- has only a partial search/environment surface: `search-wordlist` and
+  `get-current` are present, while `vocabulary`, `wordlist`, `set-current`,
+  `get-order`, and `set-order` are still absent
+- `require savesys.fs` fails at `MEM+DO`
+- `require comp-i.fs` fails before `comp-image` is available
+- candidate attempts to load the missing builder prerequisites directly into
+  the compact image fail early:
+  - `to.fs` stops on a compact-image compile limitation
+  - `environ.fs` stops on a compact-image compile limitation
+  - `to.fs` plus `float.fs` stops at `back>`
+  - `to.fs` plus `glocals.fs` stops at `environment-wordlist`
+  - `debugs.fs` stops before providing `nocov[`
+- native full-startup invocation candidates are not available yet:
+  - loading `envos.fs` alone stops at `environment-wordlist`
+  - a minimal `environment-wordlist`/`set-current` shim can sometimes drive
+    `envos.fs` far enough to report `os-type` as `win32`, but the same shape
+    can also stop at `;` depending on invocation context; this is only an
+    `envos.fs` isolation result and does not provide the vocabulary and
+    search-order machinery needed by `environ.fs` or the full startup path
+  - compile-context isolation shows the compact image can mishandle ordinary
+    literals and primitive compilation before recognizer initialization; after
+    `rec-sequence.fs`, small definitions such as `: plus + ;`,
+    `: one 1 ;`, and the core `naligned` body can compile successfully
+  - startup-prefix isolation still shows unstable edges: `except.fs` without
+    that setup stops at `first-throw on ;`, while prefix combinations that add
+    `search.fs`, `options.fs`, `environ.fs`, or `envos.fs` still expose
+    compact-image `;` blockers before the normal startup sequence can reach
+    the later interactive libraries
+  - invoking `rec-sequence.fs exboot.fs startup.fs` can move the visible
+    full-startup blocker from `;` to `os-type`, which makes recognizer
+    initialization a plausible repair path but does not yet produce
+    `savesystem`
+  - running `exboot.fs startup.fs` on the compact image stops on a
+    compact-image compile limitation
+  - running the same path with `--clear-dictionary --no-offset-im` also stops
+    before `savesystem` is available
+  - reproducing the standard `gforthmi` fixed-image stage with the native
+    engine (`--clear-dictionary --no-offset-im -i kernl64l.fi exboot.fs
+    startup.fs -e savesystem ...`, and the `--offset-image` variant) stops in
+    `except.fs` around `first-throw on`/`;`, before the fixed images are
+    written
+- existing local image artifacts have been checked and none currently provide
+  the advanced builder or full interactive surface:
+  - `build/native/gforth.fi`
+  - `kernl64l.fi`
+  - `build/installer/stage/gforth.fi`
+  - `.tmp-stagecheck/gforth.fi`
+  all lack `savesystem`, `comp-image`, `ekey`, `history-cold`, `see`,
+  `locate`, and `+status`
+- bootstrap cross-build candidates for a builder-capable intermediate image
+  are not available yet:
+  - `kernel/main.fs` alone can still be saved with `save-cross`; this is the
+    compact kernel image class that `build-native.ps1` already uses
+  - loading `search.fs` before `kernel/main.fs` also saves successfully, but
+    still produces the same compact-kernel class of image rather than a
+    builder-capable full startup image
+  - loading the full builder prefix before `kernel/main.fs` is blocked earlier:
+    `to.fs` stops at missing `value-to` under the installed `gforth 0.7.0`
+    bootstrap
+  - a one-word `value-to` shim is not enough for that route; `to.fs` then
+    stops at missing `Create-from`, so this is a broader current
+    compiler/header machinery gap rather than a single missing word
+  - `kernel/main.fs` plus `savesys.fs` reaches cross compilation but ends in a
+    segmentation fault before producing `gforth-builder-probe.fi`
+  - `kernel/main.fs` plus `to.fs`, `glocals.fs`, `stuff.fs`, and `savesys.fs`
+    now passes the former `U+DO` blocker after adding `U+DO` to the cross
+    conditional surface, but still ends in a segmentation fault before
+    producing `gforth-builder-probe2.fi`
+  - direct isolation shows the first crash in the larger path is not
+    `stuff.fs` or `savesys.fs`; after `kernel/main.fs`, a plain
+    `require search.fs` or `include search.fs` already segfaults, while
+    `include to.fs` alone still reaches the end
+  - prior probes showed that inserting `compat/loops.fs` did not fix `U+DO`,
+    because the missing piece was in the cross-compiler target compilation
+    surface, not the host compatibility loop definitions
+
+Installed bootstrap Gforth:
+
+- version checked by the probe path: `gforth 0.7.0`
+- exposes `savesystem`, `dump-fi`, `slurp-file`, `{`, and `base-execute`
+- does not expose `comp-image`, `sections`, `current-section`, `section-dp`,
+  `$Variable`, `MEM+DO`, `{:`, or `nocov[`
+- cannot load this tree's `comp-i.fs`; the first blocker remains `$Variable`
+  in `sections.fs`
+- loading this tree's `kernel/stringk.fs` into the bootstrap stops at
+  `atomic!@`
+- a simple `$Variable` shim moves the bootstrap blocker from `$Variable` to
+  `section-dp`, so a one-word compatibility shim is not enough
+
+Current conclusion:
+
+- neither image currently has the full builder surface needed to produce
+  `build/native/gforth-advanced.fi`
+- the current default native image is the compact cross-built kernel image, not
+  a full `startup.fs` image
+- the standard full-image `gforthmi` path is not yet usable with the native
+  compact kernel image because `exboot.fs`/`startup.fs` still stops before
+  `savesystem`; depending on invocation, the visible blocker is currently in
+  early environment/startup setup such as `os-type`/`;`, `search.fs` prefix
+  compilation, or the `first-throw` exception-frame path
+- the current Phase 7 candidate split is now:
+  - make recognizer/compiler initialization stable before `except.fs` and
+    `startup.fs`
+  - then make `os-type` and the environment wordlist visible early enough for
+    the first Windows branch in `startup.fs`
+  - only after those pass should `savesystem`/`comp-image` and the advanced
+    interactive libraries be restored
+
+## Phase 7 Startup Prefix Recovery Check
+
+Date checked: 2026-04-24
+
+The native full-startup probe now reaches the point where `savesystem` is
+visible in the `exboot.fs startup.fs` path.
+
+Changes made during this checkpoint:
+
+- `startup.fs` now looks up `os-type` explicitly through the `environment`
+  vocabulary for both Windows branches, because `envos.fs` defines `os-type`
+  in the environment wordlist and the compact native startup path does not
+  leave it directly visible in the default search order
+- the Windows branch in `startup.fs` now requires `kernel/saccept.fs`, matching
+  the reduced Windows-native input implementation that is actually present in
+  this tree
+- `status-line.fs` now provides a local `-scan` fallback when full
+  `history.fs` has not been loaded yet
+- `rec-scope.fs` now treats history-backed completion hooks as optional:
+  without full `history.fs`, `simple-search-prefix`, `search-voc`, and
+  `search-prefix` are bypassed or reduced to no-op prefix behavior
+- `obsolete.fs` now only defines obsolete function-key aliases when the full
+  `ekey.fs` key constants are available
+
+Observed progress:
+
+- the prior `os-type` blocker is cleared in the full-startup path
+- the missing root `saccept.fs` blocker is cleared by using
+  `kernel/saccept.fs`
+- the `status-line.fs` `-scan` blocker is cleared without loading full
+  `history.fs`
+- the `rec-scope.fs` completion blockers are cleared without loading full
+  `history.fs`
+- the `obsolete.fs` `k-f1` blocker is cleared while full `ekey.fs` remains
+  absent from the Windows reduced startup branch
+- `scripts/build-advanced-interactive-image.ps1 -ProbeOnly` now reports
+  `native invocation:exboot+startup` and `native invocation:clear-dictionary-save`
+  as passing candidate checks that can see `savesystem`
+
+Additional progress in this checkpoint:
+
+- `savesys.fs` now detects Windows native image preambles that start with
+  `#! C:/...` instead of assuming a Unix-style `#! /...` prefix
+- `scripts/build-advanced-interactive-image.ps1` can now run a native
+  `gforthmi`-like sequence in normal build mode:
+  - save a no-offset temporary image from `exboot.fs startup.fs`
+  - save an offset temporary image when the compact startup path cooperates
+  - run the third `comp-image` stage with `-e 3`
+  - verify the resulting `build/native/gforth-advanced.fi` with a smoke test
+- because the current Windows offset-image path can still report identical
+  base addresses, the script keeps a two-no-offset data-relocatable fallback,
+  but it only accepts an output image that starts cleanly
+- the latest successful output was
+  `build/native/gforth-advanced.fi` at 1829799 bytes
+- the new advanced image starts and exposes `savesystem`, `see`, `locate`,
+  and `+status`
+
+Remaining Phase 7 / Phase 8 boundary:
+
+- the default compact `build/native/gforth.fi` still lacks the advanced
+  `comp-image`, full `ekey`, full `history`, `see`, and `locate`
+  builder and editor words and must remain on the reduced `kernel/saccept.fs`
+  path
+- `comp-image` is used during the build stage but is not present in the
+  resulting advanced image
+- direct advanced-image `require` checks now pass for `see.fs`, `locate1.fs`,
+  and `status-line.fs`
+- direct advanced-image `require` checks still fail for `ekey.fs` and
+  `history.fs`; the observed blocker is the compact startup/compiler `;`
+  failure path
+- full `ekey.fs` and `history.fs` are still intentionally not restored in the
+  Windows reduced startup branch
+- the next implementation step is to start Phase 8 on the advanced image by
+  isolating the full `ekey.fs` `;` failure, while preserving the reduced
+  default startup path
+
+## Phase 8 Full `ekey.fs` Advanced Image Check
+
+Date checked: 2026-04-24
+
+Full `ekey.fs` is now restored in the advanced image path, not in the default
+compact image.
+
+Changes made during this checkpoint:
+
+- `scripts/build-advanced-interactive-image.ps1` now accepts `-IncludeEkey`
+- with `-IncludeEkey`, the script loads `ekey.fs` before each temporary
+  `savesystem` step, runs the native `comp-image` stage, smoke-tests the
+  resulting image, and verifies that `ekey` is present before accepting the
+  image
+- `-IncludeEkey` uses a higher retry count for the temporary save and
+  `comp-image` stages, because the compact startup/compiler path can still
+  fail intermittently at `;`
+
+Observed result:
+
+- `.\scripts\build-advanced-interactive-image.ps1 -IncludeEkey` produced
+  `build/native/gforth-advanced.fi`
+- the accepted image size was 1872041 bytes
+- the accepted image starts cleanly
+- the accepted image exposes `savesystem`, `ekey`, `k-left`, `k-f1`,
+  `k-winch`, `see`, `locate`, and `+status`
+- `history-cold` is still absent
+
+Remaining Phase 8 boundary:
+
+- `history.fs` still fails on the advanced image at the compact
+  startup/compiler `;` path
+- `see.fs`, `locate1.fs`, and `status-line.fs` still pass direct
+  advanced-image `require` checks after `ekey.fs` is included in the image
+- the next implementation step is full `history.fs` recovery in the advanced
+  path
+
+## Phase 9 Full `history.fs` Advanced Image Check
+
+Date checked: 2026-04-24
+
+Full `history.fs` is now restored in the advanced image path, layered on top
+of the full `ekey.fs` advanced image work.
+
+Changes made during this checkpoint:
+
+- `scripts/build-advanced-interactive-image.ps1` now accepts `-IncludeHistory`
+- `-IncludeHistory` implies the full `ekey.fs` load before the temporary
+  `savesystem` steps
+- with `-IncludeHistory`, the script loads `ekey.fs` and `history.fs` before
+  each temporary image save, runs the native `comp-image` stage, smoke-tests
+  the resulting image, and verifies both `ekey` and `history-cold`
+- the higher retry count used for `-IncludeEkey` is also used for
+  `-IncludeHistory`, because temporary image creation can still intermittently
+  hit the compact startup/compiler `;` path
+
+Observed result:
+
+- `.\scripts\build-advanced-interactive-image.ps1 -IncludeHistory` produced
+  `build/native/gforth-advanced.fi`
+- the accepted image size was 1960483 bytes
+- the accepted image starts cleanly
+- the accepted image exposes `savesystem`, `ekey`, `k-left`, `k-f1`,
+  `k-winch`, `history-cold`, `edit-terminal`, `bindkey`, `see`, `locate`,
+  and `+status`
+
+Remaining Phase 9 / Phase 10 boundary:
+
+- the default compact `build/native/gforth.fi` still must not load full
+  `ekey.fs` or full `history.fs`
+- `scripts/check-advanced-image-runtime.ps1` now verifies the advanced image
+  surface and a non-interactive `history-cold` / `write-history` runtime path
+- `scripts/check-windows-interactive-release.ps1` runs the advanced image
+  runtime probe automatically when `build/native/gforth-advanced.fi` exists
+- the latest advanced runtime probe passed `smoke`, `savesystem`, `ekey`,
+  `k-left`, `k-f1`, `k-winch`, `history-cold`, `edit-terminal`, `bindkey`,
+  `see`, `locate`, `+status`, `runtime:history-write`,
+  `runtime:history-relative-path`, and `runtime:repl-history-save`
+- redirected stdin is sufficient to verify full-history REPL persistence, but
+  not sufficient to verify full Up/Down navigation: an ANSI Up sequence fed
+  through redirected stdin is observed as literal `A`, so navigation remains a
+  real terminal manual check
+- after manual testing showed that Backspace worked but arrow and PageUp /
+  PageDown keys were displayed as key sequences, the advanced image build was
+  changed to restore `kernel/accept.fs` before loading `ekey.fs` and
+  `history.fs`; this keeps the advanced REPL on the full editor instead of the
+  reduced `kernel/saccept.fs` input path
+- `engine/io.c` now maps Windows console Left, Right, Home, and End key events
+  to the ANSI sequences that full `ekey.fs` already understands; Up, Down,
+  PageUp, and PageDown were already mapped in the native console path
+- note: the Up / Down / PageUp / PageDown behavior in the reduced
+  `GFORTH_WIN_INTERACTIVE=1` path was already fixed and manually confirmed for
+  `fukuyori.2.2`; the current advanced-image work is a separate full
+  `ekey.fs` / `history.fs` path
+- after manual testing showed that Left, Right, and Backspace worked but Up,
+  Down, PageUp, and PageDown did not recall history, the full `history.fs`
+  `force-open` path was fixed to avoid creating a directory for a relative
+  `GFORTHHIST` filename with no parent slash; `.gforth-advanced-history` now
+  opens as a history file in the advanced image
+- the stale `.gforth-advanced-history` directory created by the earlier bug was
+  removed from the working tree and replaced by a file seeded with `1 2 + .`
+  for immediate manual Up recall testing
+- after rechecking the full `ekey.fs` path, `engine/io.c` was also changed so
+  `key?` peeks Windows console key events without queueing ANSI bytes; full
+  `ekey.fs` uses `key?` while completing escape sequences, so availability
+  checks must be side-effect free
+- after PageUp and PageDown still appeared as `5~` and `6~` in the real
+  terminal, both Windows console key events and VT raw input sequences for
+  PageUp/PageDown were normalized to the same short ANSI sequences as Up/Down;
+  this matches the current full `history.fs` binding, where `k-prior` and
+  `k-next` both dispatch to the same history movement words as Up and Down
+- after manual testing then showed PageUp/PageDown being consumed without
+  recalling history, the remaining manual path was traced to real Windows
+  `VK_PRIOR` / `VK_NEXT` key events, not only injected `ESC [ 5 ~` /
+  `ESC [ 6 ~` text
+- `engine/io.c` now returns native Gforth ekey codes directly for Windows
+  console Left, Right, Home, End, Up, Down, PageUp, and PageDown events; this
+  avoids feeding virtual-key events back through the escape-sequence parser
+- `ekey.fs` now keeps native ekey codes out of the extended-character reader,
+  so `k-up` / `k-down` from the Windows console path reach the full editor
+  control dispatch unchanged
+- `scripts/probe-advanced-page-keys-console.ps1` was added to automate the
+  advanced PageUp/PageDown console-input check from a real interactive terminal
+  by injecting `ESC [ 5 ~` and `ESC [ 6 ~` with `WriteConsoleInputW` and
+  failing if `5~` or `6~` leaks into output
+- `scripts/probe-advanced-page-keys-console.ps1` now also injects real
+  `VK_PRIOR` / `VK_NEXT` console key events and verifies that PageUp recalls
+  `1 2 + .` and PageDown clears back to an empty edit line
+- manual retesting on 2026-04-24 confirmed that PageUp and PageDown now work
+  in the advanced image
+- Phase 9 is now complete enough to hand off to Phase 10: verify `see.fs` and
+  full locate behavior in the advanced image, then leave visible status-bar
+  activation for the final phase

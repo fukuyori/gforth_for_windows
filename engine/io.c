@@ -57,6 +57,16 @@ typedef unsigned int uint32_t;
 #define ENABLE_VIRTUAL_TERMINAL_INPUT 0x0200
 #endif
 
+#define GFORTH_WIN32_ESCAPE_TAIL_WAIT_MS 100
+
+#define GFORTH_KEYCODE_START 0x80000000U
+#define GFORTH_K_LEFT   (GFORTH_KEYCODE_START + 0)
+#define GFORTH_K_RIGHT  (GFORTH_KEYCODE_START + 1)
+#define GFORTH_K_UP     (GFORTH_KEYCODE_START + 2)
+#define GFORTH_K_DOWN   (GFORTH_KEYCODE_START + 3)
+#define GFORTH_K_HOME   (GFORTH_KEYCODE_START + 4)
+#define GFORTH_K_END    (GFORTH_KEYCODE_START + 5)
+
 static int gforth_win32_pending_keys[8];
 static int gforth_win32_pending_key_count = 0;
 static int gforth_win32_pending_newline = -1;
@@ -163,26 +173,157 @@ static int gforth_win32_read_input_byte(HANDLE input)
   return c;
 }
 
+static int gforth_win32_read_input_byte_if_ready(HANDLE input)
+{
+  if (WaitForSingleObject(input, GFORTH_WIN32_ESCAPE_TAIL_WAIT_MS) != WAIT_OBJECT_0)
+    return -1;
+  return gforth_win32_read_input_byte(input);
+}
+
+static Cell gforth_win32_read_vt_input_key(HANDLE input)
+{
+  int first = gforth_win32_read_input_byte(input);
+  int second;
+  int third;
+  int fourth;
+
+  if (first != 0x1b)
+    return first;
+
+  second = gforth_win32_read_input_byte_if_ready(input);
+  if (second < 0)
+    return first;
+  if (second != '[') {
+    gforth_win32_queue_pending_key(second);
+    return first;
+  }
+
+  third = gforth_win32_read_input_byte_if_ready(input);
+  if (third < 0) {
+    gforth_win32_queue_pending_key(second);
+    return first;
+  }
+
+  if (third == '5' || third == '6') {
+    fourth = gforth_win32_read_input_byte_if_ready(input);
+    if (fourth == '~')
+      return gforth_win32_queue_ansi_sequence(third == '5' ? "\x1b[A" : "\x1b[B");
+
+    gforth_win32_queue_pending_key(second);
+    gforth_win32_queue_pending_key(third);
+    if (fourth >= 0)
+      gforth_win32_queue_pending_key(fourth);
+    return first;
+  }
+
+  gforth_win32_queue_pending_key(second);
+  gforth_win32_queue_pending_key(third);
+  return first;
+}
+
+static int gforth_win32_read_console_char_event_if_ready(HANDLE input)
+{
+  INPUT_RECORD record;
+  DWORD read = 0;
+
+  if (WaitForSingleObject(input, GFORTH_WIN32_ESCAPE_TAIL_WAIT_MS) != WAIT_OBJECT_0)
+    return -1;
+
+  if (!ReadConsoleInputW(input, &record, 1, &read) || read != 1)
+    return -1;
+
+  if (record.EventType == KEY_EVENT &&
+      record.Event.KeyEvent.bKeyDown &&
+      record.Event.KeyEvent.uChar.UnicodeChar != 0)
+    return (unsigned char)record.Event.KeyEvent.uChar.UnicodeChar;
+
+  return -1;
+}
+
+static Cell gforth_win32_normalize_console_escape_sequence(HANDLE input)
+{
+  int second = gforth_win32_read_console_char_event_if_ready(input);
+  int third;
+  int fourth;
+
+  if (second < 0)
+    return 0x1b;
+  if (second != '[') {
+    gforth_win32_queue_pending_key(second);
+    return 0x1b;
+  }
+
+  third = gforth_win32_read_console_char_event_if_ready(input);
+  if (third < 0) {
+    gforth_win32_queue_pending_key(second);
+    return 0x1b;
+  }
+
+  if (third == '5' || third == '6') {
+    fourth = gforth_win32_read_console_char_event_if_ready(input);
+    if (fourth == '~')
+      return gforth_win32_queue_ansi_sequence(third == '5' ? "\x1b[A" : "\x1b[B");
+
+    gforth_win32_queue_pending_key(second);
+    gforth_win32_queue_pending_key(third);
+    if (fourth >= 0)
+      gforth_win32_queue_pending_key(fourth);
+    return 0x1b;
+  }
+
+  gforth_win32_queue_pending_key(second);
+  gforth_win32_queue_pending_key(third);
+  return 0x1b;
+}
+
 static int gforth_win32_console_event_key(const KEY_EVENT_RECORD *key_event)
 {
   if (!key_event->bKeyDown)
     return -1;
 
   switch (key_event->wVirtualKeyCode) {
+  case VK_LEFT:
+    return GFORTH_K_LEFT;
+  case VK_RIGHT:
+    return GFORTH_K_RIGHT;
   case VK_UP:
-    return gforth_win32_queue_ansi_sequence("\x1b[A");
+    return GFORTH_K_UP;
   case VK_DOWN:
-    return gforth_win32_queue_ansi_sequence("\x1b[B");
+    return GFORTH_K_DOWN;
+  case VK_HOME:
+    return GFORTH_K_HOME;
+  case VK_END:
+    return GFORTH_K_END;
   case VK_PRIOR:
-    return gforth_win32_queue_ansi_sequence("\x1b[5~");
+    return GFORTH_K_UP;
   case VK_NEXT:
-    return gforth_win32_queue_ansi_sequence("\x1b[6~");
+    return GFORTH_K_DOWN;
   }
 
   if (key_event->uChar.UnicodeChar != 0)
     return (unsigned char)key_event->uChar.UnicodeChar;
 
   return -1;
+}
+
+static int gforth_win32_console_event_key_available(const KEY_EVENT_RECORD *key_event)
+{
+  if (!key_event->bKeyDown)
+    return 0;
+
+  switch (key_event->wVirtualKeyCode) {
+  case VK_LEFT:
+  case VK_RIGHT:
+  case VK_UP:
+  case VK_DOWN:
+  case VK_HOME:
+  case VK_END:
+  case VK_PRIOR:
+  case VK_NEXT:
+    return 1;
+  }
+
+  return key_event->uChar.UnicodeChar != 0;
 }
 
 static int gforth_win32_console_key_available(void)
@@ -199,16 +340,13 @@ static int gforth_win32_console_key_available(void)
   if (input == INVALID_HANDLE_VALUE || input == NULL)
     return _kbhit();
 
-  if (gforth_win32_vt_input_enabled(input))
-    return 1;
-
   if (!PeekConsoleInputW(input, records,
                          sizeof(records) / sizeof(records[0]), &read))
     return _kbhit();
 
   for (i = 0; i < read; i++) {
     if (records[i].EventType == KEY_EVENT &&
-        gforth_win32_console_event_key(&records[i].Event.KeyEvent) >= 0)
+        gforth_win32_console_event_key_available(&records[i].Event.KeyEvent))
       return 1;
   }
 
@@ -225,16 +363,12 @@ static Cell gforth_win32_read_console_key(void)
 
   input = GetStdHandle(STD_INPUT_HANDLE);
   if (input != INVALID_HANDLE_VALUE && input != NULL) {
-    if (gforth_win32_vt_input_enabled(input)) {
-      mapped = gforth_win32_read_input_byte(input);
-      if (mapped >= 0)
-        return mapped;
-    }
-
     for (;;) {
       if (ReadConsoleInputW(input, &record, 1, &read) && read == 1 &&
           record.EventType == KEY_EVENT) {
         mapped = gforth_win32_console_event_key(&record.Event.KeyEvent);
+        if (mapped == 0x1b && !gforth_win32_has_pending_key())
+          return gforth_win32_normalize_console_escape_sequence(input);
         if (mapped >= 0)
           return mapped;
       }
@@ -245,14 +379,22 @@ static Cell gforth_win32_read_console_key(void)
   if (result == 0 || result == 0xE0) {
     result = _getch();
     switch (result) {
+    case 75: /* Left */
+      return GFORTH_K_LEFT;
+    case 77: /* Right */
+      return GFORTH_K_RIGHT;
     case 72: /* Up */
-      return gforth_win32_queue_ansi_sequence("\x1b[A");
+      return GFORTH_K_UP;
     case 80: /* Down */
-      return gforth_win32_queue_ansi_sequence("\x1b[B");
+      return GFORTH_K_DOWN;
+    case 71: /* Home */
+      return GFORTH_K_HOME;
+    case 79: /* End */
+      return GFORTH_K_END;
     case 73: /* PageUp */
-      return gforth_win32_queue_ansi_sequence("\x1b[5~");
+      return GFORTH_K_UP;
     case 81: /* PageDown */
-      return gforth_win32_queue_ansi_sequence("\x1b[6~");
+      return GFORTH_K_DOWN;
     }
   }
   return result;

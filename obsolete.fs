@@ -190,6 +190,7 @@ opt: @ 2 swap (to), ;
     is rec-forth ;
 
 \ from ekey.fs
+[IFDEF] k-f1
 ' k-f1  alias k1  ( -- u ) \ gforth-obsolete
 ' k-f2  alias k2  ( -- u ) \ gforth-obsolete
 ' k-f3  alias k3  ( -- u ) \ gforth-obsolete
@@ -216,6 +217,7 @@ k-f9  k-shift-mask or constant s-k9  ( -- u ) \ gforth-obsolete
 k-f10 k-shift-mask or constant s-k10 ( -- u ) \ gforth-obsolete 
 k-f11 k-shift-mask or constant s-k11 ( -- u ) \ gforth-obsolete
 k-f12 k-shift-mask or constant s-k12 ( -- u ) \ gforth-obsolete
+[THEN]
 
 \ from intcomp.fs
 

@@ -80,11 +80,19 @@ Variable vt100-modifier \ shift, ctrl, alt
     >r  BEGIN  dup  WHILE  1- 2dup + c@ r@ =  UNTIL  THEN
     rdrop ;
 
+: ?mkdir-parents ( addr len -- )
+    2dup '/' -scan dup IF
+	$1FF mkdir-parents drop
+    ELSE
+	2drop
+    THEN
+    2drop ;
+
 : force-open ( addr len -- fid )
     2dup r/w open-file
     IF
 	drop
-	2dup '/' -scan $1FF mkdir-parents drop
+	2dup ?mkdir-parents
 	r/w create-file throw
     ELSE
 	nip nip
@@ -134,6 +142,15 @@ Variable vt100-modifier \ shift, ctrl, alt
 
 : prev-line  ( max span addr pos1 -- max span addr pos2 false )
     clear-line find-prev-line xretype ;
+
+: hist-to-end ( -- )
+    history ?dup-IF
+	file-size throw 2dup forward^ 2! backward^ 2!
+    THEN ;
+
+: xpage-prev-line ( max span addr pos1 -- max span addr pos2 false )
+    third 0= IF  hist-to-end  THEN
+    prev-line ;
 
 \ Create lfpad #lf c,
 
@@ -488,6 +505,18 @@ Create std-ekeys
     + perform ;
 
 : xins ( max span addr pos1 char -- max span addr pos2 )
+    dup '5' = over '6' = or IF
+	esc-tail? IF
+	    key dup '~' = IF
+		drop dup '5' = IF
+		    drop xpage-prev-line drop EXIT
+		ELSE
+		    drop next-line drop EXIT
+		THEN
+	    THEN
+	    unkey
+	THEN
+    THEN
     vt100-modifier @ 8 and IF
 	2 mask-shift# lshift or xchar-edit-ctrl drop
     ELSE  (xins)  THEN ;

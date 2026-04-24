@@ -168,6 +168,7 @@ Variable key-buffer
 table constant esc-sequences \ and prefixes
 
 Variable ekey-buffer
+Variable esc-csi-tail-rescue
 
 [IFUNDEF] #esc  27 Constant #esc  [THEN]
 
@@ -189,9 +190,49 @@ Variable ekey-buffer
 : clear-ekey-buffer ( -- )
     ekey-buffer $free ;
 
+: esc-tail? ( -- flag )
+    key? ?dup-if  EXIT  THEN
+    50 0 ?DO
+	2 ms key? ?dup-if
+	    unloop EXIT
+	THEN
+    LOOP
+    false ;
+
+: esc-csi-prefix-state ( -- u )
+    ekey-buffer $@ s" [" str= IF  1 EXIT  THEN
+    ekey-buffer $@ s" [5" str= IF  '5' EXIT  THEN
+    ekey-buffer $@ s" [6" str= IF  '6' EXIT  THEN
+    0 ;
+
+: esc-csi-tail-key ( u -- u' )
+    esc-csi-tail-rescue @ ?dup-if
+	false esc-csi-tail-rescue !
+	dup 1 = IF
+	    drop
+	    dup '5' = over '6' = or IF
+		>r
+		esc-tail? IF
+		    key dup '~' = IF
+			drop r> '5' = IF  k-up  ELSE  k-down  THEN
+			EXIT
+		    THEN
+		    unkey
+		THEN
+		r>
+	    THEN
+	ELSE
+	    swap dup '~' = IF
+		drop '5' = IF  k-up  ELSE  k-down  THEN
+		EXIT
+	    THEN
+	    nip
+	THEN
+    THEN ;
+
 : esc-prefix ( -- u )
     BEGIN
-	key? \ ?dup-0=-if  1 ms key?  endif \ workaround for Windows 1607 Linux
+	esc-tail?
     WHILE
 	    key ekey-buffer c$+!
 	    ekey-buffer $@ ['] esc-mask #10 base-execute >r
@@ -201,6 +242,9 @@ Variable ekey-buffer
 	    endif
 	    rdrop
     REPEAT
+    esc-csi-prefix-state ?dup-if
+	esc-csi-tail-rescue ! clear-ekey-buffer #esc EXIT
+    THEN
     ekey-buffer $@ unkeys #esc clear-ekey-buffer ;
 
 : esc-sequence ( u1 addr u -- ; name execution: -- u2 ) recursive
@@ -310,6 +354,7 @@ set-current
 	loop
 	ekey-buffer $@ x-size ekey-buffer $@len u>= ;
     : get-xkey ( u -- xc )
+	dup keycode-start u>= IF  EXIT  THEN
 	dup max-single-byte u>= if
 	    read-xkey if
 		ekey-buffer $@ drop xc@+ nip  else
@@ -350,6 +395,7 @@ Defer ekey-extension ' noop is ekey-extension
 	dup k-fgcolor k-bgcolor 1+ within IF  read-rgb  THEN
 	exit
     then
+    esc-csi-tail-key
     ekey-extension
     [IFDEF] max-single-byte
 	get-xkey

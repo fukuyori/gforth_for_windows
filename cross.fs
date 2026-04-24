@@ -3983,6 +3983,7 @@ Cond: ENDCASE   endcase, ;Cond
 Cond: DO      	do, ;Cond
 Cond: ?DO     	?do, ;Cond
 Cond: +DO     	+do, ;Cond
+Cond: U+DO     	+do, ;Cond
 Cond: -DO     	-do, ;Cond
 Cond: U-DO     	u-do, ;Cond
 Cond: FOR	for, ;Cond

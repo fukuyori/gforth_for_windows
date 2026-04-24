@@ -45,6 +45,10 @@
 action-of rec-forth get-stack 1+ ' rec-scope -rot
 action-of rec-forth set-stack
 
+[IFUNDEF] simple-search-prefix
+    : simple-search-prefix ( addr len -- addr len ) ;
+[THEN]
+
 : current-execute ( xt -- ) \ gforth-experimental
     \G execute current-changing word and revert current afterwards
     get-current >r catch r> set-current throw ;
@@ -63,8 +67,16 @@ action-of rec-forth set-stack
 
 : ?search-prefix ( addr len wid/0 -- addr' len' )
     ?dup-IF
+[IFDEF] search-voc
 	wordlist-id @ 0 search-voc prefix-string
-    ELSE   simple-search-prefix  THEN ;
+[ELSE]
+	drop
+[THEN]
+    ELSE
+[IFDEF] simple-search-prefix
+	simple-search-prefix
+[THEN]
+    THEN ;
 
 : scope-search-prefix ( addr1 len1 -- addr2 len2 )
     0  BEGIN >r
@@ -76,4 +88,6 @@ action-of rec-forth set-stack
 		>wordlist >r 2nip r>  REPEAT  drop  THEN
     2drop simple-search-prefix ;
 
-' scope-search-prefix is search-prefix
+[IFDEF] search-prefix
+    ' scope-search-prefix is search-prefix
+[THEN]
