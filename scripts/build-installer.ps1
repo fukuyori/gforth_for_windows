@@ -33,7 +33,8 @@ function Resolve-InnoCompiler {
 $requiredStageFiles = @(
     "gforth.exe",
     "gforth.fi",
-    "gforth-advanced.fi"
+    "gforth-advanced.fi",
+    "generate-advanced.ps1"
 )
 
 foreach ($file in $requiredStageFiles) {

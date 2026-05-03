@@ -50,6 +50,7 @@ Name: "{autodesktop}\Gforth Native"; Filename: "{app}\gforth.exe"; WorkingDir: "
 Name: "{autoprograms}\Uninstall Gforth Native"; Filename: "{uninstallexe}"
 
 [Run]
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\generate-advanced.ps1"""; WorkingDir: "{app}"; StatusMsg: "Generating advanced interactive image..."; Flags: runhidden waituntilterminated
 Filename: "{app}\gforth.exe"; Description: "Launch Gforth Native"; Flags: nowait postinstall skipifsilent
 
 [Code]

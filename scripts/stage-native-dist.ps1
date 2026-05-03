@@ -106,6 +106,7 @@ New-Item -ItemType Directory -Force -Path $StageDir | Out-Null
 
 Copy-StageFile -SourcePath (Join-Path $NativeDir "gforth.exe") -DestinationPath (Join-Path $StageDir "gforth.exe")
 Copy-StageFile -SourcePath (Join-Path $NativeDir "gforth.fi") -DestinationPath (Join-Path $StageDir "gforth.fi")
+Copy-StageFile -SourcePath (Join-Path $RepoRoot "scripts/generate-installed-advanced.ps1") -DestinationPath (Join-Path $StageDir "generate-advanced.ps1")
 
 $advancedImage = Join-Path $NativeDir "gforth-advanced.fi"
 if (Test-Path $advancedImage) {

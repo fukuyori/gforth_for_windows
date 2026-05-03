@@ -43,6 +43,23 @@ Run the native build:
 .\build\native\gforth.exe
 ```
 
+Run the advanced interactive image with the status bar enabled:
+
+```powershell
+.\scripts\run-advanced.ps1
+```
+
+The script enables the status bar and uses `.gforth-advanced-history` for
+advanced history persistence.  To run the same path manually:
+
+![Gforth advanced mode with the status bar enabled](doc/images/screenshot-advanced.jpg)
+
+```powershell
+$env:GFORTHHIST = ".gforth-advanced-history"
+$env:GFORTH_WIN_STATUS = "1"
+.\build\native\gforth.exe -i .\build\native\gforth-advanced.fi
+```
+
 Smoke test:
 
 ```powershell
