@@ -34,7 +34,8 @@ $requiredStageFiles = @(
     "gforth.exe",
     "gforth.fi",
     "gforth-advanced.fi",
-    "generate-advanced.ps1"
+    "generate-advanced.ps1",
+    "gforth-advanced.cmd"
 )
 
 foreach ($file in $requiredStageFiles) {

@@ -45,13 +45,13 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; Flags: unchecked
 Source: "{#StageDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\Gforth Native"; Filename: "{app}\gforth.exe"; WorkingDir: "{app}"
-Name: "{autodesktop}\Gforth Native"; Filename: "{app}\gforth.exe"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autoprograms}\Gforth Native"; Filename: "{app}\gforth-advanced.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\gforth.ico"
+Name: "{autodesktop}\Gforth Native"; Filename: "{app}\gforth-advanced.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\gforth.ico"; Tasks: desktopicon
 Name: "{autoprograms}\Uninstall Gforth Native"; Filename: "{uninstallexe}"
 
 [Run]
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\generate-advanced.ps1"""; WorkingDir: "{app}"; StatusMsg: "Generating advanced interactive image..."; Flags: runhidden waituntilterminated
-Filename: "{app}\gforth.exe"; Description: "Launch Gforth Native"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\gforth-advanced.cmd"; Description: "Launch Gforth Native"; Flags: nowait postinstall skipifsilent
 
 [Code]
 const

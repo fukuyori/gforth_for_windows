@@ -91,6 +91,49 @@ The installer output is written to:
 
 - `build/installer/output/gforth-native-<version>-x64-setup.exe`
 
+#### Launching after installation
+
+The installer defaults to launching the **advanced interactive mode** (status
+bar plus persistent history).  After installation, every entry point below
+starts Gforth in advanced mode:
+
+- Start menu → **Gforth Native**
+- Desktop shortcut **Gforth Native** (only when "Create a desktop shortcut" is
+  checked during setup)
+- The **Launch Gforth Native** checkbox on the final setup page
+
+These all run `gforth-advanced.cmd` in the install directory, which is
+equivalent to:
+
+```powershell
+$env:GFORTH_WIN_STATUS = "1"
+$env:GFORTHHIST = "<install-dir>\.gforth-advanced-history"
+gforth.exe -i gforth-advanced.fi
+```
+
+The default install directory is `%LOCALAPPDATA%\Programs\Gforth`.
+
+To launch from a terminal (requires the "Add Gforth to PATH" task during
+setup):
+
+```powershell
+# Advanced mode (status bar + history)
+gforth-advanced.cmd
+
+# Plain mode (no status bar)
+gforth.exe
+```
+
+Without PATH set, use the full path:
+
+```powershell
+& "$env:LOCALAPPDATA\Programs\Gforth\gforth-advanced.cmd"
+```
+
+Extra arguments are forwarded to Gforth (for example
+`gforth-advanced.cmd myprog.fs`).  If `gforth-advanced.fi` is missing, the
+launcher falls back to the plain `gforth.fi` image.
+
 ### Upstream-style builds
 
 This repository still contains the normal upstream source tree and build
