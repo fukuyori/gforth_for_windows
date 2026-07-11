@@ -180,23 +180,29 @@ Check your remotes:
 git remote -v
 ```
 
-Bring upstream changes into this fork with a merge:
+Bring upstream changes into this fork with a merge (the upstream default
+branch is `master`):
 
 ```powershell
 git fetch upstream
 git checkout main
-git merge upstream/main
+git merge upstream/master
 git push origin main
 ```
 
-If you prefer a linear history, replace `merge` with `rebase`:
+The sync merge of 2026-07-11 (`0.7.9_20260708+fukuyori.3.0`) connected this
+fork's history with upstream, so plain merges work from now on.  When
+resolving conflicts, keep the fork's Windows-specific changes; the files that
+carry them are listed in `WINDOWS-NATIVE.md`.
 
-```powershell
-git fetch upstream
-git checkout main
-git rebase upstream/main
-git push origin main
-```
+After merging, the generated bootstrap artifacts (`engine/*.i`,
+`kernel/prim.fs`, `kernel/aliases.fs`, `kernl64l.fi`) must be regenerated
+before `scripts\build-native.ps1` can compile the new engine.  This needs a
+full-image Gforth as bootstrap host; the fork's own installed `gforth.fi` is
+a compact kernel image and cannot host the generators.  See "Bootstrap
+requirements after an upstream sync" in `WINDOWS-NATIVE.md` for the
+supported options (WSL Gforth, official Windows Gforth, or upstream snapshot
+tarball artifacts with `-SkipBootstrap`).
 
 Normal development should push to `origin`, not to `upstream`.
 

@@ -268,7 +268,7 @@ Write-Check -Name "runtime:see-primitive" -Passed $seePrimitivePassed -Detail $s
 $allPassed = $allPassed -and $seePrimitivePassed
 
 $locateColonRun = Invoke-Gforth -Arguments @("-i", $advancedImagePath, "-e", "locate interpret cr bye")
-$locateColonPassed = ($locateColonRun.ExitCode -eq 0 -and $locateColonRun.Stdout -match "kernel/main.fs")
+$locateColonPassed = ($locateColonRun.ExitCode -eq 0 -and $locateColonRun.Stdout -match "kernel/(main|int)\.fs")
 $locateColonDetail = if ($locateColonRun.Stderr) {
     $locateColonRun.Stderr.Split([Environment]::NewLine)[0]
 } else {
@@ -278,7 +278,7 @@ Write-Check -Name "runtime:locate-existing" -Passed $locateColonPassed -Detail $
 $allPassed = $allPassed -and $locateColonPassed
 
 $locatePrimitiveRun = Invoke-Gforth -Arguments @("-i", $advancedImagePath, "-e", "locate + cr bye")
-$locatePrimitivePassed = ($locatePrimitiveRun.ExitCode -eq 0 -and $locatePrimitiveRun.Stdout -match "kernel/main.fs")
+$locatePrimitivePassed = ($locatePrimitiveRun.ExitCode -eq 0 -and $locatePrimitiveRun.Stdout -match "kernel/(main|int)\.fs|prim(\.b)?:")
 $locatePrimitiveDetail = if ($locatePrimitiveRun.Stderr) {
     $locatePrimitiveRun.Stderr.Split([Environment]::NewLine)[0]
 } else {
@@ -378,7 +378,7 @@ $statusCoexistPassed = (
     $statusCoexistRun.ExitCode -eq 0 -and
     $statusCoexistRun.Stdout -match "\b3\b" -and
     $statusCoexistRun.Stdout -match ": interpret" -and
-    $statusCoexistRun.Stdout -match "kernel/main.fs"
+    $statusCoexistRun.Stdout -match "kernel/(main|int)\.fs"
 )
 $statusCoexistDetail = if ($statusCoexistRun.Stderr) {
     $statusCoexistRun.Stderr.Split([Environment]::NewLine)[0]

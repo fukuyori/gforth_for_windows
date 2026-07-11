@@ -3,8 +3,8 @@
 This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that adds a native
 Windows build, runtime fixes for interactive terminals, and an Inno Setup
-installer flow.  The current fork release is based on `Gforth 0.7.9_20260415`
-and is versioned as `0.7.9_20260415+fukuyori.2.3`.
+installer flow.  The current fork release is based on `Gforth 0.7.9_20260708`
+and is versioned as `0.7.9_20260708+fukuyori.3.0`.
 
 The goal is to build and package `gforth.exe` on Windows without depending on
 MSYS2 or MinGW at runtime.
@@ -29,6 +29,18 @@ Native build:
 ```powershell
 .\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
 ```
+
+Native build from pre-generated artifacts, without any bootstrap Gforth:
+
+```powershell
+.\scripts\build-native.ps1 -SkipBootstrap
+```
+
+`-SkipBootstrap` compiles the engine from the already-present generated files
+(`engine/*.i`, `kernel/prim.fs`, `kernel/aliases.fs`, `prim.b`,
+`kernl64l.fi`) instead of regenerating them.  See "Bootstrap requirements
+after an upstream sync" below for when this is needed and how to produce
+those files.
 
 Native build with the Phase 6 advanced-interactive readiness checks:
 
@@ -166,6 +178,58 @@ The installer build produces:
 
 For the staged recovery plan for richer Windows interactive behavior, see
 `WINDOWS-INTERACTIVE-PLAN.md`.
+
+## Bootstrap Requirements After an Upstream Sync
+
+After merging upstream changes that touch `prim`, `kernel/`, or the startup
+libraries, the generated artifacts (`engine/*.i`, `kernel/prim.fs`,
+`kernel/aliases.fs`, `kernl64l.fi`) must be regenerated before the engine is
+rebuilt.  The generators (`prims2x.fs` and the `cross.fs` kernel build) need
+a **full-image** Gforth as host:
+
+- The fork's installed `gforth.fi` is a compact kernel-only image.  It lacks
+  `vocabulary`/`environment?`, so `kernel/main.fs` tries to `require
+  startup.fs` into the host, which replaces `included` with the
+  terminal-protocol version from `kernel/saccept.fs` and breaks all further
+  file loading.  Do not use it as a bootstrap host.
+- `gforth-advanced.fi` has the same terminal-protocol `included` and is
+  equally unusable for builds.
+
+Supported bootstrap hosts, in order of preference:
+
+1. **WSL Gforth** (used for the 20260708 sync).  Any reasonably recent full
+   Gforth in WSL can regenerate everything against the Windows-target
+   configuration files (`machpc.fs` is already generated with
+   `true DefaultValue crlf`, so the cross-built kernel keeps CRLF newlines):
+
+   ```sh
+   # in WSL, repo root; regenerate prim.b, engine/*.i, kernel/{prim,aliases}.fs
+   m4 -Dcondbranch_opt=0 prim > prim.b
+   gforth -p ".:$PWD:<gforth-lib-dir>" prims2x.fs -e '...'   # per build-native.ps1
+   # cross-build the fork kernel
+   gforth -p ".:$PWD:<gforth-lib-dir>" \
+     -e 'fpath= .|./kernel|~+|.' \
+     -e 's" mach64l.fs" include kernel/main.fs' \
+     -e 'save-cross kernl64l.fi- build/native/gforth.exe bye'
+   mv kernl64l.fi- kernl64l.fi
+   cp kernl64l.fi build/native/gforth.fi
+   ```
+
+   Then on Windows: `.\scripts\build-native.ps1 -SkipBootstrap`, followed by
+   the advanced-image build.
+
+2. **Official Windows Gforth** (`C:\Program Files (x86)\gforth\gforth.exe`),
+   when installed: pass it as `-BootstrapExe`; it is a full image and hosts
+   the generators directly.
+
+3. **Upstream snapshot tarball** artifacts: a matching
+   `gforth-<version>.tar.xz` ships pre-generated `engine/*.i`,
+   `kernel/prim.fs`, `kernel/aliases.fs`, and `kernl*.fi`.  These match the
+   upstream `prim`, so any fork-side `prim` changes must be re-applied to
+   `engine/prim.i` by hand, and the tarball kernel lacks the fork's
+   `kernel/accept.fs` console handling — use it only to break the
+   chicken-and-egg cycle, then cross-build the real fork kernel with the
+   resulting engine or WSL.
 
 ## Port Summary
 

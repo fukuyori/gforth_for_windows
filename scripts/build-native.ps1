@@ -5,6 +5,7 @@ param(
     [string]$BootstrapImage,
     [string]$BootstrapPrimSpec,
     [string]$M4Exe,
+    [switch]$SkipBootstrap,
     [switch]$SyntaxOnly,
     [switch]$CheckAdvancedInteractive,
     [switch]$ProbeAdvancedInteractive,
@@ -765,7 +766,15 @@ function Invoke-OptionalPhase6Checks {
 Write-NativeConfig
 Write-SupportGeneratedFiles
 
-$script:ResolvedBootstrapExe = if ($BootstrapExe) {
+$script:ResolvedBootstrapExe = if ($SkipBootstrap) {
+    # Build only from pre-generated artifacts (engine/*.i, kernel/prim.fs,
+    # kernel/aliases.fs, prim.b, kernl64l.fi), e.g. taken from an upstream
+    # snapshot tarball.  Needed when no full-image bootstrap gforth is
+    # available: the fork's installed gforth.fi is a kernel-only image, and
+    # loading startup.fs on it replaces INCLUDED with the terminal-protocol
+    # version from kernel/saccept.fs, which cannot read files.
+    $null
+} elseif ($BootstrapExe) {
     $BootstrapExe
 } else {
     $installedBootstrapExe = Get-InstalledBootstrapExe

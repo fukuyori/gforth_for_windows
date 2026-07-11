@@ -540,38 +540,38 @@ If @i{nerror} is 0, drop it and continue.  Otherwise, transfer
 control to the next dynamically enclosing exception handler, reset
 the stacks accordingly, and push @i{nerror}.
 
-#line 273 "kernel/basics.fs"
+#line 274 "kernel/basics.fs"
 make-doc c(abort") c-addr --  )
 
-#line 276 "kernel/basics.fs"
+#line 277 "kernel/basics.fs"
 make-doc ?warning f xt --  )
 
-#line 285 "kernel/basics.fs"
+#line 286 "kernel/basics.fs"
 make-doc abort ?? -- ??  ) core,exception-ext
 @code{-1 throw}.
 
-#line 291 "kernel/basics.fs"
+#line 292 "kernel/basics.fs"
 make-doc ?stack ?? -- ??  ) gforth-internal
 
-#line 301 "kernel/basics.fs"
+#line 302 "kernel/basics.fs"
 make-doc depth -- +n  ) core depth
 @var{+n} is the number of values that were on the data stack before
 @var{+n} itself was placed on the stack.
 
-#line 306 "kernel/basics.fs"
+#line 307 "kernel/basics.fs"
 make-doc clearstack ... --  ) gforth clear-stack
 remove and discard all/any items from the data stack.
 
-#line 310 "kernel/basics.fs"
+#line 311 "kernel/basics.fs"
 make-doc clearstacks ... --  ) gforth clear-stacks
 empty data and FP stack
 
-#line 321 "kernel/basics.fs"
+#line 322 "kernel/basics.fs"
 make-doc decimal --  ) core
 Set @code{base} to #10 (decimal).  In many cases
 @code{base-execute} is a better alternative.
 
-#line 326 "kernel/basics.fs"
+#line 327 "kernel/basics.fs"
 make-doc hex --  ) core-ext
 Set @code{base} to $10 (hexadecimal).  In many cases
 @code{base-execute} is a better alternative.
@@ -2045,32 +2045,32 @@ Create an unnamed stack with at least @var{n} cells space.
 make-doc >stack x stack --  ) gforth-experimental to-stack
 Push @i{x} to top of @i{stack}.
 
-#line 168 "kernel/recognizer.fs"
+#line 169 "kernel/recognizer.fs"
 make-doc stack> stack -- x  ) gforth-experimental stack-from
 Pop item @i{x} from top of @i{stack}.
 
-#line 172 "kernel/recognizer.fs"
+#line 177 "kernel/recognizer.fs"
 make-doc stack# stack -- elements  )
 
-#line 175 "kernel/recognizer.fs"
+#line 180 "kernel/recognizer.fs"
 make-doc rec-kernel addr u -- ... translate-xt / 0  ) gforth-internal
 Sequence of @code{rec-name} and @code{rec-number-kernel}
 
-#line 179 "kernel/recognizer.fs"
+#line 184 "kernel/recognizer.fs"
 make-doc rec-forth c-addr u -- translation  ) gforth-experimental
 The system recognizer: @word{rec-forth} is a @word{defer}red
 word that contains a recognizer (sequence).  The system's text
 interpreter calls @word{rec-forth}.
 
-#line 185 "kernel/recognizer.fs"
+#line 190 "kernel/recognizer.fs"
 make-doc [ --  )  core	left-bracket
 Enter interpretation state. Immediate word.
 
-#line 189 "kernel/recognizer.fs"
+#line 194 "kernel/recognizer.fs"
 make-doc ] --  ) core	right-bracket
 Enter compilation state.
 
-#line 193 "kernel/recognizer.fs"
+#line 198 "kernel/recognizer.fs"
 make-doc postpone "name" --  ) core
 Compiles the compilation semantics of @i{name}.
 
