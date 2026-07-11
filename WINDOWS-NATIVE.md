@@ -116,7 +116,7 @@ To classify the current advanced-interactive blockers:
 
 This reports whether failures are missing words, startup/build-context
 dependencies, image-builder mismatches, or compact-image compile limitations.
-In the current `fukuyori.2.3` follow-up state, `status-line.fs` and
+In the current `fukuyori.3.0` state, `status-line.fs` and
 `locate1.fs` are safe to `require` in the compact image, but the `locate` word
 itself is still absent until the full locate startup context or the advanced
 image is used.  The advanced image built with `-IncludeHistory` currently

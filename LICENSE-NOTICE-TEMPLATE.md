@@ -19,10 +19,10 @@ Upstream repository:
 https://github.com/forthy42/gforth
 
 Base version:
-Gforth 0.7.9_20260415
+Gforth 0.7.9_20260708
 
 Fork release version:
-0.7.9_20260415+fukuyori.1.1
+0.7.9_20260708+fukuyori.3.0
 
 Maintainer:
 fukuyori
@@ -37,7 +37,7 @@ Use this near the top of `README.md` or in the repository description:
 
 ```text
 This repository is a fork of https://github.com/forthy42/gforth and is
-based on Gforth 0.7.9_20260415.
+based on Gforth 0.7.9_20260708.
 
 This fork contains Windows-native build, runtime, and packaging changes.
 Unless otherwise noted in individual files, the work is distributed
@@ -52,7 +52,7 @@ Use this in release notes or project documentation when you want to
 state clearly that this is a modified version:
 
 ```text
-This is a modified version of Gforth, based on Gforth 0.7.9_20260415
+This is a modified version of Gforth, based on Gforth 0.7.9_20260708
 from the forthy42/gforth repository.
 
 This fork adds Windows-native compatibility, build scripts, and an
@@ -70,7 +70,7 @@ Use this when publishing a source archive or source tag:
 ```text
 Source release for the Windows-native Gforth fork.
 
-This release is based on Gforth 0.7.9_20260415 from
+This release is based on Gforth 0.7.9_20260708 from
 https://github.com/forthy42/gforth and contains local modifications.
 
 Fork repository:
@@ -91,7 +91,7 @@ Use this alongside a `.zip`, `.exe`, or installer download:
 
 ```text
 Windows binary release of a modified Gforth fork based on
-Gforth 0.7.9_20260415 from https://github.com/forthy42/gforth.
+Gforth 0.7.9_20260708 from https://github.com/forthy42/gforth.
 
 Corresponding source for this exact binary release is available at:
 https://github.com/fukuyori/gforth_for_windows/releases/tag/<tag>
@@ -115,7 +115,7 @@ Use this in a GitHub Release description:
 This release contains a Windows-native build of this Gforth fork.
 
 Base version:
-- Gforth 0.7.9_20260415
+- Gforth 0.7.9_20260708
 - upstream fork source: https://github.com/forthy42/gforth
 - fork repository: https://github.com/fukuyori/gforth_for_windows
 
@@ -142,7 +142,7 @@ Use this in an installer README, download page, or release announcement:
 
 ```text
 This installer packages a modified Windows-native build of Gforth based
-on Gforth 0.7.9_20260415.
+on Gforth 0.7.9_20260708.
 
 Upstream source:
 https://github.com/forthy42/gforth
@@ -165,5 +165,5 @@ See the included license files for additional details.
 Use this where only a short attribution fits:
 
 ```text
-Forked from forthy42/gforth, based on Gforth 0.7.9_20260415.
+Forked from forthy42/gforth, based on Gforth 0.7.9_20260708.
 ```
