@@ -21,13 +21,13 @@ dnl Process this file with autoconf to produce a configure script.
 
 #We use some automake macros here,
 #but don't use automake for creating Makefile.in
-AC_INIT([gforth],[0.7.9_20260415+fukuyori.2.3],[https://savannah.gnu.org/bugs/?func=addbug&group=gforth])
+AC_INIT([gforth],[0.7.9_20260708+fukuyori.3.0],[https://savannah.gnu.org/bugs/?func=addbug&group=gforth])
 AC_PREREQ([2.69])
 AC_CONFIG_MACRO_DIR([m4])
 #snapshots have numbers major.minor.release_YYYYMMDD
 #note that lexicographic ordering must be heeded.
 #I.e., 0.4.1_YYYYMMDD must not exist before 0.4.1!
-UPDATED="April 15, 2026"
+UPDATED="July 08, 2026"
 AC_SUBST(UPDATED)
 AC_CONFIG_HEADERS(engine/config.h)
 AC_USE_SYSTEM_EXTENSIONS
@@ -1520,6 +1520,8 @@ AC_CHECK_LIB(rt,clock_gettime)
 # Checks for libopcodes
 
 LD_VERSION=`$LD -v | tr ' ' '\n' | $GNU_TAIL -n 1`
+LD_VER1=`echo $LD_VERSION | cut -f1-3 -d.`
+LD_VER2=`echo $LD_VERSION | cut -f4 -d.`
 LIBOPCODES=""
 disasm2_fs=""
 disasm2_la=""
@@ -1529,7 +1531,7 @@ old_LDFLAGS="$LDFLAGS"
 #  searched, because we use libcc to link to libopcodes
 old_CC="$CC"
 CC="$CC -fPIC -shared -Wl,--no-undefined"
-AC_SEARCH_LIBS([init_disassemble_info],[opcodes-$LD_VERSION-system opcodes-$LD_VERSION-multiarch opcodes-$LD_VERSION opcodes],
+AC_SEARCH_LIBS([init_disassemble_info],[opcodes_pic opcodes-$LD_VERSION-system opcodes-$LD_VER1-system.$LD_VER2 opcodes-$LD_VERSION-multiarch opcodes-$LD_VER1-multiarch.$LD_VER2 opcodes-$LD_VERSION opcodes],
 	        [AC_CHECK_HEADER(dis-asm.h,[LIBOPCODES=$ac_cv_search_init_disassemble_info
 disasm2_fs=unix/disasm2.fs
 disasm2_la='$(buildccdir)/libgfdisasm2.la'

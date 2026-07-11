@@ -163,7 +163,7 @@ Constant status-terminal-ready?
 [THEN]
 
 [IFDEF] {
-    : -status ( -- ) \ gforth
+    : -status ( -- ) \ gforth "minus-status"
 	\G Turn off the status bar at the bottom of the screen
 	['] noop is .status ['] noop is .unstatus ;
 [ELSE]

@@ -73,6 +73,7 @@ require history.fs
 [THEN]
 require varues.fs
 require latest-name.fs
+require rec-prefix.fs
 require rec-string.fs
 require rec-to.fs
 require rec-tick.fs
@@ -104,6 +105,7 @@ require rec-meta.fs
 require substitute.fs
 require csv.fs
 require i18n.fs
+require random.fs
 require obsolete.fs
 require unused.fs
 \ require unix/pthread.fs

@@ -39,8 +39,11 @@ get-current also c-lib definitions
     bintool-version { d: basename d: version }
     basename trylib dup ?EXIT drop
     version basename [: type '-' emit type ;] $tmp trylib dup ?EXIT drop
+    version basename [: type 2drop ." _pic" ;] $tmp trylib dup ?EXIT drop
     version basename [: type '-' emit type ." -system" ;] $tmp trylib dup ?EXIT drop
-    version basename [: type '-' emit type ." -multiarch" ;] $tmp trylib dup ?EXIT drop basename ;
+    version basename [: type '-' emit 2dup '.' -scan tuck type ." -system" /string type ;] $tmp trylib dup ?EXIT drop
+    version basename [: type '-' emit type ." -multiarch" ;] $tmp trylib dup ?EXIT drop
+    version basename [: type '-' emit 2dup '.' -scan tuck type ." -multiarch" /string type ;] $tmp trylib dup ?EXIT drop basename ;
 
 previous set-current
 
@@ -133,6 +136,8 @@ c-library disasm2 \ same name as .fs file!
     c-function init_opcodes_region init_region a u -- a
     c-function disline_opcodes disline_opcodes a a -- u ( addr disassembler-ftype -- addr1 )
     c-callback opcodes_stylish_type: a u n -- void
+
+    lib-handle-addr @ lha-id >r
 end-c-library
 
 theme-color: mnemonic-color
@@ -217,7 +222,11 @@ machine "amd64" str= machine "386" str= or [IF]
     2dup init_opcodes_region to disasm()
     [: bounds u+do cr i disline2 +loop cr ;] $10 base-execute ;
 :is 'cold defers 'cold
-    ['] set-stylish-type catch 0= IF ['] disasm2 is discode THEN ;
+    [ r> ]L @ 1+ 1 u> IF
+	['] set-stylish-type catch 0=
+	IF  ['] disasm2  ELSE  [ action-of discode ]L  THEN
+    ELSE  [ action-of discode ]L  THEN
+    is discode ;
 
 :is 'image  0 to disasm() defers 'image ;
 

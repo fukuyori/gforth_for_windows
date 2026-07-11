@@ -3,8 +3,8 @@
 This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that has been modified so
 Gforth can be built, run, and packaged natively on Windows.  It is currently
-based on `Gforth 0.7.9_20260415` and this fork's current release version is
-`0.7.9_20260415+fukuyori.2.3`.
+based on `Gforth 0.7.9_20260708` and this fork's current release version is
+`0.7.9_20260708+fukuyori.3.0`.
 
 Gforth is a fast and portable implementation of ANS Forth and Forth 200x.  The
 upstream project remains the base of this repository; this fork adds a native

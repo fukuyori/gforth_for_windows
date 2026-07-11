@@ -305,6 +305,7 @@ Arithmetic
 * Two-stage integer division::
 * Bitwise operations::
 * Numeric comparison::
+* Pseudo-random number generator::
 * Floating Point::
 
 Stack Manipulation
@@ -488,7 +489,7 @@ Object-oriented Forth
 * OOF::
 * Mini-OOF::
 * Mini-OOF2::
-* Comparison with other object models::
+* Comparison of object models::
 
 The @file{objects.fs} model
 
@@ -528,7 +529,7 @@ Programming Tools
 * Text interpreter status::
 * Locating source code definitions::  and editing
 * Locating uses of a word::     @code{where}.
-* Locating exception source::   Examining backtraces.
+* Locating backtrace source::
 * Examining compiled code::     @code{see} and friends.
 * Examining data::              Stacks and Memory.
 * Forgetting words::            Usually before reloading.
@@ -5423,6 +5424,7 @@ the operands are still in the original order. I.e., the infix
 * Two-stage integer division::
 * Bitwise operations::
 * Numeric comparison::
+* Pseudo-random number generator::
 * Floating Point::
 @end menu
 
@@ -5765,7 +5767,7 @@ doc-ror
 doc-drol
 doc-dror
 
-@node Numeric comparison, Floating Point, Bitwise operations, Arithmetic
+@node Numeric comparison, Pseudo-random number generator, Bitwise operations, Arithmetic
 @subsection Numeric comparison
 @cindex numeric comparison words
 
@@ -5821,7 +5823,19 @@ doc-du>
 doc-du>=
 
 
-@node Floating Point,  , Numeric comparison, Arithmetic
+@node  Pseudo-random number generator, Floating Point, Numeric comparison, Arithmetic
+@subsection Pseudo-random number generator
+@cindex Random numbers
+
+The pseudo-random number generator is initialised based on the time,
+so in the usual case it will start at a different value in different
+sessions.
+
+doc-rnd
+doc-random
+doc-seed!
+
+@node Floating Point,  , Pseudo-random number generator, Arithmetic
 @subsection Floating Point
 @cindex floating point arithmetic words
 
@@ -14441,10 +14455,11 @@ in every loop iteration.
 @cindex implementation of locals
 
 @cindex locals stack
-Gforth uses an extra locals stack. The most compelling reason for this
-is that the return stack is not float-aligned; using an extra stack
-also eliminates the problems and restrictions of using the return
-stack as locals stack. Like the other stacks, the locals stack grows
+Gforth uses a separate locals stack. The most compelling reason for
+this is that the return stack is not float-aligned; using a separate
+stack also eliminates the restrictions that other systems have because
+they use the return stack as locals stack (and that standard programs
+therefore also have). Like the other stacks, the locals stack grows
 toward lower addresses. A few primitives allow an efficient
 implementation; you should not use them directly, but they appear in
 the output of @code{see}, so they are documented here:
@@ -14616,12 +14631,14 @@ easier to misread and miswrite.
 @node Object-oriented Forth, Closures, Locals, Words
 @section Object-oriented Forth
 
-Gforth comes with three packages for object-oriented programming:
-@file{objects.fs}, @file{oof.fs}, and @file{mini-oof.fs}; none of them
-is preloaded, so you have to @code{include} them before use. The most
-important differences between these packages (and others) are discussed
-in @ref{Comparison with other object models}. All packages are written
-in Standard Forth and can be used with any other Standard Forth.
+Gforth comes with the following packages for object-oriented
+programming: @file{objects.fs}, @file{oof.fs}, @file{mini-oof.fs}, and
+@file{mini-oof2.fs}; none of them is preloaded, so you have to
+@code{require} them before use. The most important differences between
+these packages (and others) are discussed in @ref{Comparison with
+other object models}. Mini-OOF2 is Gforth-specific, the other three
+are are written in Standard Forth and can be used with any other
+standard-compliant Forth system.
 
 @menu
 * Why object-oriented programming?::
@@ -14630,7 +14647,7 @@ in Standard Forth and can be used with any other Standard Forth.
 * OOF::
 * Mini-OOF::
 * Mini-OOF2::
-* Comparison with other object models::
+* Comparison of object models::
 @end menu
 
 @c ----------------------------------------------------------------
@@ -15990,7 +16007,7 @@ s" fat bar" bar init
 bar draw
 @end example
 
-@node Mini-OOF2, Comparison with other object models, Mini-OOF, Object-oriented Forth
+@node Mini-OOF2, Comparison of object models, Mini-OOF, Object-oriented Forth
 @subsection Mini-OOF2
 
 Mini-OOF2 is very similar to Mini-OOF in many respects, but differs
@@ -16010,55 +16027,103 @@ doc-rec-moof2
 
 To assign methods to selectors, use @var{xt class} @code{is}
 @var{selector}, so no @code{defines} necessary.  For early binding of
-methods, @code{[} @var{class} @code{] defers} @var{selector} is used, no
-need for @code{::}.  Instead of writing @code{:noname} @var{code}
-@code{;} @var{class} @code{is} @var{selector}, you can also use the
-syntactic sugar @var{class} @code{:method} @var{selector} @var{code} @code{;}.
+methods, instead of @word{::} you use @word{defers}:
+
+@example
+[ @i{class} ] defers @i{selector}
+@end example
+
+Instead of writing
+
+@example
+:noname @i{code} ; @i{class} is @i{selector}
+@end example
+
+you can also use the syntactic sugar
+
+@example
+@i{class} :method @i{selector} @i{code} ;
+@end example
 
 doc-:method
 
-@node Comparison with other object models,  , Mini-OOF2, Object-oriented Forth
-@subsection Comparison with other object models
+
+
+@node Comparison of object models,  , Mini-OOF2, Object-oriented Forth
+@subsection Comparison of object models
+@c old name of the node
+@anchor{Comparison with other object models}
 @cindex comparison of object models
 @cindex object models, comparison
 
 Many object-oriented Forth extensions have been proposed (@cite{A survey
 of object-oriented Forths} (SIGPLAN Notices, April 1996) by Bradford
-J. Rodriguez and W. F. S. Poehlman lists 17). This section discusses the
-relation of the object models described here to two well-known and two
-closely-related (by the use of method maps) models.  Andras Zsoter
-helped us with this section.
+J. Rodriguez and W. F. S. Poehlman lists 17).
 
 @cindex Neon model
-The most popular model currently seems to be the Neon model (see
-@cite{Object-oriented programming in ANS Forth} (Forth Dimensions, March
-1997) by Andrew McKewan) but this model has a number of limitations
-@footnote{A longer version of this critique can be
-found in @cite{On Standardizing Object-Oriented Forth Extensions} (Forth
+A number of Forth object-oriented models were inspired by Neon (see
+@cite{Object-oriented programming in ANS Forth} (Forth Dimensions,
+March 1997) by Andrew McKewan) but this model has a number of
+limitations @footnote{A longer version of this critique can be found
+in @cite{On Standardizing Object-Oriented Forth Extensions} (Forth
 Dimensions, May 1997) by Anton Ertl.}:
 
 @itemize @bullet
 @item
-It uses a @code{@emph{selector object}} syntax, which makes it unnatural
-to pass objects on the stack.
+It uses a @code{@emph{selector object}} syntax, which makes it
+unnatural to pass objects on the stack.  By contrast, all models
+discussed in this manual have objects on the stack, leading to a
+@code{@emph{object selector}} syntax.
 
 @item
-It requires that the selector parses the input stream (at
-compile time); this leads to reduced extensibility and to bugs that are
-hard to find.
+It requires that the selector parses the input stream (at compile
+time); this leads to reduced extensibility and to bugs that are hard
+to find.  In @file{oof.fs} there is also parsing of the input stream,
+in the other models this does not happen for regular selector
+invocations.
 
 @item
 It allows using every selector on every object; this eliminates the
 need for interfaces, but makes it harder to create efficient
-implementations.
+implementations.  The models included with Gforth typically only
+support using selectors on objects of certain classes, with surprising
+and usually unpleasant results if you use a selector on other objects
+(or other things).
 @end itemize
 
-@cindex Pountain's object-oriented model
-Another well-known publication is @cite{Object-Oriented Forth} (Academic
-Press, London, 1987) by Dick Pountain. However, it is not really about
-object-oriented programming, because it hardly deals with late
-binding. Instead, it focuses on features like information hiding and
-overloading that are characteristic of modular languages like Ada (83).
+Another difference between object models is whether they have an
+active object such as @code{this} in @file{objects.fs}.
+@file{mini-oof.fs} does not have an active object, and uses the
+top-of-stack as the object for instance variables and the selector.
+
+And if they have an active object, there are differences in what sets
+or changes it, and what make use of the active object.
+
+@itemize @bullet
+@item
+In @file{objects.fs} @code{this} is only changed on method invocation
+(i.e., by @code{m: ... ;m}; note the possible separation between
+methods and selectors in @file{objects.fs}), and restored when leaving
+the method.  Only instance variables use @code{this}, while selectors
+take their object from the stack.
+
+@item
+In @file{mini-oof2.fs} only @code{>o ... o>} changes the active
+object, and both selectors and instance variables use the active
+object as the object for which the selector is invoked, or the
+instance variable accessed.  However, @file{mini-oof2.fs} has a
+recognizer that recognizes @code{.@i{word}} and
+executes/compiles/postpones code equivalent to @code{>o @i{word} >o},
+so you can use it like @file{objects.fs} by always invoking selectors
+with a prefixed @samp{.}, and never invoke instance variables in that
+way.
+
+@item
+In @file{oof.fs} selector/method invocation changes the active object,
+like in @code{object.fs}, but it also has @code{>o ... o>} like
+@file{mini-oof2.fs} (but without a helping recognizer).
+
+@end itemize
 
 @cindex Zsoter's object-oriented model
 In @uref{http://www.forth.org/oopf.html, Does late binding have to be
@@ -16066,15 +16131,11 @@ slow?} (Forth Dimensions 18(1) 1996, pages 31-35) Andras Zsoter
 describes a model that makes heavy use of an active object (like
 @code{this} in @file{objects.fs}): The active object is not only used
 for accessing all fields, but also specifies the receiving object of
-every selector invocation; you have to change the active object
-explicitly with @code{@{ ... @}}, whereas in @file{objects.fs} it
-changes more or less implicitly at @code{m: ... ;m}. Such a change at
-the method entry point is unnecessary with Zsoter's model, because the
-receiving object is the active object already. On the other hand, the
-explicit change is absolutely necessary in that model, because otherwise
-no one could ever change the active object. An Standard Forth implementation
-of this model is available through
-@uref{http://www.forth.org/oopf.html}.
+every selector invocation (like in @file{mini-oof2.fs}; you have to
+change the active object explicitly with @code{@{ ... @}} (similar to
+how you use @code{>o ... o>} in @file{oof.fs} and
+@file{mini-oof2.fs}).  A Standard Forth implementation of this model
+is available through @uref{http://www.forth.org/oopf.html}.
 
 @cindex @file{oof.fs}, differences to other models
 The @file{oof.fs} model combines information hiding and overloading
@@ -16091,11 +16152,6 @@ disadvantage of this model is the parsing and the state-smartness, which
 reduces extensibility and increases the opportunities for subtle bugs;
 essentially, you are only safe if you never tick or @code{postpone} an
 object or class (Bernd disagrees, but I (Anton) am not convinced).
-
-@cindex @file{mini-oof.fs}, differences to other models
-The @file{mini-oof.fs} model is quite similar to a very stripped-down
-version of the @file{objects.fs} model, but syntactically it is a
-mixture of the @file{objects.fs} and @file{oof.fs} models.
 
 
 @c --------------------------------------------------------------
@@ -16461,20 +16517,32 @@ Regular expressions are pattern matching algorithms for strings found in
 many contemporary languages.  You can add regular expression
 functionality to Gforth with @code{require regexp.fs}.
 
-The classical implementation for this pattern matching is a backtracking
-algorithm, which is also necessary if you want to have features like
-backreferencing.  Gforth implements regular expressions by providing a
-language to define backtracking programs for pattern matching.  Basic
-element is the control structure @code{FORK} @dots{} @code{JOIN}, which
-is a forward call within a word, and therefore allows to code a
-lightweight try and fail control structure.
+However, the regexp support does not use any of the established regexp
+syntaxes; instead, the syntax is described below.  Here's an example
+of how it is used:
 
-doc-FORK
-doc-JOIN
+@source
+charclass [bl-]   blanks +class '-' +char
 
-You can program any sort of arbitrary checks yourself by computing a
-flag and @code{?LEAVE} when the check fails.  Your regular expression
-code is enclosed in @code{((} and @code{))}.
+: telnum ( addr u -- flag )
+    (( {{ ` (  \( \d \d \d \) ` ) || \( \d \d \d \) }}  \s
+    \( \d \d \d \) [bl-] c?
+    \( \d \d \d \d \) )) ;
+
+: ?tel ( addr u -- )
+  telnum IF
+    '(' emit \1 type ." ) " \2 type '-' emit \3 type ."  succeeded"
+  ELSE
+    \0 type ."  failed"
+  THEN ;
+
+s" (555) 555-5555abc" ?tel \ prints "(555) 555-5555 succeeded"
+s" (555) 555-555abc"  ?tel \ prints "(555) 555-555abc failed"
+@end source
+
+More examples can be found in @code{test/regexp-test.fs}.
+
+Your regular expression code is enclosed in @code{((} and @code{))}.
 
 doc-((
 doc-))
@@ -16556,7 +16624,19 @@ doc-//s
 doc-//o
 doc-//g
 
-Examples can be found in @code{test/regexp-test.fs}.
+The classical implementation for this pattern matching is a backtracking
+algorithm, which is also necessary if you want to have features like
+backreferencing.  Gforth implements regular expressions by providing a
+language to define backtracking programs for pattern matching.  Basic
+element is the control structure @code{FORK} @dots{} @code{JOIN}, which
+is a forward call within a word, and therefore allows to code a
+lightweight try and fail control structure.
+
+doc-FORK
+doc-JOIN
+
+You can program any sort of arbitrary checks yourself by computing a
+flag and @code{?LEAVE} when the check fails.
 
 @c -------------------------------------------------------------
 @node Programming Tools, Multitasker, Regular Expressions, Words
@@ -16569,7 +16649,7 @@ Examples can be found in @code{test/regexp-test.fs}.
 * Text interpreter status::
 * Locating source code definitions::  and editing
 * Locating uses of a word::     @code{where}.
-* Locating exception source::   Examining backtraces.
+* Locating backtrace source::
 * Examining compiled code::     @code{see} and friends.
 * Examining data::              Stacks and Memory.
 * Forgetting words::            Usually before reloading.
@@ -16638,9 +16718,9 @@ to finish editing to continue with your Forth session), terminal
 editors in the foreground (default for editors not known to Gforth is
 foreground).  If you have not set @code{EDITOR}, the default editor is
 @file{vi}.
-@c !! cursor keys
 
 doc-locate
+doc-fancy-after-l
 doc-xt-locate
 
 The @emph{current location} is set by a number of other words in
@@ -16670,7 +16750,7 @@ You can see the definitions of similarly-named words with
 doc-browse
 
 
-@node Locating uses of a word, Locating exception source, Locating source code definitions, Programming Tools
+@node Locating uses of a word, Locating backtrace source, Locating source code definitions, Programming Tools
 @subsection Locating uses of a word
 @cindex Uses of a word
 
@@ -16690,17 +16770,24 @@ no uses:
 
 doc-unused-words
 
-@node Locating exception source, Examining compiled code, Locating uses of a word, Programming Tools
+@node Locating backtrace source, Examining compiled code, Locating uses of a word, Programming Tools
 @subsection Locating exception source
 @cindex exception source code
 @cindex source code for exception
 @cindex backtrace examination
 
+An uncaught exception shows a backtrace (actually a return stack dump,
+@pxref{Error messages}).  If the return stack entry is a return
+address, the immediately preceding location produced the call that the
+return address would have returned from, and is shown as word in the
+backtrace.  You can inspect the source code of such a call with the
+following words:
+
 doc-tt
 doc-nt
 doc-bt
 
-@node Examining compiled code, Examining data, Locating exception source, Programming Tools
+@node Examining compiled code, Examining data, Locating backtrace source, Programming Tools
 @subsection Examining compiled code
 @cindex compiled code examination
 

@@ -68,6 +68,7 @@
 ???
 @
 @+
+@+
 [
 [']
 [(')]
@@ -276,6 +277,7 @@ add-ldflags
 add-lib
 add-lib
 add-libpath
+add-prefix
 .addr.
 >addr
 ?addr
@@ -1221,6 +1223,7 @@ decl,
 decl,
 decode
 decode-pos
+decode-string-literal
 decode-view
 @decompile-prim
 decompile-prim3
@@ -1236,7 +1239,6 @@ default-method
 default-name>comp
 default-name>int
 default-out
-default-recognize
 default-w:
 default-wa:
 Def-color
@@ -3011,6 +3013,7 @@ ind-call
 ind-call
 index++
 index--
+index.
 in-dictionary?
 in-dictionary1?
 -inf
@@ -3541,6 +3544,7 @@ mark-end
 marker
 marker!
 marker,
+marker>here
 mark-start
 mask?
 mask-shift#
@@ -4331,6 +4335,7 @@ prefix-found
 prefix-number
 prefix-off
 prefix-string
+prefix-table
 preopen-path-lib
 prepare-cb#
 prepare-for-dump
@@ -4448,6 +4453,7 @@ r+
 r>
 r@
 RAD_2_DEG
+random
 rawdata_t
 rawdata_t-meas
 rawdata_t-mtime
@@ -4474,6 +4480,7 @@ rec'[]
 rec-[[
 rec-body
 rec-complex
+rec-default
 rec-dtick
 rec-env
 rec-f83
@@ -4482,6 +4489,7 @@ rec-float
 rec-forth
 rec-forth-nt?
 ?rec-found
+rec-id.
 rec-kernel
 rec-level
 rec-local
@@ -4496,6 +4504,7 @@ rec-number-kernel
 recognize
 .recognizer-sequence
 record-name
+rec-prefix
 recs
 rec-scope
 rec-sequence:
@@ -4594,6 +4603,8 @@ rfft
 rgb>mode
 rgb-split
 rmdir
+rnd
+rng-state
 r/o
 rol
 roll
@@ -5157,8 +5168,6 @@ section-name
 sections
 sections-execute
 section-size
-sections-marker!
-sections-marker,
 section-start
 see
 see;abicode
@@ -5168,7 +5177,10 @@ seecode
 see-code-range
 seecol
 seecon
+seed
+seed!
 seedefer
+seed-init
 seedoes
 seefield
 SEEN_AIS
@@ -5852,6 +5864,7 @@ U-DO
 udp
 ud.r
 u#exec
+uindex.
 UINT_MAX
 ul@
 um*
@@ -5875,6 +5888,7 @@ uncolored-mode
 under+
 Underline
 un-dquote
+(unescape)
 unescape
 !!unfinished!!
 unfixed-forward

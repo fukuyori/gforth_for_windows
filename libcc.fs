@@ -791,7 +791,7 @@ Create callback-&style c-var c,
 : c-hash-ok? ( -- addr1 addr2 flag )
     [: ." gflibcc_hash_" lib-modulename $. ;] $tmp
     lib-handle lib-sym
-    ?dup-IF  c-source-hash 2dup $10 tuck str=  ELSE  0 0 false  THEN ;
+    dup IF  c-source-hash 2dup $10 tuck str=  ELSE  drop 0 0 false  THEN ;
 
 : .xx ( n -- ) 0 [: <<# # # #> type #>> ;] $10 base-execute ;
 : .hashxx ( addr u -- ) bounds DO  I c@ .xx  LOOP ;
@@ -877,10 +877,10 @@ Create callback-&style c-var c,
     c-source-file-id @ assert( dup ) ;
 
 : .lib-error ( -- )
-    [: cr lib-name type ." :"
+    [: cr error-color lib-name type ." :"
     [ifdef] lib-error
          cr lib-error type
-    [then] ;] do-debug ;
+    [then] ;] ['] execute-theme-color do-debug ;
 
 \ hashing
 
@@ -1186,11 +1186,14 @@ init-libcc
     [: [: ( lib -- )
 	    case dup >does-code
 		['] call-c@ of
-		    >body dup link-wrapper-function
-		    \ ." relink: " over body> .name dup h. cr
-		    swap !  endof
+		    >body dup cff-lha @ @ 1+ 1 u> IF
+			dup link-wrapper-function
+			\ ." relink: " over body> .name dup h. cr
+			swap !  ELSE  drop  THEN
+		endof
 		['] callback-does> of
-		    >body setup-callback
+		    >body dup ccb-lha @ @ 1+ 1 u> IF
+			setup-callback  ELSE  drop  THEN
 		endof
 	    drop endcase
 	    true ;] swap traverse-wordlist ;] map-vocs ;
@@ -1209,34 +1212,35 @@ Defer prefetch-lib ( addr u -- )
 ' 2drop is prefetch-lib
 
 : map-libs { xt -- }
-    lib-handle-addr @
-    BEGIN  dup @ IF  dup xt execute  THEN
-    lha-next @ dup 0= UNTIL  drop ;
+    lib-handle-addr @ >r
+    BEGIN  r@ @ IF  r@ xt execute  THEN
+    r> lha-next @ dup >r 0= UNTIL  rdrop ;
 
 : .libs ( -- ) [: lha-name $. space ;] map-libs ;
 
 : reopen-libs ( -- )
-    [:  lib-handle-addr !@ >r
+    lib-handle-addr @ >r
+    [:  lib-handle-addr !
 	lib-modulename $@
 	libcc-named-dir prepend-dirname lib-filename $!
 	open-wrappers dup IF
 	    \ ." link " r@ lha-name $. ."  to " dup h. cr
 	    dup lib-handle!  init-lib
-	    r> lib-handle-addr !
 	    EXIT
-	THEN
-	r> lib-handle-addr !
-	.lib-error !!openlib!! throw
-    ;] map-libs ;
+	THEN  drop
+	true warning" reopen lib failed"
+	.lib-error
+	\ !!openlib!! throw
+    ;] ['] map-libs catch
+    r> lib-handle-addr ! throw ;
 
 :is 'cold ( -- )
     defers 'cold  get-host? to host?
     init-libcc reopen-libs rebind-libcc lib-filename $free ;
 
-:noname ( -- )
+:is 'image ( -- )
     defers 'image  unbind-libcc  ['] on map-libs
     libcc$ off  libcc-named-dir$ off  libcc-path off  lib-filename off ;
-is 'image
 
 : c-library ( "name" -- ) \ gforth
 \G Parsing version of @code{c-library-name}

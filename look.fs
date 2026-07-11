@@ -136,6 +136,8 @@ has? rom
 
 \ print recognizer stack
 
+Defer rec-id. ' id. is rec-id.
+
 : .recognizer-sequence ( recognizer -- )
     get-recs 0 ?DO
 	dup defers@ >does-code ['] recognize =
@@ -143,10 +145,7 @@ has? rom
 	dup >voc >does-code [ ' forth >does-code ] Literal = IF
 	    >voc
 	THEN
-\	    name>string 2dup s" rec-" string-prefix? IF
-\		4 /string  9 attr! ." ~"  0 attr!
-\	    THEN  type space
-	id.  r> ?dup-IF
+	rec-id. r> ?dup-IF
 	    ." ( " recurse ." ) "
 	THEN
     LOOP ;

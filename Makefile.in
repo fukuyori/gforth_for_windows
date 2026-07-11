@@ -324,6 +324,7 @@ GFORTH_FI_SRC2=\
 	prelude.fs \
 	quotes.fs \
 	rec-sequence.fs \
+	rec-prefix.fs \
 	rec-string.fs \
 	recognizer-ext.fs \
 	rec-to.fs rec-tick.fs rec-body.fs rec-scope.fs rec-env.fs rec-meta.fs \
@@ -499,7 +500,7 @@ FORTH_SRC = $(KERN_SRC) $(GFORTH_FI_DIST_SRC) $(EC_SRC) $(F_SRC)	      \
 	notfound.fs utf16.fs archive.fs cilk.fs fixfiles.fs bits.fs	      \
 	reverse-words.fs config.fs set-compsem.fs coverage.fs tokenize.fs     \
 	unix/opensles-vals.fs recognizer2.fs trigger-value.fs need.fs	      \
-	provides.fs deferring.fs
+	provides.fs deferring.fs doc/dummy.fs
 
 GEN_SRC = standard-words.fs
 
@@ -1723,6 +1724,8 @@ doc/gforth.txt:	txt
 pdf ebook dvi txt ps html info: $(GFORTH_TEXI) $(VMGEN_TEXI) doc/Makefile
 		@echo MAKEDOC $@
 		-cd doc; $(MAKE) -j1 $@
+
+doc/vmgen.pdf doc/gforth.pdf: pdf
 
 .PHONY: doc
 doc:		info html ps pdf txt

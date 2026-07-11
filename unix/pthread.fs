@@ -163,6 +163,8 @@ c-library pthread
     3 to callback#
     c-callback atfork: -- void ( -- )
     r> to callback#
+
+    lib-handle-addr @ lha-id >r
 end-c-library
 
 require unix/pthread-types.fs
@@ -218,8 +220,8 @@ s" GFORTH_IGNLIB" getenv s" true" str= 0= [IF]
 
 :noname ( -- )
     [:  pthread-joinwait @ 0= IF  pthread-id pthread_detach drop  THEN
-	0 epiper !@ ?dup-if  close-file drop  THEN
-	0 epipew !@ ?dup-if  close-file drop  THEN
+	0 epiper !@ dup if  close-file  THEN  drop
+	0 epipew !@ dup if  close-file  THEN  drop
 	tmp$[] $[]free ;] catch drop
     0 (bye) ;
 IS kill-task
@@ -491,7 +493,7 @@ User keypollfds pollfd 2* cell- aligned uallot drop
 ' thread-key is key-ior
 
 :is 'cold defers 'cold
-    host? IF
+    host? [ r> ]L @ 1+ 1 u> and IF
 	atfork-cbs atfork-init
 	pthread-id pthread_self epiper create_pipe
 	preserve key-ior  preserve deadline
