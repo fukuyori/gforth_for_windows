@@ -4,7 +4,7 @@ This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that has been modified so
 Gforth can be built, run, and packaged natively on Windows.  It is currently
 based on `Gforth 0.7.9_20260708` and this fork's current release version is
-`0.7.9_20260708+fukuyori.3.0`.
+`0.7.9_20260708+fukuyori.3.1`.
 
 Gforth is a fast and portable implementation of ANS Forth and Forth 200x.  The
 upstream project remains the base of this repository; this fork adds a native
@@ -26,16 +26,21 @@ For the Windows-specific implementation details, see `WINDOWS-NATIVE.md`.
 
 ### Native Windows build
 
-Build a native `gforth.exe` and `gforth.fi` on Windows:
+Build the native runtime, image builder, and default image on Windows:
 
 ```powershell
-.\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
+.\scripts\build-native.ps1
 ```
 
 This produces:
 
 - `build/native/gforth.exe`
+- `build/native/gforth-ditc.exe`
 - `build/native/gforth.fi`
+
+`gforth.exe` uses the stable indirect-threaded engine on Windows.
+`gforth-ditc.exe` is a packaging helper used to create fully relocatable
+images; normal interactive use should continue to launch `gforth.exe`.
 
 Run the native build:
 
@@ -71,17 +76,20 @@ Smoke test:
 Create the release build first:
 
 ```powershell
-.\scripts\build-release.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
+.\scripts\build-release.ps1
 ```
 
 This produces the native runtime files and stages the installer input tree:
 
 - `build/native/gforth.exe`
+- `build/native/gforth-ditc.exe`
 - `build/native/gforth.fi`
 - `build/native/gforth-advanced.fi`
 - `build/installer/stage/`
 
-Create the installer from the staged release build:
+Electronically sign `build/installer/stage/gforth.exe` and
+`build/installer/stage/gforth-ditc.exe`, then create the installer from the
+signed staged release build:
 
 ```powershell
 .\scripts\build-installer.ps1
@@ -110,6 +118,11 @@ $env:GFORTH_WIN_STATUS = "1"
 $env:GFORTHHIST = "<install-dir>\.gforth-advanced-history"
 gforth.exe -i gforth-advanced.fi
 ```
+
+The installer regenerates `gforth-advanced.fi` with the bundled
+`gforth-ditc.exe`.  This keeps the image fully relocatable and prevents its
+primitive checksum from becoming invalid when Windows ASLR chooses a different
+address after a reboot.
 
 The default install directory is `%LOCALAPPDATA%\Programs\Gforth`.
 

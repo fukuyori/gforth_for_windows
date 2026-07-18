@@ -1,5 +1,6 @@
 param(
     [string]$NativeExe = ".\build\native\gforth.exe",
+    [string]$ImageBuilderExe = ".\build\native\gforth-ditc.exe",
     [string]$OutputImage = ".\build\native\gforth-advanced.fi",
     [string]$BootstrapExe = "C:\Program Files (x86)\gforth\gforth.exe",
     [switch]$IncludeEkey,
@@ -8,6 +9,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$script:BuildWorkingDirectory = (Get-Location).Path
 
 function Resolve-ExistingPath {
     param(
@@ -40,6 +42,7 @@ function Invoke-Gforth {
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
     $psi.UseShellExecute = $false
+    $psi.WorkingDirectory = $script:BuildWorkingDirectory
 
     $p = [System.Diagnostics.Process]::Start($psi)
     $stdout = $p.StandardOutput.ReadToEnd()
@@ -250,7 +253,8 @@ function Invoke-ImageBuildStep {
         [string]$Exe,
         [string[]]$Arguments,
         [string]$OutputImage,
-        [int]$RetryCount = 2
+        [int]$RetryCount = 2,
+        [string]$RejectOutputPattern
     )
 
     $attempts = 1 + $RetryCount
@@ -263,6 +267,10 @@ function Invoke-ImageBuildStep {
         }
         $result = Invoke-Gforth -Exe $Exe -Arguments $Arguments
         $passed = ($result.ExitCode -eq 0)
+        if ($passed -and $RejectOutputPattern) {
+            $combinedOutput = "$($result.Stdout)`n$($result.Stderr)"
+            $passed = ($combinedOutput -notmatch $RejectOutputPattern)
+        }
         if ($passed -and $OutputImage) {
             $passed = ((Test-Path $OutputImage) -and ((Get-Item $OutputImage).Length -gt 0))
         }
@@ -312,6 +320,7 @@ function Test-ImageWord {
 }
 
 $native = Resolve-ExistingPath -Path $NativeExe -Description "native gforth executable"
+$imageBuilder = Resolve-ExistingPath -Path $ImageBuilderExe -Description "DITC image-builder executable"
 $repoRoot = (Resolve-Path ".").Path
 $outputFullPath = [System.IO.Path]::GetFullPath($OutputImage, $repoRoot)
 $outputDirectory = [System.IO.Path]::GetDirectoryName($outputFullPath)
@@ -639,6 +648,11 @@ $bootstrapCrossCandidates = @(
     }
 )
 
+$outputParentOk = [string]::IsNullOrEmpty($outputDirectory) -or (Test-Path $outputDirectory)
+$separateFromDefault = ([System.IO.Path]::GetFullPath($defaultImage) -ne $outputFullPath)
+$advancedLoaderExists = Test-Path "windows-interactive-advanced.fs"
+
+if ($ProbeOnly) {
 Write-Host "Advanced interactive image probe"
 Write-Host "native: $native"
 Write-Host "default image: $defaultImage"
@@ -648,13 +662,10 @@ Write-Host "include history: $IncludeHistory"
 
 Write-Host ""
 Write-Host "== Image layout =="
-$outputParentOk = [string]::IsNullOrEmpty($outputDirectory) -or (Test-Path $outputDirectory)
 Write-Check -Name "advanced image directory" -Passed $outputParentOk -Detail $outputDirectory
 
-$separateFromDefault = ([System.IO.Path]::GetFullPath($defaultImage) -ne $outputFullPath)
 Write-Check -Name "advanced image separate from default image" -Passed $separateFromDefault
 
-$advancedLoaderExists = Test-Path "windows-interactive-advanced.fs"
 Write-Check -Name "advanced loader source" -Passed $advancedLoaderExists -Detail "windows-interactive-advanced.fs"
 
 $requiredSources = @("comp-i.fs", "startup.fs", "ekey.fs", "history.fs", "see.fs", "locate1.fs", "status-line.fs")
@@ -746,13 +757,12 @@ if ($bootstrapAvailable) {
 }
 
 Write-Host ""
-if ($ProbeOnly) {
-    Write-Host "Advanced interactive image probe complete."
-    Write-Host "Next required work:"
-    Write-Host "- make the native gforthmi-like path produce $OutputImage in normal build mode"
-    Write-Host "- verify the resulting image word surface before restoring ekey.fs/history.fs"
-    Write-Host "- keep build/native/gforth.fi on the current simple saccept path until then"
-    exit 0
+Write-Host "Advanced interactive image probe complete."
+Write-Host "Next required work:"
+Write-Host "- make the native gforthmi-like path produce $OutputImage in normal build mode"
+Write-Host "- verify the resulting image word surface before restoring ekey.fs/history.fs"
+Write-Host "- keep build/native/gforth.fi on the current simple saccept path until then"
+exit 0
 }
 
 if (-not $outputParentOk -or -not $separateFromDefault -or -not $advancedLoaderExists) {
@@ -764,7 +774,6 @@ Write-Host "Building advanced interactive image"
 
 $buildNoOffsetImage = Join-Path $repoRoot "build/native/gforth-mi-build-no-offset.fi"
 $buildOffsetImage = Join-Path $repoRoot "build/native/gforth-mi-build-offset.fi"
-$buildSecondNoOffsetImage = Join-Path $repoRoot "build/native/gforth-mi-build-second-no-offset.fi"
 $outputImageForForth = Convert-ToGforthPath $outputFullPath
 $savePrefix = ""
 if ($IncludeHistory) {
@@ -779,7 +788,7 @@ if ($IncludeEkey -or $IncludeHistory) {
 
 $noOffsetOk = Invoke-ImageBuildStep `
     -Name "build:no-offset-save" `
-    -Exe $native `
+    -Exe $imageBuilder `
     -Arguments @("--clear-dictionary", "--no-offset-im", "--die-on-signal=2", "-p", ".;~+;.", "-i", $kernelImage, "exboot.fs", "startup.fs", "-e", "$($savePrefix)savesystem build/native/gforth-mi-build-no-offset.fi") `
     -OutputImage $buildNoOffsetImage `
     -RetryCount $buildRetryCount
@@ -791,7 +800,7 @@ if (-not $noOffsetOk) {
 
 $offsetOk = Invoke-ImageBuildStep `
     -Name "build:offset-save" `
-    -Exe $native `
+    -Exe $imageBuilder `
     -Arguments @("--clear-dictionary", "--offset-image", "--die-on-signal=2", "-p", ".;~+;.", "-i", $kernelImage, "exboot.fs", "startup.fs", "-e", "$($savePrefix)savesystem build/native/gforth-mi-build-offset.fi") `
     -OutputImage $buildOffsetImage `
     -RetryCount $buildRetryCount
@@ -799,10 +808,11 @@ $offsetOk = Invoke-ImageBuildStep `
 if ($offsetOk) {
     $advancedOk = Invoke-ImageBuildStep `
         -Name "build:comp-image" `
-        -Exe $native `
+        -Exe $imageBuilder `
         -Arguments @("--die-on-signal=2", "-p", ".;~+;.", "-i", $kernelImage, "-e", "3", "exboot.fs", "startup.fs", "comp-i.fs", "-e", "comp-image build/native/gforth-mi-build-no-offset.fi build/native/gforth-mi-build-offset.fi $outputImageForForth bye") `
         -OutputImage $outputFullPath `
-        -RetryCount $buildRetryCount
+        -RetryCount $buildRetryCount `
+        -RejectOutputPattern "images have the same base address"
     if ($advancedOk) {
         if (Test-ImageSmoke -Name "build:advanced-smoke" -Exe $native -Image $outputFullPath) {
             if (($IncludeEkey -or $IncludeHistory) -and -not (Test-ImageWord -Name "build:advanced-word:ekey" -Exe $native -Image $outputFullPath -Word "ekey")) {
@@ -820,43 +830,5 @@ if ($offsetOk) {
     }
 }
 
-Write-Host "Offset-image build did not produce a fully usable pair; trying the two-no-offset data-relocatable fallback."
-
-$secondNoOffsetOk = Invoke-ImageBuildStep `
-    -Name "build:second-no-offset-save" `
-    -Exe $native `
-    -Arguments @("--clear-dictionary", "--no-offset-im", "--die-on-signal=2", "-p", ".;~+;.", "-i", $kernelImage, "rec-sequence.fs", "exboot.fs", "startup.fs", "-e", "$($savePrefix)savesystem build/native/gforth-mi-build-second-no-offset.fi") `
-    -OutputImage $buildSecondNoOffsetImage `
-    -RetryCount $buildRetryCount
-
-if (-not $secondNoOffsetOk) {
-    Write-Host "Advanced interactive image build failed before the fallback comp-image step."
-    exit 2
-}
-
-$fallbackOk = Invoke-ImageBuildStep `
-    -Name "build:comp-image-two-no-offset" `
-    -Exe $native `
-    -Arguments @("--die-on-signal=2", "-p", ".;~+;.", "-i", $kernelImage, "-e", "3", "exboot.fs", "startup.fs", "comp-i.fs", "-e", "comp-image build/native/gforth-mi-build-no-offset.fi build/native/gforth-mi-build-second-no-offset.fi $outputImageForForth bye") `
-    -OutputImage $outputFullPath `
-    -RetryCount $buildRetryCount
-
-if ($fallbackOk) {
-    if (Test-ImageSmoke -Name "build:advanced-fallback-smoke" -Exe $native -Image $outputFullPath) {
-        if (($IncludeEkey -or $IncludeHistory) -and -not (Test-ImageWord -Name "build:advanced-fallback-word:ekey" -Exe $native -Image $outputFullPath -Word "ekey")) {
-            Write-Host "Fallback image was written but does not expose ekey."
-            exit 2
-        }
-        if ($IncludeHistory -and -not (Test-ImageWord -Name "build:advanced-fallback-word:history-cold" -Exe $native -Image $outputFullPath -Word "history-cold")) {
-            Write-Host "Fallback image was written but does not expose history-cold."
-            exit 2
-        }
-        Write-Host "Built $outputFullPath with the data-relocatable two-no-offset fallback."
-        exit 0
-    }
-    Write-Host "Fallback image was written but does not start cleanly."
-    exit 2
-}
-
-Write-Host "Advanced interactive image build failed."
+Write-Host "Advanced interactive image build failed; refusing to create a data-relocatable fallback."
 exit 2

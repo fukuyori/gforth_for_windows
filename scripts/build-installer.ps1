@@ -32,6 +32,7 @@ function Resolve-InnoCompiler {
 
 $requiredStageFiles = @(
     "gforth.exe",
+    "gforth-ditc.exe",
     "gforth.fi",
     "gforth-advanced.fi",
     "generate-advanced.ps1",

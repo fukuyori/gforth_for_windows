@@ -98,6 +98,10 @@ if (-not (Test-Path (Join-Path $NativeDir "gforth.fi"))) {
     throw "Missing build/native/gforth.fi. Run scripts/build-native.ps1 first."
 }
 
+if (-not (Test-Path (Join-Path $NativeDir "gforth-ditc.exe"))) {
+    throw "Missing build/native/gforth-ditc.exe. Run scripts/build-native.ps1 first."
+}
+
 if ($Clean -and (Test-Path $StageDir)) {
     Remove-ItemWithRetry -Path $StageDir
 }
@@ -105,6 +109,7 @@ if ($Clean -and (Test-Path $StageDir)) {
 New-Item -ItemType Directory -Force -Path $StageDir | Out-Null
 
 Copy-StageFile -SourcePath (Join-Path $NativeDir "gforth.exe") -DestinationPath (Join-Path $StageDir "gforth.exe")
+Copy-StageFile -SourcePath (Join-Path $NativeDir "gforth-ditc.exe") -DestinationPath (Join-Path $StageDir "gforth-ditc.exe")
 Copy-StageFile -SourcePath (Join-Path $NativeDir "gforth.fi") -DestinationPath (Join-Path $StageDir "gforth.fi")
 Copy-StageFile -SourcePath (Join-Path $RepoRoot "scripts/generate-installed-advanced.ps1") -DestinationPath (Join-Path $StageDir "generate-advanced.ps1")
 Copy-StageFile -SourcePath (Join-Path $RepoRoot "scripts/gforth-advanced.cmd") -DestinationPath (Join-Path $StageDir "gforth-advanced.cmd")

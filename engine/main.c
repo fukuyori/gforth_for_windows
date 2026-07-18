@@ -2206,7 +2206,8 @@ void compile_prim1(Cell *start)
     return;
   prim = (Label)*start;
   if (prim<((Label)(xts+DOER_MAX)) || prim>((Label)(xts+npriminfos))) {
-    debugp(stderr,"compile_prim encountered xt %p [%lx]\n", prim, (((Cell)CODE_ADDRESS(prim)-(Cell)labels)));
+    debugp(stderr,"compile_prim encountered xt %p [%llx]\n", prim,
+           (unsigned long long)(((Cell)CODE_ADDRESS(prim)-(Cell)labels)));
     *start = (Cell)(((Cell)CODE_ADDRESS(prim)-(Cell)labels)+(Cell)vm_prims)+CFA_BYTE_OFFSET;
     return;
   } else {

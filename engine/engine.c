@@ -655,8 +655,10 @@ Label *gforth_engine(Xt *ip0 sr_proto)
     Cell xt_offset = offset_image? XT_OFFSET : 0;
     Cell label_offset = offset_image? LABEL_OFFSET : 0;
 
-    debugp(stderr, "offsets code/xt/label: %lx/%lx/%lx\n",
-	   code_offset, xt_offset, label_offset);
+    debugp(stderr, "offsets code/xt/label: %llx/%llx/%llx\n",
+           (unsigned long long)code_offset,
+           (unsigned long long)xt_offset,
+           (unsigned long long)label_offset);
 
     symbols = (Label *)(malloc(MAX_SYMBOLS*sizeof(Cell)+CODE_OFFSET)+code_offset);
     xts = (Label *)(malloc(MAX_SYMBOLS*sizeof(Cell)+XT_OFFSET)+xt_offset);

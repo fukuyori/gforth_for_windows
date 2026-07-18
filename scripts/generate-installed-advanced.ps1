@@ -6,6 +6,7 @@ $ErrorActionPreference = "Stop"
 
 $installRoot = (Resolve-Path -LiteralPath $InstallDir).Path
 $gforth = Join-Path $installRoot "gforth.exe"
+$imageBuilder = Join-Path $installRoot "gforth-ditc.exe"
 $kernelImage = Join-Path $installRoot "gforth.fi"
 $noOffsetImage = Join-Path $installRoot "gforth-mi-build-no-offset.fi"
 $offsetImage = Join-Path $installRoot "gforth-mi-build-offset.fi"
@@ -31,20 +32,22 @@ function Require-File {
 function Invoke-GforthStep {
     param(
         [string]$Name,
+        [string]$Executable = $gforth,
         [string[]]$Arguments,
-        [int]$RetryCount = 1
+        [int]$RetryCount = 1,
+        [string]$RejectOutputPattern
     )
 
     for ($attempt = 1; $attempt -le $RetryCount; $attempt++) {
         Write-Log ""
         Write-Log "== $Name attempt $attempt/$RetryCount =="
-        Write-Log ("& `"$gforth`" " + ($Arguments -join " "))
+        Write-Log ("& `"$Executable`" " + ($Arguments -join " "))
 
         Push-Location $installRoot
         $oldErrorActionPreference = $ErrorActionPreference
         try {
             $ErrorActionPreference = "Continue"
-            $output = & $gforth @Arguments 2>&1
+            $output = & $Executable @Arguments 2>&1
             $exitCode = $LASTEXITCODE
         } finally {
             $ErrorActionPreference = $oldErrorActionPreference
@@ -56,7 +59,12 @@ function Invoke-GforthStep {
         }
 
         if ($exitCode -eq 0) {
-            return
+            $outputText = $output | Out-String
+            if ($RejectOutputPattern -and $outputText -match $RejectOutputPattern) {
+                Write-Log "$Name rejected output matching: $RejectOutputPattern"
+                return $false
+            }
+            return $true
         }
 
         Write-Log "$Name failed with exit code $exitCode"
@@ -71,6 +79,7 @@ function Invoke-GforthStep {
 Set-Content -LiteralPath $logPath -Value "Generating gforth-advanced.fi in $installRoot"
 
 Require-File -Path $gforth -Description "gforth executable"
+Require-File -Path $imageBuilder -Description "gforth DITC image builder"
 Require-File -Path $kernelImage -Description "kernel image"
 Require-File -Path (Join-Path $installRoot "exboot.fs") -Description "exboot.fs"
 Require-File -Path (Join-Path $installRoot "startup.fs") -Description "startup.fs"
@@ -83,18 +92,16 @@ Remove-Item -LiteralPath $noOffsetImage, $offsetImage, $advancedImage -Force -Er
 
 $savePrefix = "include kernel/accept.fs require ekey.fs require history.fs "
 
-# The two intermediate images must end up at different base addresses for
-# comp-image to compute a complete relocation bitmap.  When address-space
-# layout happens to place both at the same base, the composed image loads
-# and passes a plain smoke test but crashes in compile-prims as soon as a
-# new definition is compiled.  The compile smoke test below catches that;
-# on failure the whole image set is rebuilt.
+# The two intermediate images must be created by the doubly indirect threaded
+# builder.  A normal engine cannot provide independent code/xt/label bases and
+# produces only a data-relocatable image whose checksum and code references
+# become invalid when Windows ASLR changes the executable address.
 $accepted = $false
 for ($round = 1; $round -le 4; $round++) {
     Write-Log ""
     Write-Log "== image generation round $round =="
 
-    Invoke-GforthStep -Name "save no-offset image" -Arguments @(
+    $null = Invoke-GforthStep -Name "save no-offset image" -Executable $imageBuilder -Arguments @(
         "--clear-dictionary",
         "--no-offset-im",
         "--die-on-signal=2",
@@ -105,7 +112,7 @@ for ($round = 1; $round -le 4; $round++) {
         "-e", "$($savePrefix)savesystem gforth-mi-build-no-offset.fi"
     ) -RetryCount 12
 
-    Invoke-GforthStep -Name "save offset image" -Arguments @(
+    $null = Invoke-GforthStep -Name "save offset image" -Executable $imageBuilder -Arguments @(
         "--clear-dictionary",
         "--offset-image",
         "--die-on-signal=2",
@@ -116,7 +123,7 @@ for ($round = 1; $round -le 4; $round++) {
         "-e", "$($savePrefix)savesystem gforth-mi-build-offset.fi"
     ) -RetryCount 12
 
-    Invoke-GforthStep -Name "compose advanced image" -Arguments @(
+    $composeAccepted = Invoke-GforthStep -Name "compose advanced image" -Executable $imageBuilder -Arguments @(
         "--die-on-signal=2",
         "-p", ".;~+;.",
         "-i", $kernelImage,
@@ -125,7 +132,13 @@ for ($round = 1; $round -le 4; $round++) {
         "startup.fs",
         "comp-i.fs",
         "-e", "comp-image gforth-mi-build-no-offset.fi gforth-mi-build-offset.fi gforth-advanced.fi bye"
-    ) -RetryCount 12
+    ) -RetryCount 12 -RejectOutputPattern "images have the same base address"
+
+    if (-not $composeAccepted) {
+        Write-Log "composition did not produce a fully relocatable image; rebuilding images"
+        Remove-Item -LiteralPath $noOffsetImage, $offsetImage, $advancedImage -Force -ErrorAction SilentlyContinue
+        continue
+    }
 
     Push-Location $installRoot
     try {
@@ -152,3 +165,4 @@ if (-not $accepted) {
 
 Write-Log ""
 Write-Log "Generated $advancedImage"
+Remove-Item -LiteralPath $noOffsetImage, $offsetImage -Force -ErrorAction SilentlyContinue

@@ -4,7 +4,7 @@ This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that adds a native
 Windows build, runtime fixes for interactive terminals, and an Inno Setup
 installer flow.  The current fork release is based on `Gforth 0.7.9_20260708`
-and is versioned as `0.7.9_20260708+fukuyori.3.0`.
+and is versioned as `0.7.9_20260708+fukuyori.3.1`.
 
 The goal is to build and package `gforth.exe` on Windows without depending on
 MSYS2 or MinGW at runtime.
@@ -27,10 +27,17 @@ PowerShell build scripts, and targeted runtime fixes.
 Native build:
 
 ```powershell
-.\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
+.\scripts\build-native.ps1
 ```
 
-Native build from pre-generated artifacts, without any bootstrap Gforth:
+If an official full-image Gforth is installed under `Program Files`, the
+script can use it to regenerate bootstrap artifacts.  Otherwise, the normal
+command compiles from the generated artifacts already present in the source
+tree.  The fork installed under `%LOCALAPPDATA%\Programs\Gforth` is deliberately
+not selected because its compact image cannot host `prims2x.fs` or the cross
+compiler.
+
+To explicitly prevent use of any bootstrap Gforth:
 
 ```powershell
 .\scripts\build-native.ps1 -SkipBootstrap
@@ -45,13 +52,13 @@ those files.
 Native build with the Phase 6 advanced-interactive readiness checks:
 
 ```powershell
-.\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe" -CheckAdvancedInteractive -ProbeAdvancedInteractive
+.\scripts\build-native.ps1 -CheckAdvancedInteractive -ProbeAdvancedInteractive
 ```
 
 Native build with the reduced Windows interactive release checks:
 
 ```powershell
-.\scripts\build-native.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe" -CheckWindowsInteractiveRelease
+.\scripts\build-native.ps1 -CheckWindowsInteractiveRelease
 ```
 
 These optional checks do not change the default Windows startup path.  They
@@ -116,7 +123,7 @@ To classify the current advanced-interactive blockers:
 
 This reports whether failures are missing words, startup/build-context
 dependencies, image-builder mismatches, or compact-image compile limitations.
-In the current `fukuyori.3.0` state, `status-line.fs` and
+In the current `fukuyori.3.1` state, `status-line.fs` and
 `locate1.fs` are safe to `require` in the compact image, but the `locate` word
 itself is still absent until the full locate startup context or the advanced
 image is used.  The advanced image built with `-IncludeHistory` currently
@@ -156,17 +163,20 @@ testing the advanced image; the history path must be a file.
 Release build:
 
 ```powershell
-.\scripts\build-release.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
+.\scripts\build-release.ps1
 ```
 
 The release build step produces:
 
 - `build/native/gforth.exe`
+- `build/native/gforth-ditc.exe`
 - `build/native/gforth.fi`
 - `build/native/gforth-advanced.fi`
 - `build/installer/stage/`
 
-Create the installer from the staged release build:
+Electronically sign `build/installer/stage/gforth.exe` and
+`build/installer/stage/gforth-ditc.exe`, then create the installer from the
+signed staged release build:
 
 ```powershell
 .\scripts\build-installer.ps1
@@ -269,7 +279,9 @@ The script is responsible for:
 - locating `m4.exe` when available
 - generating primitive tables and kernel-generated files
 - compiling the compatibility layer and engine objects
-- linking `build/native/gforth.exe`
+- linking the indirect-threaded runtime as `build/native/gforth.exe`
+- linking the doubly indirect-threaded image builder as
+  `build/native/gforth-ditc.exe`
 - copying the generated image to `build/native/gforth.fi`
 - optionally running the Phase 6 advanced-interactive readiness and image
   probe checks when `-CheckAdvancedInteractive` or `-ProbeAdvancedInteractive`
@@ -288,6 +300,20 @@ that the generated image is copied into that name, so this works directly:
 ```powershell
 .\build\native\gforth.exe
 ```
+
+The Windows runtime deliberately uses the indirect-threaded engine.  The
+previous direct-threaded build ran `compile-prims` while loading or extending
+an image and could fail with access violation `-9` for some randomized memory
+layouts.  The indirect-threaded engine does not use that conversion path.
+
+Advanced images are created with `gforth-ditc.exe`, the doubly
+indirect-threaded image builder required for independent code, xt, and label
+relocation bases.  Building both intermediate images with the normal runtime
+creates only a data-relocatable image.  Such an image embeds the runtime
+primitive checksum and code addresses, so it becomes invalid when Windows
+ASLR places `gforth.exe` at a different address after a reboot.  Both the
+release build and installer-time `generate-advanced.ps1` use the DITC builder
+and reject output that reports identical image bases.
 
 On Windows, the image-loading path in `engine/main.c` also falls back to
 `fread()` when file-backed mapping is not available.  That avoids startup
@@ -458,6 +484,7 @@ release build.
 The staged tree focuses on runtime content:
 
 - `gforth.exe`
+- `gforth-ditc.exe` (used by installer-time advanced-image generation)
 - `gforth.fi`
 - root `.fs`, `.fb`, and `.4th` files
 - selected top-level documentation files
@@ -652,6 +679,7 @@ Interactive startup:
 Recreate the installer from an existing native build:
 
 ```powershell
-.\scripts\build-release.ps1 -BootstrapExe "C:\Program Files (x86)\gforth\gforth.exe"
+.\scripts\build-release.ps1
+# Electronically sign build\installer\stage\gforth.exe and gforth-ditc.exe.
 .\scripts\build-installer.ps1
 ```

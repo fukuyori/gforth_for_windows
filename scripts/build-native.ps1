@@ -521,19 +521,13 @@ function Test-ExistingPath {
 function Get-InstalledBootstrapExe {
     $candidates = @(
         (Join-Path ${env:ProgramFiles(x86)} "gforth\gforth.exe"),
-        (Join-Path ${env:ProgramFiles} "gforth\gforth.exe"),
-        (Join-Path ${env:LOCALAPPDATA} "Programs\Gforth\gforth.exe")
+        (Join-Path ${env:ProgramFiles} "gforth\gforth.exe")
     ) | Where-Object { $_ }
 
     foreach ($candidate in $candidates) {
         if (Test-ExistingPath $candidate) {
             return $candidate
         }
-    }
-
-    $resolved = Resolve-ToolPath -CommandName "gforth"
-    if ($resolved) {
-        return $resolved
     }
 
     return $null
@@ -553,14 +547,31 @@ function Invoke-CheckedProcess {
         [string]$StdoutPath
     )
 
-    if ($StdoutPath) {
-        & $Executable @Arguments > $StdoutPath
-    } else {
+    if (-not $StdoutPath) {
         & $Executable @Arguments
+        if ($LASTEXITCODE -ne 0) {
+            throw "Command failed: $Executable $($Arguments -join ' ')"
+        }
+        return
     }
 
-    if ($LASTEXITCODE -ne 0) {
-        throw "Command failed: $Executable $($Arguments -join ' ')"
+    $outputDirectory = Split-Path -Parent $StdoutPath
+    $outputName = Split-Path -Leaf $StdoutPath
+    $temporaryOutput = Join-Path $outputDirectory "$outputName.tmp-$PID"
+
+    try {
+        & $Executable @Arguments > $temporaryOutput
+        if ($LASTEXITCODE -ne 0) {
+            throw "Command failed: $Executable $($Arguments -join ' ')"
+        }
+        if (-not (Test-Path $temporaryOutput) -or (Get-Item $temporaryOutput).Length -eq 0) {
+            throw "Command produced no output: $Executable $($Arguments -join ' ')"
+        }
+        Move-Item -LiteralPath $temporaryOutput -Destination $StdoutPath -Force
+    } finally {
+        if (Test-Path $temporaryOutput) {
+            Remove-Item -LiteralPath $temporaryOutput -Force
+        }
     }
 }
 
@@ -777,12 +788,10 @@ $script:ResolvedBootstrapExe = if ($SkipBootstrap) {
 } elseif ($BootstrapExe) {
     $BootstrapExe
 } else {
-    $installedBootstrapExe = Get-InstalledBootstrapExe
-    if ($installedBootstrapExe) {
-        $installedBootstrapExe
-    } else {
-        Get-LocalBootstrapExe
-    }
+    # Only an official full-image installation is suitable here.  The fork's
+    # LocalAppData installation and build/native executable use compact images
+    # and cannot host prims2x.fs or the cross compiler.
+    Get-InstalledBootstrapExe
 }
 
 $script:ResolvedBootstrapImage = if ($BootstrapImage) {
@@ -831,29 +840,32 @@ foreach ($entry in $sources) {
 }
 
 if ((Test-Path "engine/prim.i") -and (Test-Path "engine/prim_num.i") -and (Test-Path "engine/prim_names.i") -and (Test-Path "engine/prim_superend.i") -and (Test-Path "engine/costs.i") -and (Test-Path "engine/super2.i")) {
-    $probeArgs = @(
-        "-D_CRT_SECURE_NO_WARNINGS",
-        "-D_CRT_NONSTDC_NO_DEPRECATE",
-        "-D_WIN32_WINNT=0x0601",
-        "-Icompat/win32/include",
-        "-Iengine",
-        "-Iarch/$Arch",
-        "-DGFORTH_DEBUGGING",
-        "-DENGINE=2",
-        "-fsyntax-only",
-        "engine/engine.c",
-        "engine/main.c"
-    )
-    & $Compiler @probeArgs
-    if ($LASTEXITCODE -ne 0) {
-        throw "Compilation probe failed for engine.c/main.c"
+    foreach ($threadingMode in @("-DINDIRECT_THREADED", "-DDOUBLY_INDIRECT")) {
+        $probeArgs = @(
+            "-D_CRT_SECURE_NO_WARNINGS",
+            "-D_CRT_NONSTDC_NO_DEPRECATE",
+            "-D_WIN32_WINNT=0x0601",
+            "-Icompat/win32/include",
+            "-Iengine",
+            "-Iarch/$Arch",
+            "-DGFORTH_DEBUGGING",
+            $threadingMode,
+            "-fsyntax-only",
+            "engine/engine.c",
+            "engine/main.c"
+        )
+        & $Compiler @probeArgs
+        if ($LASTEXITCODE -ne 0) {
+            throw "Compilation probe failed for engine.c/main.c ($threadingMode)"
+        }
     }
 
     if (-not $SyntaxOnly) {
         $coreSources = @(
-            @{ Source = "engine/engine.c"; Object = (Join-Path $objRoot "engine-main.o"); ExtraArgs = @("-DGFORTH_DEBUGGING") },
-            @{ Source = "engine/engine.c"; Object = (Join-Path $objRoot "engine.o"); ExtraArgs = @("-DGFORTH_DEBUGGING", "-DENGINE=2") },
-            @{ Source = "engine/main.c"; Object = (Join-Path $objRoot "main.o"); ExtraArgs = @("-DGFORTH_DEBUGGING") },
+            @{ Source = "engine/engine.c"; Object = (Join-Path $objRoot "engine-itc.o"); ExtraArgs = @("-DGFORTH_DEBUGGING", "-DINDIRECT_THREADED") },
+            @{ Source = "engine/main.c"; Object = (Join-Path $objRoot "main-itc.o"); ExtraArgs = @("-DGFORTH_DEBUGGING", "-DINDIRECT_THREADED") },
+            @{ Source = "engine/engine.c"; Object = (Join-Path $objRoot "engine-ditc.o"); ExtraArgs = @("-DGFORTH_DEBUGGING", "-DDOUBLY_INDIRECT") },
+            @{ Source = "engine/main.c"; Object = (Join-Path $objRoot "main-ditc.o"); ExtraArgs = @("-DGFORTH_DEBUGGING", "-DDOUBLY_INDIRECT") },
             @{ Source = "engine/libmain.c"; Object = (Join-Path $objRoot "libmain.o") },
             @{ Source = "engine/fnmatch.c"; Object = (Join-Path $objRoot "fnmatch.o") },
             @{ Source = "engine/getopt.c"; Object = (Join-Path $objRoot "getopt.o"); ExtraArgs = @("-DATTRIBUTE_UNUSED=", "-include", "string.h") },
@@ -867,10 +879,7 @@ if ((Test-Path "engine/prim.i") -and (Test-Path "engine/prim_num.i") -and (Test-
             Invoke-Compile -Source $entry.Source -Object $entry.Object -ExtraArgs $entry.ExtraArgs
         }
 
-        $linkObjects = @(
-            (Join-Path $objRoot "engine-main.o"),
-            (Join-Path $objRoot "engine.o"),
-            (Join-Path $objRoot "main.o"),
+        $commonLinkObjects = @(
             (Join-Path $objRoot "libmain.o"),
             (Join-Path $objRoot "support.o"),
             (Join-Path $objRoot "io.o"),
@@ -885,7 +894,17 @@ if ((Test-Path "engine/prim.i") -and (Test-Path "engine/prim_num.i") -and (Test-
             (Join-Path $objRoot "exp10.o"),
             (Join-Path $objRoot "sincos.o")
         )
-        Invoke-Link -Objects $linkObjects -Output (Join-Path $buildRoot "gforth.exe")
+        $runtimeLinkObjects = @(
+            (Join-Path $objRoot "engine-itc.o"),
+            (Join-Path $objRoot "main-itc.o")
+        ) + $commonLinkObjects
+        $imageBuilderLinkObjects = @(
+            (Join-Path $objRoot "engine-ditc.o"),
+            (Join-Path $objRoot "main-ditc.o")
+        ) + $commonLinkObjects
+
+        Invoke-Link -Objects $runtimeLinkObjects -Output (Join-Path $buildRoot "gforth.exe")
+        Invoke-Link -Objects $imageBuilderLinkObjects -Output (Join-Path $buildRoot "gforth-ditc.exe")
     }
 }
 

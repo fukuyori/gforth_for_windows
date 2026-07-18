@@ -19,13 +19,14 @@ if (-not $SkipNative) {
 }
 
 $nativeExe = Join-Path $RepoRoot "build/native/gforth.exe"
+$nativeImageBuilder = Join-Path $RepoRoot "build/native/gforth-ditc.exe"
 $nativeImage = Join-Path $RepoRoot "build/native/gforth.fi"
-if (-not (Test-Path $nativeExe) -or -not (Test-Path $nativeImage)) {
-    throw "Missing build/native/gforth.exe or build/native/gforth.fi. Run scripts/build-release.ps1 without -SkipNative first."
+if (-not (Test-Path $nativeExe) -or -not (Test-Path $nativeImageBuilder) -or -not (Test-Path $nativeImage)) {
+    throw "Missing build/native/gforth.exe, gforth-ditc.exe, or gforth.fi. Run scripts/build-release.ps1 without -SkipNative first."
 }
 
 $advancedImageBuilder = Join-Path $RepoRoot "scripts/build-advanced-interactive-image.ps1"
-& $advancedImageBuilder -NativeExe $nativeExe -OutputImage (Join-Path $RepoRoot "build/native/gforth-advanced.fi") -IncludeHistory
+& $advancedImageBuilder -NativeExe $nativeExe -ImageBuilderExe $nativeImageBuilder -OutputImage (Join-Path $RepoRoot "build/native/gforth-advanced.fi") -IncludeHistory
 if ($LASTEXITCODE -ne 0) {
     throw "Native advanced interactive image build failed."
 }
@@ -36,8 +37,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $stageExe = Join-Path $StageDir "gforth.exe"
+$stageImageBuilder = Join-Path $StageDir "gforth-ditc.exe"
 $stageAdvancedImage = Join-Path $StageDir "gforth-advanced.fi"
-& $advancedImageBuilder -NativeExe $stageExe -OutputImage $stageAdvancedImage -IncludeHistory
+& $advancedImageBuilder -NativeExe $stageExe -ImageBuilderExe $stageImageBuilder -OutputImage $stageAdvancedImage -IncludeHistory
 if ($LASTEXITCODE -ne 0) {
     throw "Staged advanced interactive image build failed."
 }

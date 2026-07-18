@@ -22,7 +22,7 @@ Base version:
 Gforth 0.7.9_20260708
 
 Fork release version:
-0.7.9_20260708+fukuyori.3.0
+0.7.9_20260708+fukuyori.3.1
 
 Maintainer:
 fukuyori
