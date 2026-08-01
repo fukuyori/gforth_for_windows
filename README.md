@@ -161,6 +161,7 @@ machinery for Unix-like systems.  For those paths, see:
 Use these entry points depending on what you want to do:
 
 - `WINDOWS-NATIVE.md`: native Windows build, terminal behavior, and installer flow
+- `WINDOWS-RELEASE-3.1.md`: causes, fixes, and verification for the Windows-native 3.1 release
 - `INSTALL.md`: build from source, especially from git
 - `INSTALL`: general installation notes from the traditional build flow
 - `INSTALL.BINDIST`: installation from binary distributions

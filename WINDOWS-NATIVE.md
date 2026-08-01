@@ -6,6 +6,9 @@ Windows build, runtime fixes for interactive terminals, and an Inno Setup
 installer flow.  The current fork release is based on `Gforth 0.7.9_20260708`
 and is versioned as `0.7.9_20260708+fukuyori.3.1`.
 
+For the root causes, implementation changes, and verification performed for
+this release, see `WINDOWS-RELEASE-3.1.md`.
+
 The goal is to build and package `gforth.exe` on Windows without depending on
 MSYS2 or MinGW at runtime.
 
