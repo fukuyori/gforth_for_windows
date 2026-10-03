@@ -47,6 +47,8 @@ require glocals.fs
 threading-method 1 <> [IF] require fold.fs [THEN]
 require iloops.fs
 require recognizer-ext.fs
+require str-exec.fs
+require edot.fs
 require stuff.fs
 require sections2.fs
 require struct0x.fs
@@ -85,7 +87,6 @@ require backtrac.fs
 require simp-see.fs
 require debug.fs
 require libcc.fs
-require str-exec.fs
 require dis-gdb.fs
 require gforthrc.fs
 \ require colorize.fs

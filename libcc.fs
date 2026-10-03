@@ -237,30 +237,40 @@ Variable c-libs \ library names in a string (without "lib")
 : lib-prefix ( -- addr u )  s" libgf" ;
 
 : add-cflags ( c-addr u -- ) \ gforth
-    \G add any kind of cflags to compilation
+    \G Add the string @i{c-addr u} to the currently used flags for
+    \G C compilation.
     [: space type ;] c-flags $exec ;
 
 : add-incdir ( c-addr u -- ) \ gforth
-    \G Add path @i{c-addr u} to the list of include search pathes
+    \G Add @code{-I@i{string}} to the compiler call for the current
+    \G library, where @i{string} is represented by @i{c-addr u}.
+    \G I.e., add @i{string} to the directory where the C compiler
+    \G searches for @file{.h} files.
     [: ."  -I" type ;] c-flags $exec ;
 
 : add-ldflags ( c-addr u -- ) \ gforth
-    \G add flag to linker
+    \G Add the string @i{c-addr u} to the currently used flags for
+    \G C linking.
     [: space type ;] c-libs $exec ;
 
 : add-lib ( c-addr u -- ) \ gforth
-    \G Add library lib@i{string} to the list of libraries, where
-    \G @i{string} is represented by @i{c-addr u}.
+    \G Add @code{-l@i{string}} to the linker call for the current
+    \G library, where @i{string} is represented by @i{c-addr u}.
+    \G I.e., link with @file{lib@i{string}.so} or somesuch.
     [: ."  -l" type ;] c-libs $exec ;
 
 : add-framework ( c-addr u -- ) \ gforth
-    \G Add framework lib@i{string} to the list of frameworks, where
-    \G @i{string} is represented by @i{c-addr u}.
+    \G Add @code{-framework @i{string}} (@pxref{Darwin Options,,, gcc,
+    \G Using the GNU Compiler Collection}) to the compiler call for
+    \G the current library, where @i{string} is represented by
+    \G @i{c-addr u}.
     [: ."  -framework " type ;] c-libs $exec ;
 
 : add-libpath ( c-addr u -- ) \ gforth
-\G Add path @i{string} to the list of library search pathes, where
-    \G @i{string} is represented by @i{c-addr u}.
+    \G Add @code{-L@i{string}} to the linker call for the current
+    \G library, where @i{string} is represented by @i{c-addr u}.
+    \G I.e., add @i{string} to the directories that are searched for
+    \G C libraries specified with @word{add-lib}.
     [: ."  -L" type ;] c-libs $exec ;
 
 \ C prefix lines
@@ -741,7 +751,11 @@ Create callback-&style c-var c,
 
 ' callback-thread-define alias callback-define
 
-2 Value callback# \ how many callbacks should be created?
+2 Value callback# ( -- n ) \ gforth-experimental callback-number
+\G @i{N} is the number of instantiations that the next callback
+\G instantiator can create.  This number can be changed with @code{to
+\G callback#}, and affects the callback instantiators defined after
+\G this change.
 
 : callback-instantiate ( addr u -- )
     callback# 0 ?DO
@@ -914,7 +928,7 @@ DEFER compile-wrapper-function ( -- )
     ptr-declare off  c-libs off  c-flags off
     libcc$ $free  libcc-include ;
 
-: clear-libs ( -- ) \ gforth
+: clear-libs ( -- ) \ gforth-internal
 \G Clear the list of libs
     c-source-file-id @ if
 	compile-wrapper-function

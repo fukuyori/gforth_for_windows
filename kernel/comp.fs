@@ -248,7 +248,7 @@ variable nextname$
     \g (@pxref{Name token}).
     ['] noname-header IS header-name, ;
 
-: latestnt ( -- nt ) \ gforth
+: latestnt ( -- nt|0 ) \ gforth
     \G @i{nt} is the name token of the most recent word (named or
     \G unnamed) defined in the current section.
     \ The main purpose of this word is to get the nt of words defined using noname
@@ -262,7 +262,7 @@ variable nextname$
 : latest ( -- nt|0 ) \ gforth
     \g If the most recent word defined in the current section has a
     \g name, @i{nt} is its name token; otherwise, return 0.
-    latestnt dup name>string d0<> and ;
+    latestnt dup IF  dup name>string d0<> and  THEN ;
 
 \ \ literals							17dec92py
 
@@ -476,7 +476,7 @@ $BF000000. 1 cells 8 = [IF] #32 dlshift [THEN] dValue synonym-mask \ do not copy
     \G @word{addr} semantics.
     ['] parse-name create-from
     ?parse-name find-name ?found
-    dup >f+c @ synonym-mask and latest >f+c +!
+    dup >f+c @ synonym-mask and lastflags or!
     ['] s>int ['] s>comp synonym, reveal ;
 
 : synonym? ( nt -- flag )
@@ -579,18 +579,6 @@ defer defer-default ( -- )
     \G into the current definition.  I.e., this produces static
     \G binding as if @i{name} was not deferred.
     ' defer@ compile, ; immediate
-
-\ No longer used for DOES>; integrate does>-like with ;abi-code, and
-\ eliminate the extra stuff?
-
-: does>-like ( xt -- colon-sys )
-    \ xt ( addr -- ) is !does or !;abi-code etc, addr is the address
-    \ that should be stored right after the code address.
-    >r ;-hook
-    exit-like
-    here [ has? peephole [IF] ] 5 [ [ELSE] ] 4 [ [THEN] ] cells +
-    postpone literal r> compile, [compile] exit
-    ?colon-sys basic-block-end colon-sys ;
 
 \ call with locals - unused
 

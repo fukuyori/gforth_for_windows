@@ -43,6 +43,8 @@ GFORTH_TEXI =  gforth.texi version.texi fdl.texi gpl.texi
 
 VMGEN_TEXI = vmgen.texi version.texi fdl.texi
 
+GFORTH_HTML = gforth_html
+
 clean:
 	-rm -rf *.aux *.cp *.cps *.dvi *.fn *.fns *.info* *.ky *.kys *.log \
 	          *.pdf *.ps gforth.texi *.toc *.txt numuses version.texi \
@@ -82,12 +84,12 @@ vmgen.info:	$(VMGEN_TEXI)
 		$(MAKEINFO) $<
 
 gforth:		$(GFORTH_TEXI)
-		$(MAKEINFO) @MAKEINFOREF@ -o gforth --html $<
-		$(CP) $(srcdir)/$(GFORTH_CSS) gforth/
-		$(CP) $(srcdir)/$(GFORTH_JS) gforth/
+		$(MAKEINFO) @MAKEINFOREF@ -o gforth_html --html $<
+		$(CP) $(srcdir)/$(GFORTH_CSS) $(GFORTH_HTML)/
+		$(CP) $(srcdir)/$(GFORTH_JS) $(GFORTH_HTML)/
 
 vmgen:		$(VMGEN_TEXI)
-		$(MAKEINFO) -o vmgen --html $<
+		$(MAKEINFO) -o vmgen_html --html $<
 
 gforth.txt:	$(GFORTH_TEXI)
 		echo "Table of Contents" >gforth.txt
@@ -120,3 +122,12 @@ Makefile: Makefile.in ../config.status ../configure.ac
 	cd .. && $(MAKE) doc/Makefile.in
 
 all:		Makefile doc
+
+#useful for creating NEWS
+# generate the old version with something like:
+# grep ^doc- ~/gforth-0.7.3/doc/gforth.ds >docs/0.7.3
+newly-documented: gforth.texi.in
+	awk '/^doc-/ {if (FILENAME!="gforth.texi.in") docs[$$1]=1; else if (!($$1 in docs)) print substr($$1,5) }' docs/0.7.3 $< >$@
+
+no-longer-documented: gforth.texi.in
+	grep ^doc- $@|sort|bash -c 'join -v 2 - <(sort docs/0.7.3)'|sed 's/^doc-//'

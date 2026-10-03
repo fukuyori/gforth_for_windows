@@ -209,7 +209,7 @@ VM_JUMP(EXEC1(*(Xt *)PFA(CFA)));
 n2 = n1 + *(Cell *)PFA(CFA);
 
 (dovalue) ( -- w )	gforth-internal	paren_doval
-""run-time routine for constants""
+""run-time routine for values (see @word{:dovalue} for caveats)""
 w = *(Cell *)PFA(CFA);
 
 (dodoes) ( -- a_body )  gforth-internal       paren_dodoes
@@ -2231,13 +2231,14 @@ is 0, @i{wretval} is the exit code of the command invoked by
 wretval = pclose((FILE *)wfileid);
 wior = IOR(wretval==-1);
 
->time&date&tz	( udtime -- nsec nmin nhour nday nmonth nyear fdst ndstoff c_addrtz utz )	gforth	to_time_and_date
-""Convert time in seconds since 1.1.1970 0:00Z to the current time of day. Seconds, minutes and hours are numbered from 0.
+>time&date&tz	( dtime -- nsec nmin nhour nday nmonth nyear fdst ndstoff c_addrtz utz )	gforth	to_time_and_date
+""Convert @i{dtime} in seconds since 1.1.1970 0:00Z to the current time of day
+in the current timezone. Seconds, minutes and hours are numbered from 0.
 Months are numbered from 1.""
 #ifdef BUGGY_LONG_LONG
-time_t now=(time_t)DLO(udtime);
+time_t now=(time_t)DLO(dtime);
 #else
-time_t now=(time_t)udtime;
+time_t now=(time_t)dtime;
 #endif
 struct tm ltime;
 localtime_r(&now, &ltime); /* thread save version */
@@ -3190,24 +3191,33 @@ ffourth	  ( r1 r2 r3 r4 -- r1 r2 r3 r4 r1 )	gforth
 
 \g syslib
 
-open-lib	( c_addr1 u1 -- u2 )	gforth	open_lib
-u2 = gforth_dlopen(c_addr1, u1);
+open-lib	( c_addr1 u1 -- c_addr2 )	gforth	open_lib
+""Open the (typically shared) library with the name given by
+@i{c-addr1 u1} and return the handle @i{c-addr2} (to be used by
+@word{lib-sym}).""
+c_addr2 = gforth_dlopen(c_addr1, u1);
 
 open-lib2	( c_addr1 u1 -- u2 )	gforth-internal	open_lib2
+""Open the (typically shared) library with the name given by
+@i{c-addr1 u1} and return the handle @i{u2} (to be used by
+@word{lib-sym}).""
 u2 = gforth_dlopen2(c_addr1, u1);
 
-lib-sym	( c_addr1 u1 u2 -- u3 )	gforth	lib_sym
+lib-sym	( c_addr1 u1 c_addr2 -- c_addr3 )	gforth	lib_sym
+""@i{C-addr3} is the address of the symbol @i{c-addr1 u1} in the
+library @i{c_addr2} (opened with @word{open-lib}).  If the library
+does not contain the symbol, @i{c-addr3} is 0.""
 char * string = cstr(c_addr1, u1);
 #ifdef HAVE_LIBLTDL
-u3 = (UCell) lt_dlsym((lt_dlhandle)u2, string);
+c_addr3 = (Address) lt_dlsym((lt_dlhandle)c_addr2, string);
 #elif defined(HAVE_LIBDL) || defined(HAVE_DLOPEN)
-u3 = (UCell) dlsym((void*)u2,string);
+c_addr3 = (Address) dlsym(c_addr2,string);
 #else
 #  ifdef _WIN32
-u3 = (Cell) GetProcAddress((HMODULE)u2, string);
+c_addr3 = (Address) GetProcAddress((HMODULE)c_addr2, string);
 #  else
 #warning Define lib-sym!
-u3 = 0;
+c_addr3 = 0;
 #  endif
 #endif
 free_l(string);

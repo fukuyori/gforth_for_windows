@@ -36,6 +36,11 @@ OutputDir={#OutputDir}
 OutputBaseFilename=gforth-native-{#AppVersion}-x64-setup
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+; Signing is activated by build-installer.ps1 -Sign (ISCC /DSign + /Ssigntool=...)
+#ifdef Sign
+SignTool=signtool
+SignedUninstaller=yes
+#endif
 
 [Tasks]
 Name: "modifypath"; Description: "Add Gforth to PATH"; Flags: unchecked

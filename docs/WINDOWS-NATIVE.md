@@ -3,8 +3,8 @@
 This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that adds a native
 Windows build, runtime fixes for interactive terminals, and an Inno Setup
-installer flow.  The current fork release is based on `Gforth 0.7.9_20260708`
-and is versioned as `0.7.9_20260708+fukuyori.3.1`.
+installer flow.  The current fork release is based on `Gforth 0.7.9_20260923`
+and is versioned as `0.7.9_20260923+fukuyori.3.2`.
 
 For the root causes, implementation changes, and verification performed for
 this release, see `WINDOWS-RELEASE-3.1.md`.

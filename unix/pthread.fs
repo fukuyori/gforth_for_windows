@@ -277,7 +277,8 @@ Defer thread-init
     r> swap >r  save-task r@ 's !
     pthread-id r@ 's 0 thread_start r> pthread_create drop ; compile-only
 
-: activate ( run-time nest-sys1 task -- ) \ gforth-experimental
+: activate ( run-time nest-sys1 task -- ) \ gforth-obsolete
+    \G @word{Activate} is obsolete; use @word{initiate} instead.@*
     \G Let @i{task} perform the code behind @code{activate}, and
     \G return to the caller of the word containing @code{activate}.
     \G When the task returns from the code behind @code{activate}, it
@@ -290,7 +291,8 @@ Defer thread-init
     sp0 r@ 's @ swap 0 ?DO  tuck ! cell+  LOOP  drop
     pthread-id r@ 's 0 thread_start r> pthread_create drop ; compile-only
 
-: pass ( x1 .. xn n task -- ) \ gforth-experimental
+: pass ( x1 .. xn n task -- ) \ gforth-internal
+    \G @word{Pass} is obsolete; use @word{initiate} instead.@*
     \G Pull @i{x1 .. xn n} from the current task's data stack and push
     \G @i{x1 .. xn} on @i{task}'s data stack.  Let @i{task} perform
     \G the code behind @code{pass}, and return to the caller of the
@@ -299,19 +301,21 @@ Defer thread-init
     ]] (pass) up! sp0 ! thread-init [[ ; immediate compile-only
 
 : initiate ( xt task -- ) \ gforth-experimental
-    \G Let @i{task} execute @i{xt}.  Upon return from the @i{xt}, the task
-    \G terminates itself (VFX compatible).  Use one-time executable closures
-    \G to pass arbitrary paramenters to a task.
+    \G Let @i{task} execute @i{xt}.  Upon return from the @i{xt}, the
+    \G task terminates itself (VFX compatible).  Use one-time
+    \G executable closures (see @word{:}h1}, @pxref{Closures}) to pass
+    \G arbitrary paramenters to a task.
     1 swap pass execute ;
 
-: semaphore ( "name" -- ) \ gforth-experimental
-    \G create a named semaphore @i{name}@*
-    \G @i{name} execution: ( -- @i{semaphore} )
+: mutex ( "name" -- ) \ gforth-experimental
+    \G create a named mutex @i{name}, initially unlocked.@*
+    \G @i{name} execution: ( -- @i{mutex} )
     Create  here 1 pthread-mutexes allot
     host? IF
 	0 pthread_mutex_init drop
     ELSE  drop  THEN ;
-synonym sema semaphore
+synonym semaphore mutex
+synonym sema mutex
 
 : cond ( "name" -- ) \ gforth-experimental
     \G create a named condition
@@ -320,18 +324,19 @@ synonym sema semaphore
 	0 pthread_cond_init drop
     ELSE  drop  THEN ;
 
-: lock ( semaphore -- ) \ gforth-experimental
-\G lock the semaphore
+: lock ( mutex -- ) \ gforth-experimental
+    \G If @i{mutex} is currently locked, wait until it is unlocked.
+    \G Lock @i{mutex}.
     pthread_mutex_lock drop ;
-: unlock ( semaphore -- ) \ gforth-experimental
-\G unlock the semaphore
+: unlock ( mutex -- ) \ gforth-experimental
+    \G Unlock @i{mutex}.
     pthread_mutex_unlock drop ;
 
-: critical-section ( xt semaphore -- )  \ gforth-experimental
-    \G Execute @i{xt} while locking @i{semaphore}.  After leaving
-    \G @i{xt}, @i{semaphore} is unlocked even if an exception is
-    \G thrown.
-    { sema } try sema lock execute 0 restore sema unlock endtry throw ;
+: critical-section ( xt mutex -- )  \ gforth-experimental
+    \G If @i{mutex} is currently locked, wait until it is unlocked.
+    \G Lock @i{mutex}, then execute @i{xt}.  After @i{xt} finishes
+    \G (regularly, or through an exception), unlock @i{mutex}.
+    { mtx } try mtx lock execute 0 restore mtx unlock endtry throw ;
 synonym c-section critical-section
 
 : >pagealign-stack ( n addr -- n' ) \ gforth-internal
@@ -375,9 +380,8 @@ synonym c-section critical-section
 \G Stop with timeout (in nanoseconds), better replacement for ms
     epiper @ swap 0 1000000000 um/mod wait_read 0> IF  stop  THEN ;
 : stop-dns ( dtimeout -- ) \ gforth-experimental
-\G Stop with timeout (in nanoseconds), better replacement for ms
-    epiper @ -rot 1000000000 um/mod wait_read 0> IF  stop  THEN ;
 \G Stop with dtimeout (in nanoseconds), better replacement for ms
+    epiper @ -rot 1000000000 um/mod wait_read 0> IF  stop  THEN ;
 
 : event-loop ( -- ) \ gforth-experimental
     \G Wait for event xts and execute these xts when they arrive, one
@@ -409,10 +413,10 @@ synonym wake restart ( task -- ) \ gforth-experimental
     \G Wake @i{task}
 
 : halt ( task -- ) \ gforth-experimental
-    \G Stop @i{task} (no difference from @code{sleep})
+    \G @word{Stop} @i{task} (no difference from @code{sleep})
     ['] stop swap send-event ;
 synonym sleep halt ( task -- ) \ gforth-experimental
-    \G Stop @i{task} (no difference from @code{halt})
+    \G @word{Stop} @i{task} (no difference from @code{halt})
 
 : event-block ( task -- ) \ gforth-internal
     \G send an event and wait for the answer

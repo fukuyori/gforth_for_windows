@@ -3,8 +3,8 @@
 This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that has been modified so
 Gforth can be built, run, and packaged natively on Windows.  It is currently
-based on `Gforth 0.7.9_20260708` and this fork's current release version is
-`0.7.9_20260708+fukuyori.3.1`.
+based on `Gforth 0.7.9_20260923` and this fork's current release version is
+`0.7.9_20260923+fukuyori.3.2`.
 
 Gforth is a fast and portable implementation of ANS Forth and Forth 200x.  The
 upstream project remains the base of this repository; this fork adds a native
@@ -20,7 +20,7 @@ Compared with the upstream repository, this fork currently focuses on:
 - Windows packaging with a per-user Inno Setup installer
 - PowerShell scripts for native build, release staging, and installer creation
 
-For the Windows-specific implementation details, see `WINDOWS-NATIVE.md`.
+For the Windows-specific implementation details, see `docs/WINDOWS-NATIVE.md`.
 
 ## Quick Start
 
@@ -160,12 +160,16 @@ machinery for Unix-like systems.  For those paths, see:
 
 Use these entry points depending on what you want to do:
 
-- `WINDOWS-NATIVE.md`: native Windows build, terminal behavior, and installer flow
-- `WINDOWS-RELEASE-3.1.md`: causes, fixes, and verification for the Windows-native 3.1 release
+- `docs/WINDOWS-NATIVE.md`: native Windows build, terminal behavior, and installer flow
+- `docs/WINDOWS-RELEASE-3.1.md`: causes, fixes, and verification for the Windows-native 3.1 release
+- `docs/WINDOWS-TERMINAL-CONTRACT.md`: terminal input/output behavior contract
+- `docs/WINDOWS-INTERACTIVE-PLAN.md`: recovery plan for interactive features (history, ekey, status line)
+- `docs/WINDOWS-INTERACTIVE-BASELINE.md`: verification baseline records for the interactive work
+- `docs/version-update-checklist.md`: files to update when changing the version
 - `INSTALL.md`: build from source, especially from git
 - `INSTALL`: general installation notes from the traditional build flow
 - `INSTALL.BINDIST`: installation from binary distributions
-- `LICENSE-NOTICE-TEMPLATE.md`: release and installer notice templates for this fork
+- `docs/LICENSE-NOTICE-TEMPLATE.md`: release and installer notice templates for this fork
 
 ## Repository Layout
 
@@ -207,14 +211,14 @@ git push origin main
 The sync merge of 2026-07-11 (`0.7.9_20260708+fukuyori.3.0`) connected this
 fork's history with upstream, so plain merges work from now on.  When
 resolving conflicts, keep the fork's Windows-specific changes; the files that
-carry them are listed in `WINDOWS-NATIVE.md`.
+carry them are listed in `docs/WINDOWS-NATIVE.md`.
 
 After merging, the generated bootstrap artifacts (`engine/*.i`,
 `kernel/prim.fs`, `kernel/aliases.fs`, `kernl64l.fi`) must be regenerated
 before `scripts\build-native.ps1` can compile the new engine.  This needs a
 full-image Gforth as bootstrap host; the fork's own installed `gforth.fi` is
 a compact kernel image and cannot host the generators.  See "Bootstrap
-requirements after an upstream sync" in `WINDOWS-NATIVE.md` for the
+requirements after an upstream sync" in `docs/WINDOWS-NATIVE.md` for the
 supported options (WSL Gforth, official Windows Gforth, or upstream snapshot
 tarball artifacts with `-SkipBootstrap`).
 

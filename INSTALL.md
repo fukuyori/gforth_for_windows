@@ -14,7 +14,7 @@ dependencies, depending on the variable `BUILD_FROM` (if set to `tarball`,
 it's a tarball build, otherwise, everything for a git build will be installed).
 
 This fork also includes a native Windows build and installer flow.  For that
-path, see `WINDOWS-NATIVE.md`.
+path, see `docs/WINDOWS-NATIVE.md`.
 
 ## Build from git
 

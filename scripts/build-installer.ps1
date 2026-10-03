@@ -1,11 +1,23 @@
 param(
     [string]$StageDir = "$(Join-Path (Get-Location) 'build/installer/stage')",
     [string]$OutputDir = "$(Join-Path (Get-Location) 'build/installer/output')",
-    [string]$InnoCompiler
+    [string]$InnoCompiler,
+    # Code-sign gforth.exe / gforth-ditc.exe (if not already signed), the
+    # uninstaller and the setup exe, using the certificate named by CODESIGN_CERT.
+    [switch]$Sign,
+    [string]$TimestampUrl = ""
 )
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = (Get-Location).Path
+
+$signTool = $null
+if ($Sign) {
+    . (Join-Path $PSScriptRoot "signing.ps1")
+    $signTool = Assert-SignPrereqs
+    if (-not $TimestampUrl) { $TimestampUrl = $script:DefaultTimestampUrl }
+    Write-Host "Code signing enabled: /n `"$env:CODESIGN_CERT`"" -ForegroundColor Gray
+}
 
 function Get-PackageVersion {
     $line = Select-String -Path "configure.ac" -Pattern "AC_INIT\(\[gforth\],\[([^\]]+)\]" | Select-Object -First 1
@@ -53,6 +65,13 @@ if (-not $iscc) {
     exit 0
 }
 
+# Sign the staged executables so the installed files carry one signature
+if ($Sign) {
+    foreach ($exe in @("gforth.exe", "gforth-ditc.exe")) {
+        Invoke-CodeSign -SignTool $signTool -Path (Join-Path $StageDir $exe) -TimestampUrl $TimestampUrl -SkipIfSigned
+    }
+}
+
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 $version = Get-PackageVersion
 $issPath = Join-Path $RepoRoot "installer/gforth-native.iss"
@@ -60,7 +79,16 @@ $stageArg = "/DStageDir=$StageDir"
 $versionArg = "/DAppVersion=$version"
 $outputArg = "/DOutputDir=$OutputDir"
 
-& $iscc $stageArg $versionArg $outputArg $issPath
+$isccArgs = @($stageArg, $versionArg, $outputArg)
+if ($Sign) {
+    # /DSign activates the SignTool/SignedUninstaller directives in gforth-native.iss;
+    # Inno Setup then signs both the uninstaller and the setup exe with this command
+    # ($q = literal quote, $f = file to sign).
+    $isccArgs += "/DSign"
+    $isccArgs += "/Ssigntool=`$q$signTool`$q sign /n `$q$env:CODESIGN_CERT`$q /fd SHA256 /tr $TimestampUrl /td SHA256 `$f"
+}
+
+& $iscc @isccArgs $issPath
 if ($LASTEXITCODE -ne 0) {
     throw "Inno Setup compilation failed."
 }

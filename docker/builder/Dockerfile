@@ -1,32 +1,34 @@
 ARG VERSION=unstable
 ARG ARCH=amd64
-ARG GCC=gcc-14
+ARG GCC=gcc
 FROM $ARCH/debian:$VERSION
+ARG GCC
 LABEL maintainer="Bernd Paysan <bernd@net2o.de>"
 ENV LANG=C.UTF-8
-ENV GCC=$GCC
 
-RUN apt-get -y update \
+RUN echo Specified gcc version is ${GCC} \
+  && apt-get -y update \
   && apt-get upgrade -y \
-  && apt-get -y --ignore-missing install libffi-dev libltdl7 libsoil-dev libtool make gcc $GCC g++ \
+  && apt-get -y --ignore-missing install libffi-dev libltdl7 libsoil-dev libtool make $GCC g++ \
      automake texinfo texi2html install-info dpkg-dev debhelper libtool-bin \
      libltdl-dev autoconf-archive \
      libx11-dev libx11-xcb-dev libxrandr-dev libgles2-mesa-dev libglew-dev \
      libgl1-mesa-dev libwayland-dev wayland-protocols libvulkan-dev libpng-dev \
      libfreetype-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
      libopus-dev libva-dev libavcodec-dev libavutil-dev libstb-dev lsb-release \
-     libxkbcommon-dev libwebp-dev emacs-nox gforth \
-     yodl bison libboost-dev binutils-dev git \
-  && if ! which gforth >/dev/null 2>&1; then \
+     libxkbcommon-dev libwebp-dev libv4l-dev libyuv-dev emacs-nox \
+     yodl bison libboost-dev binutils-dev git && \
+     if test "${GCC%%[0-9]*}" = "gcc-"; then echo ln -fs /usr/bin/$GCC /usr/bin/gcc; ln -fs /usr/bin/$GCC /usr/bin/gcc; if test -f /usr/bin/x86_64-linux-gnu-$GCC; then ln -fs /usr/bin/x86_64-linux-gnu-$GCC /usr/bin/x86_64-linux-gnu-gcc; fi; fi
+RUN if ! apt -y install gforth; then \
          if which wcurl >/dev/null 2>&1; then \
-	 wcurl https://www.complang.tuwien.ac.at/forth/gforth/gforth-0.7.3.tar.gz; \
+	     wcurl https://www.complang.tuwien.ac.at/forth/gforth/gforth-0.7.3.tar.gz; \
 	 else \
-	 apt -y install wget; wget https://www.complang.tuwien.ac.at/forth/gforth/gforth-0.7.3.tar.gz; \
+	     apt -y install wget; wget https://www.complang.tuwien.ac.at/forth/gforth/gforth-0.7.3.tar.gz; \
 	 fi; \
        	 tar zxf gforth-0.7.3.tar.gz; \
 	 BARCH=$(bash --version | grep -w bash | sed -e 's/.*(\([^ ]*\))$/\1/g'); \
-         (cd gforth-0.7.3; ./configure CC=$GCC --prefix=/usr --host=$BARCH --build=$BARCH; for i in *.fi; do cp $i $i-; done; make; make install); fi \
-  && if [ "`lsb_release -sc`" = "forky" -a "`gcc -v 2>&1 | tr ' ' '\n' | grep -- --host | cut -f2 -d= | cut -f1 -d-`" = "x86_64" ]; then apt-get -y install texlive-base texlive-latex-base; fi \
+         (cd gforth-0.7.3; ./configure CC=${GCC} --prefix=/usr --host=$BARCH --build=$BARCH; for i in *.fi; do cp $i $i-; done; make; make install); fi
+RUN if [ "`lsb_release -sc`" = "forky" -a "`gcc -v 2>&1 | tr ' ' '\n' | grep -- --host | cut -f2 -d= | cut -f1 -d-`" = "x86_64" ]; then apt-get -y install texlive-base texlive-latex-base; fi \
   && apt-get clean
 RUN cd /tmp/ \
     && if ! which pcre-config; then \

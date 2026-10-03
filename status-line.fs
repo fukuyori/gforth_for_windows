@@ -114,7 +114,7 @@ Constant status-terminal-ready?
     [IFDEF] f.s-precision
 	: .stacks ( -- )
 	    f.s-precision >r
-	    wide? IF  #14  ELSE  #10  THEN  to f.s-precision
+	    wide? IF  #16  ELSE  #7  THEN  to f.s-precision
 	    ... cr
 	    r> to f.s-precision ;
     [ELSE]
@@ -133,7 +133,7 @@ Constant status-terminal-ready?
     \ status line prints a stack of status words
     ' .base ' .stacks ' .order 3 status-xts set-stack
 
-    : .status-line ( -- ) { | w^ status$ }
+    : (.status-line) ( addr -- ) { status$ }
 	cols #100 > to wide?
 	[: status-xts $@ cell MEM+DO  I perform  LOOP ;] status$ $exec
 	#lf '|' status$ $@ replace-char
@@ -152,21 +152,22 @@ Constant status-terminal-ready?
 	THEN
 	cr edit-linew @ status-screenw @ dup 0= IF  $100 +  THEN  mod -1 at-deltaxy
 	status$ $@ redraw-status
-	status$ $free
 	1 to status-offset ;
+
+    : -status ( -- ) \ gforth "minus-status"
+	\G Turn off the status bar at the bottom of the screen
+	['] noop is .status ['] noop is .unstatus ;
+
+    : .status-line ( -- )
+	{ | w^ status$ }
+	status$ ['] (.status-line) catch  status$ $free
+	dup IF  -status  THEN  throw ;
 
     : +status ( -- ) \ gforth
 	\G Turn on the status bar at the bottom of the screen
 	['] .status-line is .status ['] .unstatus-line is .unstatus ;
 [ELSE]
     ' noop Alias +status ( -- ) \ gforth
-[THEN]
-
-[IFDEF] {
-    : -status ( -- ) \ gforth "minus-status"
-	\G Turn off the status bar at the bottom of the screen
-	['] noop is .status ['] noop is .unstatus ;
-[ELSE]
     ' noop Alias -status ( -- ) \ gforth
 [THEN]
 

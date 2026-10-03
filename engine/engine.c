@@ -550,18 +550,9 @@ Label *gforth_engine(Xt *ip0 sr_proto)
 */
 {
   register stackpointers * SPs SPSREG = in_SPs;
-#undef gforth_SP
-#undef gforth_RP
-#undef gforth_LP
-#undef gforth_UP
-#define gforth_SP (SPs->spx)
-#define gforth_RP (SPs->rpx)
-#define gforth_LP (SPs->lpx)
-#define gforth_UP (SPs->upx)
+#define gforth_SPs (*SPs)
 #if defined(GFORTH_DEBUGGING)
-# undef saved_ip
-# define rp (SPs->s_rp)
-# define saved_ip (SPs->s_ip)
+# define rp saved_rp
 #else /* !defined(GFORTH_DEBUGGING) */
   register Cell *rp RPREG;
 # undef saved_ip
@@ -638,7 +629,7 @@ Label *gforth_engine(Xt *ip0 sr_proto)
   CPU_DEP2
 #endif
 
-  rp = SPs->rpx;
+  rp = gforth_RP;
 #ifdef DEBUG
   debugp(stderr,"ip=%lx, sp=%lx, rp=%lx, fp=%lx, lp=%lx, up=%lx\n",
 	 (Cell)ip0,(Cell)sp,(Cell)rp,

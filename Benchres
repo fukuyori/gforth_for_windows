@@ -12,9 +12,38 @@ interpretive Forth systems in the manual (Section Performance), and a
 comparison with more systems in
 http://www.complang.tuwien.ac.at/papers/ertl&maierhofer95.ps.gz.
 
-All times are given in seconds of user time.
+All times are given in milliseconds of CPU time for the new output
+format, in seconds of CPU time for the old output format.
 
-After 0.7.0:
+
+After 2026-08-24 (new output format, all architectures in one list):
+  sieve bubble matrix    fib    fft release; CPU; gcc
+   16.8   18.2    8.9   23.4   11.6 20260910; Ryzen AI Pro 350 (Zen 5) 4900MHz; gcc-15.2
+   20.3   21.4   11.6   31.1   12.7 20260910; Ryzen 8700G (Zen 4) 4939MHz; gcc-12.2
+   25.4   23.5   13.1   38.2   15.9 20260916; Ryzen 5800X (Zen 3) 4775MHz; gcc-12.2
+   25.8   32.2   26.8   49.8   16.0 20260916; Ryzen 3900X (Zen 2) 4541MHz; gcc-12.2
+   75.0   66.6   33.8   98.6   23.8 20260916; Ryzen 1600X (Zen) 3631MHz; gcc-12.2
+   17.5   25.8    8.1   23.0    8.9 20260910; Core Ultra 5 225 P 4862MHz; gcc-14.2
+   27.7   36.0   11.8   45.6   15.7 20260916; Core i3-1315U P (Golden Cove) 3749MHz; gcc-12.2
+   32.5   33.5   15.6   39.6   14.2 20260916; Xeon E-2388G (Rocket Lake) 4633MHz; gcc-12.2
+   22.7   18.0   12.6   27.7   10.1 20260910; Core Ultra 5 225 E 4390MHz; gcc-14.2
+   47.5   77.2   27.2   80.2   29.0 20260916; Core i3-1315U E (Gracemont) 2526MHz; gcc-12.2
+   36.5   31.5   13.9   19.7   11.6 20260910; Apple M4 Pro default (P?); gcc-16.1
+   55.1   41.2   27.4   38.3   18.3 20260910; Apple M1 default (Firestorm?); gcc-16.1
+  104.5   99.8   50.1  102.2   49.0 20260910; Apple M1 taskpolicy -b (Icestorm?); gcc-16.1
+   97.3  116.6   41.5   86.9   38.4 20260916; RK3588 Cortex A76 2215MHz; gcc-10.2
+  212.0  192.0   76.0  176.0   68.0 20260916; RK3399 Cortex A72 1800MHz; gcc-6.3
+  203.8  240.1  137.4  244.8  129.9 20260916; RK3588 Cortex A55 1805MHz; gcc-10.2
+  332.0  340.0  240.0  368.0  228.0 20260916; RK3399 Cortex A53 1400MHz; gcc-6.3
+
+After 2026-01-27 (new output format, all architectures in one list):
+ sieve  bubble matrix fib    fft    release; CPU; gcc
+ 0.0168 0.0166 0.0091 0.0228 0.0118 20260819; Ryzen AI 350 (Zen 5) 4900MHz; gcc-15 
+ 0.0201 0.0209 0.0116 0.0307 0.0128 20260722; Ryzen 8700G (Zen 4) 5000MHz; gcc-12.2
+ 0.0183 0.0281 0.0082 0.0229 0.0089 20260722; Core Ultra 225 P-core 4900MHz; gcc-14
+ 0.0218 0.0183 0.0125 0.0282 0.0104 20260722; Core Ultra 225 E-core 4400MHz; gcc-14
+ 
+After 0.7.0 before 2026-01-27:
 AMD64:
  sieve bubble matrix fib   fft  release; CPU; gcc
  0.020 0.021  0.012 0.027 0.015 20250115; AMD Ryzen 8700G 5000MHz; gcc-12.2.0

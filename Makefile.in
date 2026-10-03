@@ -121,6 +121,7 @@ INSTALL_INFO = @INSTALL_INFO@
 LN_S	= @LN_S@ -f
 M4      = @M4@
 GCC	= @CC@
+ENGINECC = @ENGINECC@
 EMACS   = @EMACS@
 
 WAYLAND_SCANNER = @WAYLAND_SCANNER@
@@ -135,7 +136,7 @@ CC	= $(GCC)
 EXTRAPATH = $(PATHSEP)/usr/share/gforth/site-forth$(PATHSEP)/usr/local/share/gforth/site-forth
 FORTHPATH = .$(PATHSEP)$(siteforthdir)$(PATHSEP)$(datadir)/gforth/site-forth$(PATHSEP)$(libdir)/gforth/$(VERSION)$(PATHSEP)$(dataverdir)$(EXTRAPATH)
 FORTHSIZES = @FORTHSIZES@
-FORTHS_ARGS = @check_option@ -p ".$(PATHSEP)$(realpath $(srcdir))$(PATHSEP)$(FORTHPATH)"
+FORTHS_ARGS = @check_option@ -p ".$(PATHSEP)$(realpath .)$(PATHSEP)$(realpath $(srcdir))$(PATHSEP)$(FORTHPATH)"
 FORTHDEBUGFLAGS = --die-on-signal=2 --debug-mcheck
 FORTH_ARGS = $(FORTHDEBUGFLAGS) $(FORTHS_ARGS)
 ENGINE = ./gforth
@@ -195,14 +196,12 @@ STACK_CACHE_DEFAULT_FAST = @STACK_CACHE_DEFAULT_FAST@
 PROFOBJS = @PROFOBJS@
 PROFEXES = @PROFEXES@
 
-INSTALLDIRS = kernel kernel-ec doc asm ec f test test/fp \
-	compat unix minos2 minos2/unicode minos2/tutorial \
-	arch arch/generic arch/m68k arch/mips \
-	arch/386 arch/hppa arch/sparc arch/power \
-	arch/alpha arch/4stack arch/misc arch/6502 \
-	arch/8086 arch/avr arch/c165 arch/h8 \
-	arch/shboom arch/sharc arch/ia64 arch/amd64 \
-	arch/arm arch/arm64 arch/r8c arch/lm32 arch/riscv arch/loongarch64
+INSTALLDIRS = kernel kernel-ec doc asm ec f test test/fp compat unix minos2  \
+	minos2/unicode minos2/tutorial arch arch/generic arch/m68k arch/mips \
+	arch/386 arch/hppa arch/sparc arch/power arch/alpha arch/4stack	     \
+	arch/misc arch/6502 arch/8086 arch/avr arch/c165 arch/h8 arch/shboom \
+	arch/sharc arch/ia64 arch/amd64 arch/arm arch/arm64 arch/r8c	     \
+	arch/lm32 arch/riscv arch/loongarch64 arch/s390
 INSTALL_LIBDIRS = unix
 
 INCLUDES = engine/forth.h engine/threaded.h engine/io.h engine/longlong.h \
@@ -299,6 +298,7 @@ GFORTH_FI_SRC2=\
 	closures.fs \
 	complex.fs \
 	csv.fs \
+	edot.fs \
 	environ.fs \
 	errors.fs \
 	exboot.fs \
@@ -402,15 +402,15 @@ UNIXLIBS_SRC = unix/opengl.fs unix/opengles.fs unix/opengles3.fs	 \
 	unix/stb-image.fs unix/stb-image-write.fs unix/os-name.fs	 \
 	unix/open-url.fs unix/disasm2.fs
 
-SWIG_SRC = unix/androidlib.i unix/egl.i unix/gles.i unix/gles3.i unix/gl.i    \
-	unix/glx.i unix/jni.i unix/omxal.i unix/openvg.i unix/png16.i	      \
-	unix/soil.i unix/soil2.i unix/x.i unix/xrandr.i unix/SDL.i	      \
-	unix/v4l2.i unix/ios-gles.i unix/ios-gles3.i unix/freetype_gl.i	      \
-	unix/gdi32.i unix/user32.i unix/wayland.i unix/gps.i unix/vulkan.i    \
-	unix/harfbuzz.i unix/gobject.i unix/gst.i unix/avcodec.i unix/pulse.i \
-	unix/pipewire.i unix/opus.i unix/va.i unix/va_glx.i unix/va_drm.i     \
-	unix/va_x11.i unix/va_wayland.i unix/webp.i unix/opensles.i	      \
-	unix/spi.i unix/i2c.i unix/xkbcommon.i
+SWIG_SRC = unix/androidlib.i unix/egl.i unix/gles.i unix/gles3.i unix/gl.i \
+	unix/glx.i unix/jni.i unix/omxal.i unix/openvg.i unix/png16.i	   \
+	unix/soil.i unix/soil2.i unix/x.i unix/xrandr.i unix/SDL.i	   \
+	unix/v4l2.i unix/yuv.i unix/ios-gles.i unix/ios-gles3.i		   \
+	unix/freetype_gl.i unix/gdi32.i unix/user32.i unix/wayland.i	   \
+	unix/gps.i unix/vulkan.i unix/harfbuzz.i unix/gobject.i unix/gst.i \
+	unix/avcodec.i unix/pulse.i unix/pipewire.i unix/opus.i unix/va.i  \
+	unix/va_glx.i unix/va_drm.i unix/va_x11.i unix/va_wayland.i	   \
+	unix/webp.i unix/opensles.i unix/spi.i unix/i2c.i unix/xkbcommon.i
 
 FREETYPE_GL_INCLUDE = freetype-gl/freetype-gl-errdef.h			   \
 	freetype-gl/ftgl-utils.h freetype-gl/freetype-gl.h		   \
@@ -453,17 +453,18 @@ UNICODE_SRC = mirror.fs bidi.fs vertical.fs bidi-db.fs mirrors.fs bidis.fs \
 
 MINOS2_TUTORIAL = tutorial.fs buttons.fs plots.fs markdown.fs screenshot.fs
 
-MINOS2_SRC = gl-helper.fs gl-terminal.fs jpeg-exif.fs linux-gl.fs	   \
-	wayland-gl.fs soil-texture.fs gl-sample.fs gl-slideshow.fs	   \
-	ftgl-helper.fs ftgl-sample.fs bidi.fs widgets.fs actors.fs	   \
-	x11-actors.fs android-actors.fs wayland-actors.fs		   \
-	gforth-1.0-presentation.fs presentation.fs presentation-support.fs \
-	mts-tools.fs mkv-tools.fs omx-example.fs mkv-tags.fs		   \
-	android-recorder.fs animation.fs need-x.fs font-style.fs	   \
-	text-style.fs gst-helper.fs plot.fs md-viewer.fs md-test.fs	   \
-	mem-texture.fs pulse-audio.fs sles-audio.fs opus-codec.fs va.fs	   \
-	v4l2.fs $(patsubst %, unicode/%, $(UNICODE_SRC)) $(patsubst %,	   \
-	tutorial/%, $(MINOS2_TUTORIAL)) colorscheme2rgba.fs colorschemes.fs
+MINOS2_SRC = gl-helper.fs gl-terminal.fs jpeg-exif.fs linux-gl.fs		\
+	wayland-gl.fs soil-texture.fs gl-sample.fs gl-slideshow.fs		\
+	ftgl-helper.fs ftgl-sample.fs bidi.fs widgets.fs actors.fs		\
+	x11-actors.fs android-actors.fs wayland-actors.fs			\
+	gforth-1.0-presentation.fs presentation.fs presentation-support.fs	\
+	mts-tools.fs mkv-tools.fs omx-example.fs mkv-tags.fs			\
+	android-recorder.fs animation.fs need-x.fs font-style.fs		\
+	text-style.fs gst-helper.fs plot.fs md-viewer.fs md-test.fs		\
+	mem-texture.fs pulse-audio.fs sles-audio.fs opus-codec.fs va.fs		\
+	v4l2.fs v4l2-view.fs $(patsubst %, unicode/%, $(UNICODE_SRC))		\
+	$(patsubst %, tutorial/%, $(MINOS2_TUTORIAL)) colorscheme2rgba.fs	\
+	colorschemes.fs
 
 MINOS2_BIN = ascii.png termcolors.png button.png button2.png button3.png	\
 	bad-gateway.png net2o-minos2.png lbubble.png rbubble.png white.png	\
@@ -636,6 +637,7 @@ ARCHS =	\
 	arch/loongarch64/asm.fs \
 	arch/loongarch64/disasm.fs \
 	arch/loongarch64/insts.fs \
+	arch/s390/machine.h \
 	engine/arm64-cacheflush.c \
 	engine/arm-cacheflush0.c \
 	engine/arm-cacheflush-linux.c \
@@ -695,7 +697,7 @@ SOURCES = $(ENGINE_SOURCES) compat Makefile.in Makedist.in unix/Makefile.in  \
 	gforthker.in gforthp.in README.vmgen NEWS.vmgen autogen.sh	     \
 	configure.ac configure config.sub config.guess elisp-comp stamp-h.in \
 	envos.fs.in kernel/version.fs.in iss.sh wininst.sh modpath.iss	     \
-	firewall.iss install-sh INSTALL.md NEWS README.md ToDo BUGS	     \
+	firewall.iss install-sh INSTALL.md NEWS.md README.md ToDo BUGS	     \
 	BUILD-FROM-SCRATCH model COPYING COPYING.LIB COPYING.DOC AUTHORS     \
 	ChangeLog Benchres aclocal.m4 ltmain.sh doc/Makefile.in		     \
 	doc/gforth.texi.in $(wildcard $(srcdir)/doc/words/*-words)	     \
@@ -815,7 +817,7 @@ more:	$(ENGINES) $(FORTH_GEN) $(GEN) @libengines@ @build_libcc_named@
 
 mostlyclean:	FORCE
 		@echo MOSTLYCLEAN
-		-$(RMTREE) engine/*.s gforth.fi gforth-light.fi *.fi~ *.fi- kernel/version.fs \
+		-$(RMTREE) engine/*.s engine/*.i gforth.fi gforth-light.fi *.fi~ *.fi- kernel/version.fs \
 		kernel/authors.fs *TAGS gforth~ \
 		doc/crossdoc.fd doc/doc.fd doc/gforth.texi doc/gforth.fns \
 		doc/gforth.aux doc/gforth.cp doc/gforth.cps \
@@ -841,6 +843,7 @@ clean:	mostlyclean docclean
 	for i in gforth gforth-fast; do for j in $(OPTS); do rm -f engine/$$i$${j}$(EXT) $$i$${j}$(EXT); done; done
 	-$(RMTREE) $(buildccdir)
 	(cd unix; $(MAKE) clean)
+	$(RMTREE) lib/gforth/$(VERSION)/$(ARCH)/libcc-named/*
 
 distclean:	clean
 		@echo DISTCLEAN
@@ -999,9 +1002,9 @@ install-info:	doc
 install-html:	html
 		@echo INSTALL-HTML
 		$(MKDIR_P) $(htmldir)/html
-		$(CP) doc/gforth/* $(htmldir)/html
+		$(CP) doc/gforth_html/* $(htmldir)/html
 		$(MKDIR_P) $(htmldir)/../vmgen/html
-		$(CP) doc/vmgen/* $(htmldir)/../vmgen/html
+		$(CP) doc/vmgen_html/* $(htmldir)/../vmgen/html
 
 install-pdf:	pdf
 		@echo INSTALL-PDF
@@ -1664,7 +1667,7 @@ gforth.elc:	gforth.el
 
 start-gforth.el:	gforth.el
 		@echo EMACS $@
-		echo > $@
+		echo ";; -*- lexical-binding: t; -*-" > $@
 		-$(EMACS) --batch -l autoload --eval "(setq generated-autoload-file \"$$PWD/$@\")" -f batch-update-autoloads $(dir $<)
 
 #Documentation
@@ -1710,6 +1713,12 @@ doc/gforth.texi doc/numuses: doc/gforth.texi.in prim.b ds2texi.fs prims2x.fs \
 		@echo DOC_GEN
 		$(PREFORTH) -e "@texinfo_link@ constant texinfo-link" ds2texi.fs prims2x.fs -e "s\" prim.b\" ' register-doc ' noop process-file" $(DOC_GEN) -e "args-gforth-versions s\" $(srcdir)/doc/gforth.texi.in\" filename-ds2texi s\" doc/numuses\" report-#uses-file bye" $(wildcard $(srcdir)/doc/words/*-words) >$@-
 		$(MV) $@- $@
+
+NEWS-nolinks.html: NEWS.md
+	pandoc --from=gfm --metadata title="Gforth NEWS" -o $@ $<
+
+NEWS.html: NEWS-nolinks.html news-links.fs html
+	$(FORTH) -e "warnings off" news-links.fs -e bye >$@
 
 checkdoc:	doc/gforth.texi.in prim.b ds2texi.fs prims2x.fs $(DOC_GEN) answords.fs doc/gforth.texi
 		@echo CHECKDOC

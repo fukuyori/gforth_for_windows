@@ -575,11 +575,11 @@ Create rot-sts \ exif rotation
     3 c, 1 c, 2 c, 0 c, \ turn left+flip
     1 c, 3 c, 0 c, 2 c, \ turn left
 : rot>st ( n -- )
-    $1F and rot-sts + c@ dup 1 and s>f 2/ 1 and s>f >st ;
+    rot-sts + c@ dup 1 and s>f 2/ 1 and s>f >st ;
 : rot#>st ( frame n -- )
-    $1F and rot-sts + c@ dup 1 and s>f 2/ 1 and s>f #>st ;
+    rot-sts + c@ dup 1 and s>f 2/ 1 and s>f #>st ;
 : xywh-rect ( fcolor -- )
-    xywh >xyxy rotate# 2 lshift { f: x1 f: y1 f: x2 f: y2 fx# -- }
+    xywh >xyxy rotate# 7 and 2 lshift { f: x1 f: y1 f: x2 f: y2 fx# -- }
     6 ?flush-tris  i>off  >v
     x1 y1 >xy fdup i>c n> fx#     rot>st v+
     x2 y1 >xy fdup i>c n> fx# 1+  rot>st v+
@@ -588,7 +588,7 @@ Create rot-sts \ exif rotation
     v> 2 quad ;
 
 : draw-thumb ( -- )
-    xywh >xyxy rotate# 2 lshift { f: x1 f: y1 f: x2 f: y2 fx# -- }
+    xywh >xyxy rotate# 7 and 2 lshift { f: x1 f: y1 f: x2 f: y2 fx# -- }
     frame# IF
        frame-color
        1e to t.i0  6 ?flush-tris
@@ -632,7 +632,7 @@ tile class
 end-class image
 
 image :method draw ( -- )  render>
-    0e to t.i0
+    rotate# 8 and IF  0.5e  ELSE  0e  THEN  to t.i0
     z-bias set-color+ image-tex  frame-color xywh-rect ;
 
 \ frame widget

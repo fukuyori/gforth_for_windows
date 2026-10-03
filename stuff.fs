@@ -444,7 +444,7 @@ constant mem*do-noconstant
 \G @code{maxdepth-.s}; TOS is the right-most item.
     ." <" fdepth 0 .r ." > " fdepth 0 max maxdepth-.s @ min dup 0 ?DO
 	dup i - 1- floats fp@ + f@
-	f.s-precision 7 max dup 0 f.rdp space LOOP
+	f.s-precision e.p space LOOP
     drop ; 
 
 : typewhite ( c-addr u -- ) \ gforth
@@ -727,7 +727,7 @@ struct
     cell% field buffer-length
     cell% field buffer-address
     cell% field buffer-maxlength \ >=length
-end-struct buffer% ( u1 u2 -- ) \ gforth-experimental buffer-percent
+end-struct buffer% ( -- u1 u2 ) \ gforth-experimental buffer-percent
 \g @i{u1} is the alignment and @i{u2} is the size of a buffer descriptor.
 
 : init-buffer ( addr -- ) \ gforth-experimental

@@ -13,9 +13,12 @@ DLGL = $(CURDIR)/debian/gforth-libcc-gl
 DLGLES = $(CURDIR)/debian/gforth-libcc-gles
 DLX11 = $(CURDIR)/debian/gforth-libcc-x11
 DLWL = $(CURDIR)/debian/gforth-libcc-wayland
+DLV4L = $(CURDIR)/debian/gforth-libcc-v4l
 DLM2 = $(CURDIR)/debian/gforth-libcc-minos2
 DLA = $(CURDIR)/debian/gforth-libcc-audio
+DBV = $(CURDIR)/debian/gforth-bin-version
 DB = $(CURDIR)/debian/gforth-bin
+@DOHTML@DHV = $(CURDIR)/debian/gforth-html-version
 @DOHTML@DH = $(CURDIR)/debian/gforth-html
 @DOPDF@DP = $(CURDIR)/debian/gforth-pdf
 DV = $(CURDIR)/debian/gforth-dev
@@ -54,54 +57,52 @@ override_dh_auto_install:
 	bash -c "mv $(DM)$(SHARE)/minos2/{opus-codec,*-audio}.fs $(DMA)$(SHARE)/minos2/"
 	mv $(DB)/etc $(DC)
 	mv $(DB)/usr/bin/vmgen* $(DC)/usr/bin
+	mkdir -p $(DBV)/usr/bin
+	mv $(DB)/usr/bin/*$(GFORTH_VER)* $(DBV)/usr/bin
 	mv $(DB)/usr/lib/$(DEB_HOST_MULTIARCH) $(DL)/usr/lib/$(DEB_HOST_MULTIARCH)
 	mv $(DB)/usr/include/gforth.h $(DV)/usr/include/gforth-$(GFORTH_VER)-$(GFORTH_ARCH).h
 	mkdir -p $(DLC)/usr/lib/$(DEB_HOST_MULTIARCH)
 	mv $(DL)/usr/lib/$(DEB_HOST_MULTIARCH)/gforth $(DLC)/usr/lib/$(DEB_HOST_MULTIARCH)
 	mkdir -p $(DB)/$(LIB)
 	mv $(DLC)/$(LIB)/*.f* $(DB)/$(LIB)
-	mkdir -p $(DLGLES)$(LIBCC)
+	mkdir -p $(DLGLES)$(LIBCC) $(DLGLES)$(LIB)/unix
 	-mv $(DLC)$(LIBCC)/libgfegl.* $(DLC)$(LIBCC)/libgfgles.* $(DLGLES)$(LIBCC)
-	mkdir -p $(DLGLES)$(LIB)/unix
-	-mv $(DLC)$(LIB)/unix/gles.fs $(DLC)$(LIB)/unix/egl.fs $(DLGLES)$(LIB)/unix
-	mkdir -p $(DLGL)$(LIBCC)
+	-mv $(DLC)$(LIB)/unix/egl.fs $(DLC)$(LIB)/unix/gles.fs $(DLGLES)$(LIB)/unix
+	mkdir -p $(DLGL)$(LIBCC) $(DLGL)$(LIB)/unix
 	-mv $(DLC)$(LIBCC)/libgfgl*.* $(DLGL)$(LIBCC)
-	mkdir -p $(DLGL)$(LIB)/unix
 	-mv $(DLC)$(LIB)/unix/gl*.fs $(DLGL)$(LIB)/unix
-	mkdir -p $(DLX11)$(LIBCC)
-	mv $(DLC)$(LIBCC)/libgfx.* $(DLX11)$(LIBCC)
-	mv $(DLC)$(LIBCC)/libgfxrandr.* $(DLX11)$(LIBCC)
-	mkdir -p $(DLX11)$(LIB)/unix
-	mv $(DLC)$(LIB)/unix/x.fs $(DLX11)$(LIB)/unix
-	mv $(DLC)$(LIB)/unix/xrandr.fs $(DLX11)$(LIB)/unix
-	mkdir -p $(DLWL)$(LIBCC)
-	mv $(DLC)$(LIBCC)/libgfwayland.* $(DLWL)$(LIBCC)
-	mv $(DLC)$(LIBCC)/libgfxkbcommon.* $(DLWL)$(LIBCC)
-	mkdir -p $(DLWL)$(LIB)/unix
-	mv $(DLC)$(LIB)/unix/wayland.fs $(DLWL)$(LIB)/unix
-	mv $(DLC)$(LIB)/unix/xkbcommon.fs $(DLWL)$(LIB)/unix
-	mkdir -p $(DLM2)$(SHARE)/unix
-	mkdir -p $(DLM2)$(LIB)/unix
-	mkdir -p $(DLM2)$(LIBCC)
+	mkdir -p $(DLX11)$(LIBCC) $(DLX11)$(LIB)/unix
+	mv $(DLC)$(LIBCC)/libgfx.* $(DLC)$(LIBCC)/libgfxrandr.* $(DLX11)$(LIBCC)
+	mv $(DLC)$(LIB)/unix/x.fs $(DLC)$(LIB)/unix/xrandr.fs $(DLX11)$(LIB)/unix
+	mkdir -p $(DLWL)$(LIBCC) $(DLWL)$(LIB)/unix
+	mv $(DLC)$(LIBCC)/libgfwayland.* $(DLC)$(LIBCC)/libgfxkbcommon.* $(DLWL)$(LIBCC)
+	mv $(DLC)$(LIB)/unix/wayland.fs $(DLC)$(LIB)/unix/xkbcommon.fs $(DLWL)$(LIB)/unix
+	mkdir -p $(DLV4L)$(LIB)/unix $(DLV4L)$(LIBCC)
+	mv $(DLC)$(LIBCC)/libgfyuv.* $(DLV4L)$(LIBCC)
+	mv $(DLC)$(LIB)/unix/v4l2.fs $(DLC)$(LIB)/unix/yuv.fs $(DLV4L)$(LIB)/unix
+	mkdir -p $(DLM2)$(SHARE)/unix $(DLM2)$(LIB)/unix -p $(DLM2)$(LIBCC)
 	bash -c "mv $(DLC)$(LIB)/unix/{freetype_gl,harfbuzz}.fs $(DLM2)$(LIB)/unix"
 	bash -c "mv $(DC)$(SHARE)/unix/{stb-image,stb-image-write}.fs $(DLM2)$(SHARE)/unix"
 	bash -c "mv $(DLC)$(LIBCC)/libgf{harfbuzz,freetype_gl,stb-image,stb-image-write}.* $(DLM2)$(LIBCC)"
-	mkdir -p $(DLA)$(LIB)/unix
-	mkdir -p $(DLA)$(LIBCC)
+	mkdir -p $(DLA)$(LIB)/unix $(DLA)$(LIBCC)
 	bash -c "mv $(DLC)$(LIB)/unix/{opus,pulse}.fs $(DLA)$(LIB)/unix"
 	bash -c "mv $(DLC)$(LIBCC)/libgf{opus,pulse}.* $(DLA)$(LIBCC)"
 	mkdir -p $(D)/usr/bin
-	bash -c "mv $(DB)/usr/bin/gforth{,-fast,-itc,-ditc,mi}{,-$(GFORTH_VER)}  $(D)/usr/bin"
-	(cd $(D)/usr/include; ln -s gforth-$(GFORTH_VER)-$(GFORTH_ARCH).h gforth.h)
+	bash -c "mv $(DB)/usr/bin/gforth{,-fast,-itc,-ditc,mi} $(D)/usr/bin"
+	(cd $(DV)/usr/include; ln -s gforth-$(GFORTH_VER)-$(GFORTH_ARCH).h gforth.h)
 	mkdir -p $(DI)/usr/share
+	echo $(DC)/usr/share/doc/*; ls $(DC)/usr/share/doc/*
 	mv $(DC)/usr/share/info $(DI)/usr/share
 	rm -f $(DI)/usr/share/info/dir.gz
-	@DOHTML@mkdir -p $(DH)/usr/share/doc/gforth
-	@DOHTML@mkdir -p $(DH)/usr/share/doc/vmgen
-	@DOHTML@mv $(DC)/usr/share/doc/gforth/html $(DH)/usr/share/doc/gforth
-	@DOHTML@mv $(DC)/usr/share/doc/vmgen/html $(DH)/usr/share/doc/vmgen
-	@DOPDF@mkdir -p $(DP)/usr/share/doc/gforth
-	@DOPDF@mkdir -p $(DP)/usr/share/doc/vmgen
+	@DOHTML@mkdir -p $(DHV)/usr/share/doc/gforth/$(GFORTH_VER) $(DHV)/usr/share/doc/vmgen/$(GFORTH_VER)
+	@DOHTML@mv $(DC)/usr/share/doc/gforth/html $(DHV)/usr/share/doc/gforth/$(GFORTH_VER)/html
+	@DOHTML@mv $(DC)/usr/share/doc/vmgen/html $(DHV)/usr/share/doc/vmgen/$(GFORTH_VER)/html
+	@DOHTML@(cd $(DHV)/usr/share/doc/gforth/; ln -s $(GFORTH_VER)/html html)
+	@DOHTML@(cd $(DHV)/usr/share/doc/vmgen/; ln -s $(GFORTH_VER)/html html)
+	@DOHTML@mkdir -p $(DH)/usr/share/doc/gforth $(DH)/usr/share/doc/vmgen
+	@DOHTML@mv $(DHV)/usr/share/doc/gforth/html $(DH)/usr/share/doc/gforth/html
+	@DOHTML@mv $(DHV)/usr/share/doc/vmgen/html $(DH)/usr/share/doc/vmgen/html
+	@DOPDF@mkdir -p $(DP)/usr/share/doc/gforth $(DP)/usr/share/doc/vmgen
 	@DOPDF@mv $(DC)/usr/share/doc/gforth/*.pdf $(DP)/usr/share/doc/gforth
 	@DOPDF@mv $(DC)/usr/share/doc/vmgen/*.pdf $(DP)/usr/share/doc/vmgen
 
