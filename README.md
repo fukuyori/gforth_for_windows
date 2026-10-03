@@ -165,6 +165,7 @@ Use these entry points depending on what you want to do:
 - `docs/WINDOWS-TERMINAL-CONTRACT.md`: terminal input/output behavior contract
 - `docs/WINDOWS-INTERACTIVE-PLAN.md`: recovery plan for interactive features (history, ekey, status line)
 - `docs/WINDOWS-INTERACTIVE-BASELINE.md`: verification baseline records for the interactive work
+- `docs/CHANGELOG.md`: release history of this fork
 - `docs/version-update-checklist.md`: files to update when changing the version
 - `INSTALL.md`: build from source, especially from git
 - `INSTALL`: general installation notes from the traditional build flow
