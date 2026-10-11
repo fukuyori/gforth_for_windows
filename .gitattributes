@@ -6,3 +6,6 @@
 *.fs.in gitlab-language=Forth
 *.fb gitlab-language=Forth
 *.4th gitlab-language=Forth
+
+# shell scripts run inside WSL/Linux and must keep LF line endings
+scripts/*.sh text eol=lf

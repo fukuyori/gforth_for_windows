@@ -1,8 +1,10 @@
 # Version update checklist
 
 Version format: `<upstream base>+fukuyori.<major>.<minor>`
-(e.g. `0.7.9_20260923+fukuyori.3.2`).  The base follows the upstream
-`configure.ac` version after a sync; the fork number is bumped by the maintainer.
+(e.g. `0.7.9_20260923+fukuyori.3.2`).  The base is the upstream tag
+that was merged (tagged releases only; branches and untagged commits wait for the
+next tag, see README "Fork Synchronization"); the fork number is bumped by the
+maintainer.
 
 ## Files to edit by hand
 
@@ -23,9 +25,11 @@ Do not rewrite historical mentions (sync history in `README.md`,
 
 ## After editing
 
+0. If `prim`, `kernel/` or the startup libraries changed (upstream sync) or on a fresh
+   clone: `.\scripts\regen-bootstrap.ps1` (WSL Gforth; see README "Bootstrap artifacts").
 1. `.\scripts\build-native.ps1 -SkipBootstrap` (or with a bootstrap host)
 2. `.\scripts\build-advanced-interactive-image.ps1 -IncludeHistory`
 3. Confirm `version-string` prints the new version.
 4. Distribution artifacts (ZIP, installer) are built by the maintainer:
-   `.\scriptsuild-installer.ps1 -Sign` (needs `CODESIGN_CERT` = certificate
+   `.\scripts\build-installer.ps1 -Sign` (needs `CODESIGN_CERT` = certificate
    subject name in the current user's store, and signtool.exe from the Windows SDK).

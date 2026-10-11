@@ -199,29 +199,65 @@ Check your remotes:
 git remote -v
 ```
 
-Bring upstream changes into this fork with a merge (the upstream default
-branch is `master`):
+**Policy: follow tagged upstream releases only.**  This fork takes in the
+latest *tagged* upstream release (`0.7.9_YYYYMMDD`).  Upstream branches
+(`master` and others) and commits made between tags are not merged; wait for
+the next tag.  The fork's base version (the `0.7.9_YYYYMMDD` part of
+`0.7.9_YYYYMMDD+fukuyori.X.Y`) must match the merged tag exactly.  If no newer
+tag exists, there is nothing to sync.
+
+Bring a tagged release into this fork with a merge:
 
 ```powershell
-git fetch upstream
+git fetch upstream --tags
+git tag --list "0.7.9_*" --sort=-creatordate    # pick the newest upstream tag
 git checkout main
-git merge upstream/master
+git merge <tag>                                  # e.g. 0.7.9_20260923
 git push origin main
 ```
+
+Do not push upstream's tags to `origin`; push only this fork's own release
+tags.
 
 The sync merge of 2026-07-11 (`0.7.9_20260708+fukuyori.3.0`) connected this
 fork's history with upstream, so plain merges work from now on.  When
 resolving conflicts, keep the fork's Windows-specific changes; the files that
 carry them are listed in `docs/WINDOWS-NATIVE.md`.
 
-After merging, the generated bootstrap artifacts (`engine/*.i`,
-`kernel/prim.fs`, `kernel/aliases.fs`, `kernl64l.fi`) must be regenerated
-before `scripts\build-native.ps1` can compile the new engine.  This needs a
+### Bootstrap artifacts (WSL Gforth)
+
+The generated bootstrap artifacts (`prim.b`, `engine/*.i`, `kernel/prim.fs`,
+`kernel/aliases.fs`, `kernl64l.fi`) are git-ignored.  Generating them needs a
 full-image Gforth as bootstrap host; the fork's own installed `gforth.fi` is
-a compact kernel image and cannot host the generators.  See "Bootstrap
-requirements after an upstream sync" in `docs/WINDOWS-NATIVE.md` for the
-supported options (WSL Gforth, official Windows Gforth, or upstream snapshot
-tarball artifacts with `-SkipBootstrap`).
+a compact kernel image and cannot host the generators.
+
+| Situation | WSL Gforth needed? |
+| --- | --- |
+| Ordinary rebuild; `prim`, `kernel/` and the startup libraries are unchanged and the artifacts exist | No: `scripts\build-native.ps1 -SkipBootstrap` |
+| Advanced-image creation, installer-time image generation | No: they use only the fork's own `gforth.exe`, `gforth-ditc.exe` and `kernl64l.fi` |
+| After merging upstream changes to `prim`, `kernel/` or the startup libraries | **Yes**: regenerate first |
+| Fresh clone (no artifacts yet) | **Yes**: regenerate first |
+
+Regenerate with a full Gforth in WSL (needs `gforth`, `m4` and `python3` in the
+WSL distribution; the Gforth used so far is 0.7.9_20260410):
+
+```powershell
+.\scripts\regen-bootstrap.ps1             # regenerate, rebuild the engine, copy the kernel image
+.\scripts\regen-bootstrap.ps1 -SkipBuild  # regenerate only
+```
+
+The script runs `scripts/regen-bootstrap-wsl.sh` in WSL, then
+`build-native.ps1 -SkipBootstrap`, and copies `kernl64l.fi` to
+`build\native\gforth.fi`.  Afterwards rebuild the advanced image
+(`scripts\build-advanced-interactive-image.ps1 -IncludeHistory`, or
+`scripts\build-release.ps1 -SkipNative`).  Do not leave artifacts generated
+from a different `prim` in place: an engine and a kernel image built from
+different `prim` files make advanced-image creation fail with
+`Primitive ... is not implemented by this engine`.
+
+Other bootstrap options (official Windows Gforth with `-BootstrapExe`, or
+upstream snapshot tarball artifacts) are described under "Bootstrap
+requirements after an upstream sync" in `docs/WINDOWS-NATIVE.md`.
 
 Normal development should push to `origin`, not to `upstream`.
 

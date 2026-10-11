@@ -10,11 +10,33 @@ compiled from the git history, the GitHub release notes, and
 Upstream sync and signed-installer support.
 
 ### Upstream
-- Merged forthy42/gforth master (`0.7.9_20260923`, 180 new commits, 69 files).
+- Merged forthy42/gforth master up to `f847d479` (2026-09-28): 180 new
+  commits, 69 files.  This includes the upstream tag `0.7.9_20260923`
+  (`448860b6`, 2026-09-23) **and 10 commits after it** (8 non-merge commits,
+  7 files; see "Applied beyond the tag" below).  Future syncs are limited to
+  tagged versions.
 - New upstream features include the `e.` / `e.p` / `e.exact` words, new
   compare-and-branch superinstructions, `STACK>` / `BACK>` underflow checks,
   the Video4Linux2 viewer (minos2), mixed `ENGINECC` builds, and the
   `NEWS` -> `NEWS.md` conversion.  Details: `NEWS.md`.
+
+### Applied beyond the tag (2026-09-23 to 2026-09-28)
+Upstream changes after `0.7.9_20260923` that are present in this release:
+- `NEWS` -> `NEWS.md` conversion finished; `NEWS.md` work (`ccc370a7`,
+  `882368d4`, `2b917440`, `921aad7f`).
+- `NEWS.html` links for words; new `news-links.fs` (`7cff6c15`, `6a6db126`).
+- Working mixture of GCC for the engine and Clang for the rest
+  (`ENGINECC`; `Makefile.in`, `engine/Makefile.in`; `8ede08e9`).
+- `install-deps.sh` builds pcre and gforth from source when the `apt-get`
+  install fails (`923959b0`); `flatpak/org.gforth.gforth.yml` update.
+- `doc/words/1.0-words` regenerated.
+- These files are presumably not used by the Windows-native build (not
+  verified; the built executables were not compared against a tag-only build).
+
+Upstream `master` after 2026-09-28: one new commit, `4e5ffe8b` "added F*+"
+(2026-10-08, new primitive `f*+`; changes `prim`, `NEWS.md`,
+`doc/gforth.texi.in`).  It has been taken into upstream `master` but is **not**
+merged into this fork's `main` (checked 2026-10-11).
 - `status-line.fs`: kept the fork's guarded version and ported the upstream
   changes (`.stacks` precision `#16/#7`; the status bar is disabled when an
   exception occurs while drawing it).

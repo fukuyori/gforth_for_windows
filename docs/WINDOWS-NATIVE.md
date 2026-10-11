@@ -215,21 +215,16 @@ Supported bootstrap hosts, in order of preference:
    configuration files (`machpc.fs` is already generated with
    `true DefaultValue crlf`, so the cross-built kernel keeps CRLF newlines):
 
-   ```sh
-   # in WSL, repo root; regenerate prim.b, engine/*.i, kernel/{prim,aliases}.fs
-   m4 -Dcondbranch_opt=0 prim > prim.b
-   gforth -p ".:$PWD:<gforth-lib-dir>" prims2x.fs -e '...'   # per build-native.ps1
-   # cross-build the fork kernel
-   gforth -p ".:$PWD:<gforth-lib-dir>" \
-     -e 'fpath= .|./kernel|~+|.' \
-     -e 's" mach64l.fs" include kernel/main.fs' \
-     -e 'save-cross kernl64l.fi- build/native/gforth.exe bye'
-   mv kernl64l.fi- kernl64l.fi
-   cp kernl64l.fi build/native/gforth.fi
+   ```powershell
+   .\scripts\regen-bootstrap.ps1   # runs scripts/regen-bootstrap-wsl.sh in WSL,
+                                   # then build-native.ps1 -SkipBootstrap,
+                                   # then copies kernl64l.fi to build\native\gforth.fi
    ```
 
-   Then on Windows: `.\scripts\build-native.ps1 -SkipBootstrap`, followed by
-   the advanced-image build.
+   The WSL part needs `gforth` (full image), `m4` and `python3`; it mirrors
+   `Generate-BootstrapArtifacts` in `build-native.ps1` (prim.b, `engine/*.i`,
+   `kernel/{prim,aliases}.fs`, and the cross-built `kernl64l.fi`).  Use
+   `-SkipBuild` to regenerate only.  Afterwards rebuild the advanced image.
 
 2. **Official Windows Gforth** (`C:\Program Files (x86)\gforth\gforth.exe`),
    when installed: pass it as `-BootstrapExe`; it is a full image and hosts
