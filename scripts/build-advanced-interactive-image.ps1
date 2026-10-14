@@ -3,6 +3,9 @@ param(
     [string]$ImageBuilderExe = ".\build\native\gforth-ditc.exe",
     [string]$OutputImage = ".\build\native\gforth-advanced.fi",
     [string]$BootstrapExe = "C:\Program Files (x86)\gforth\gforth.exe",
+    # Cross-built kernel image the advanced image is derived from.  It must have
+    # been generated from the same `prim` as the engines (see regen-bootstrap.ps1).
+    [string]$KernelImage = ".\kernl64l.fi",
     [switch]$IncludeEkey,
     [switch]$IncludeHistory,
     [switch]$ProbeOnly
@@ -302,6 +305,42 @@ function Test-ImageSmoke {
     $result = Invoke-Gforth -Exe $Exe -Arguments @("-i", $Image, "-e", "1 2 + . cr bye")
     $passed = ($result.ExitCode -eq 0 -and $result.Stdout -match "3")
     Write-RunCheck -Name $Name -Result $result -Passed $passed
+    if (-not $passed) {
+        return $false
+    }
+
+    # A composed image whose parts share one base address loads and runs
+    # `1 2 + .` but crashes in compile-prims on the first newly compiled
+    # definition, so also compile and run a colon definition.
+    $compile = Invoke-Gforth -Exe $Exe -Arguments @("-i", $Image, "-e", ": advanced-image-smoke 7 dup * ; advanced-image-smoke . cr bye")
+    $compilePassed = ($compile.ExitCode -eq 0 -and $compile.Stdout -match "(^|\s)49(\s|$)")
+    Write-RunCheck -Name "$Name`:compile" -Result $compile -Passed $compilePassed
+    return $compilePassed
+}
+
+# The kernel image and the engines must come from the same `prim`.  If they do
+# not (for example after regenerating the bootstrap artifacts for another
+# revision), every image build fails with a low-level message such as
+# "Primitive N ... is not implemented by this engine".  Check up front.
+function Test-EngineKernelConsistency {
+    param(
+        [string]$Name,
+        [string]$Exe,
+        [string]$Image
+    )
+
+    $result = Invoke-Gforth -Exe $Exe -Arguments @("--die-on-signal=2", "-i", $Image, "-e", "bye")
+    $text = "$($result.Stdout)`n$($result.Stderr)"
+    $mismatch = ($text -match "is not implemented by this engine|does not match the executable")
+    $passed = ($result.ExitCode -eq 0 -and -not $mismatch)
+    Write-RunCheck -Name $Name -Result $result -Passed $passed
+    if (-not $passed) {
+        Write-Host "The kernel image does not match this engine:"
+        Write-Host "  engine: $Exe"
+        Write-Host "  kernel image: $Image"
+        Write-Host "The kernel image was probably generated from a different 'prim' than the engine."
+        Write-Host "Regenerate the bootstrap artifacts and rebuild the engine:  .\scripts\regen-bootstrap.ps1"
+    }
     return $passed
 }
 
@@ -325,7 +364,7 @@ $repoRoot = (Resolve-Path ".").Path
 $outputFullPath = [System.IO.Path]::GetFullPath($OutputImage, $repoRoot)
 $outputDirectory = [System.IO.Path]::GetDirectoryName($outputFullPath)
 $defaultImage = Join-Path (Split-Path -Parent $native) "gforth.fi"
-$kernelImage = Join-Path $repoRoot "kernl64l.fi"
+$kernelImage = [System.IO.Path]::GetFullPath($KernelImage, $repoRoot)
 $nativeExeForForth = Convert-ToGforthPath $native
 $repoRootForForth = Convert-ToGforthPath $repoRoot
 $imageBuilderWords = @(
@@ -771,6 +810,15 @@ if (-not $outputParentOk -or -not $separateFromDefault -or -not $advancedLoaderE
 }
 
 Write-Host "Building advanced interactive image"
+
+if (-not (Test-Path -LiteralPath $kernelImage)) {
+    Write-Host "Missing kernel image: $kernelImage"
+    Write-Host "Generate it with:  .\scripts\regen-bootstrap.ps1"
+    exit 2
+}
+if (-not (Test-EngineKernelConsistency -Name "build:engine-kernel-consistency" -Exe $imageBuilder -Image $kernelImage)) {
+    exit 2
+}
 
 $buildNoOffsetImage = Join-Path $repoRoot "build/native/gforth-mi-build-no-offset.fi"
 $buildOffsetImage = Join-Path $repoRoot "build/native/gforth-mi-build-offset.fi"
