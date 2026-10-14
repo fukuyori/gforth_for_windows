@@ -656,6 +656,28 @@ In this mode, a pending `winch?` flag is surfaced internally as `k-winch`,
 consumed by the compact editor path, and used to refresh `form` without
 inserting text into the input buffer.
 
+Window resize detection (console size watcher):
+
+Windows never raises `SIGWINCH`, so `rows`/`cols` (and therefore `form`, `rows`,
+`cols` and the status-bar width) used to keep the size read at startup.  While
+Gforth reads the console (`engine/io.c`, `getkey`), a watcher thread re-reads
+the console size every 150 ms.  On a change it updates `rows`/`cols`, raises
+the `winch?` flag and interrupts the blocked read, which returns `EINTR` like a
+`SIGWINCH`-interrupted read on Unix.  `ekey` then returns `k-winch`, and the
+advanced editor calls the `win-winch-hook` defer (`kernel/accept.fs`), which
+`status-line.fs` sets to `status-winch`: it erases everything below the cursor
+line (the terminal re-wraps the screen on a resize, so stale copies of the bar
+can be anywhere below it) and redraws the bar for the new width at the new
+bottom row.  The editor's own stack cells are hidden while the hook runs, so the
+bar shows only the user's stack.
+
+- The watcher starts on the first console read, only when stdin and stdout are
+  both consoles.  Set `GFORTH_WIN_NO_WINSIZE_WATCH` to disable it.
+- If the interrupt cannot be delivered, the change is still picked up at the
+  next key press (the flag stays set).
+- `kernel/accept.fs` is compiled into the kernel image, so changing it needs
+  `.\scripts\regen-bootstrap.ps1` before rebuilding the advanced image.
+
 Integrated reduced interactive mode:
 
 ```powershell

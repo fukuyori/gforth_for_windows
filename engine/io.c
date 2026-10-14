@@ -59,6 +59,81 @@ typedef unsigned int uint32_t;
 
 #define GFORTH_WIN32_ESCAPE_TAIL_WAIT_MS 100
 
+#include <errno.h>
+
+/* Windows never delivers SIGWINCH, so rows/cols would stay at the values read
+   at startup.  While Gforth reads the console, a watcher thread re-reads the
+   console size.  On a change it updates rows/cols, raises the flag SIGWINCH
+   raises on Unix (winch?), and interrupts the blocked read, which then returns
+   EINTR like a SIGWINCH-interrupted read(2).  Set GFORTH_WIN_NO_WINSIZE_WATCH to
+   disable it. */
+#define GFORTH_WIN32_WINSIZE_POLL_MS 150
+
+extern Cell winch_addr;
+extern UCell rows, cols;
+void get_winsize(void);
+
+static volatile LONG gforth_win32_in_console_read = 0;
+static HANDLE gforth_win32_main_thread = NULL;
+static int gforth_win32_watcher_started = 0;
+
+static int gforth_win32_poll_winsize(void)
+{
+  UCell old_rows = rows;
+  UCell old_cols = cols;
+
+  get_winsize();
+  if (rows == old_rows && cols == old_cols)
+    return 0;
+  winch_addr = -1;
+  return 1;
+}
+
+static volatile LONG gforth_win32_cancel_count = 0;
+
+static DWORD WINAPI gforth_win32_winsize_watcher(LPVOID arg)
+{
+  int pending = 0;
+
+  (void)arg;
+  for (;;) {
+    /* After a change, retry the interrupt at a short interval until the
+       reader has noticed (the read may not be cancelable at one instant). */
+    Sleep(pending ? 25 : GFORTH_WIN32_WINSIZE_POLL_MS);
+    if (gforth_win32_poll_winsize())
+      pending = 1;
+    if (pending) {
+      if (winch_addr == 0)
+        pending = 0;  /* the Forth side has handled it */
+      else if (gforth_win32_in_console_read) {
+        InterlockedIncrement(&gforth_win32_cancel_count);
+        CancelSynchronousIo(gforth_win32_main_thread);
+      }
+    }
+  }
+  return 0;
+}
+
+static void gforth_win32_start_winsize_watcher(void)
+{
+  HANDLE thread;
+
+  if (gforth_win32_watcher_started)
+    return;
+  gforth_win32_watcher_started = 1;
+  if (getenv("GFORTH_WIN_NO_WINSIZE_WATCH"))
+    return;
+  if (!isatty(0) || !isatty(1))
+    return;
+  if (!DuplicateHandle(GetCurrentProcess(), GetCurrentThread(),
+                       GetCurrentProcess(), &gforth_win32_main_thread,
+                       0, FALSE, DUPLICATE_SAME_ACCESS))
+    return;
+  thread = CreateThread(NULL, 0, gforth_win32_winsize_watcher, NULL, 0, NULL);
+  if (thread != NULL)
+    CloseHandle(thread);
+}
+
 #define GFORTH_KEYCODE_START 0x80000000U
 #define GFORTH_K_LEFT   (GFORTH_KEYCODE_START + 0)
 #define GFORTH_K_RIGHT  (GFORTH_KEYCODE_START + 1)
@@ -1038,8 +1113,28 @@ Cell getkey(FILE * stream)
     prep_terminal();
   }
 
+#ifdef _WIN32
+  LONG cancels_before = 0;
+
+  if (stream == stdin) {
+    gforth_win32_start_winsize_watcher();
+    cancels_before = gforth_win32_cancel_count;
+    InterlockedExchange(&gforth_win32_in_console_read, 1);
+  }
+#endif
   errno=0;
   result = fgetc(stream);
+#ifdef _WIN32
+  if (stream == stdin) {
+    InterlockedExchange(&gforth_win32_in_console_read, 0);
+    if (result < 0 && gforth_win32_cancel_count != cancels_before) {
+      /* the watcher interrupted the read because the window was resized */
+      clearerr(stream);
+      winch_addr = -1;
+      return TOIOR(EINTR);
+    }
+  }
+#endif
   return (result<0) ? IOR(1) : result;
 }
 #else

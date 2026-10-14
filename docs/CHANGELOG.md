@@ -5,6 +5,33 @@ Version format: `<upstream base>+fukuyori.<major>.<minor>`.  Entries were
 compiled from the git history, the GitHub release notes, and
 `WINDOWS-RELEASE-3.1.md`; commit hashes are given for traceability.
 
+## Unreleased
+
+### Fixed
+- The status bar width was not recalculated after the window was resized:
+  Windows never raises `SIGWINCH`, so `rows`/`cols` kept the startup size and
+  the bar wrapped when the window was narrower than at startup.  A console
+  watcher thread (`engine/io.c`) now detects size changes, interrupts the
+  blocked read (`ekey` returns `k-winch`), and `status-line.fs` redraws the bar
+  for the new width via the new `win-winch-hook` (`kernel/accept.fs`).
+  `GFORTH_WIN_NO_WINSIZE_WATCH` disables the watcher.  The kernel image must be
+  regenerated (`scripts\regen-bootstrap.ps1`) because `kernel/accept.fs` changed.
+
+### Build and installer
+- `build-advanced-interactive-image.ps1` checks that the kernel image matches
+  the engine before building (previously a mismatch failed with
+  `Primitive ... is not implemented by this engine`) and its smoke test now also
+  compiles and runs a colon definition.
+- The installer reports a failed advanced-image generation (message with the log
+  path) instead of silently starting in plain mode; `gforth-advanced.cmd` says
+  so when it falls back.
+- Added `scripts/regen-bootstrap.ps1` / `regen-bootstrap-wsl.sh` and the
+  tagged-upstream sync policy (README).
+
+### Known issue (not fixed)
+- `see` crashes (access violation) on some words of the advanced image, e.g.
+  `see decode`; reproduced with the installed 3.2 as well.
+
 ## 0.7.9_20260923+fukuyori.3.2 (2026-10-03)
 
 Upstream sync and signed-installer support.

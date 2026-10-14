@@ -133,7 +133,8 @@ Constant status-terminal-ready?
     \ status line prints a stack of status words
     ' .base ' .stacks ' .order 3 status-xts set-stack
 
-    : (.status-line) ( addr -- ) { status$ }
+    : (status-text) ( addr -- ) { status$ }
+	\ build the bar text in status$, padded or truncated to the current width
 	cols #100 > to wide?
 	[: status-xts $@ cell MEM+DO  I perform  LOOP ;] status$ $exec
 	#lf '|' status$ $@ replace-char
@@ -150,6 +151,10 @@ Constant status-terminal-ready?
 		r> I - +LOOP  drop
 	    THEN
 	THEN
+	;
+
+    : (.status-line) ( addr -- ) { status$ }
+	status$ (status-text)
 	cr edit-linew @ status-screenw @ dup 0= IF  $100 +  THEN  mod -1 at-deltaxy
 	status$ $@ redraw-status
 	1 to status-offset ;
@@ -166,6 +171,24 @@ Constant status-terminal-ready?
     : +status ( -- ) \ gforth
 	\G Turn on the status bar at the bottom of the screen
 	['] .status-line is .status ['] .unstatus-line is .unstatus ;
+
+    \ The terminal size changed (k-winch): rebuild the bar for the new width
+    \ and redraw it at the new bottom row.  On Windows the engine detects the
+    \ change by polling the console (engine/io.c).
+    : status-winch ( -- )
+	{ | w^ status$ }
+	status-offset 0= IF  EXIT  THEN
+	\ The terminal re-wraps the screen on a resize, so old copies of the bar can
+	\ be anywhere below the cursor line: erase from the next line down ...
+	save-cursor-position  $1B emit ." [E"  0 erase-display  restore-cursor-position
+	\ ... and draw the bar again the normal way.
+	status$ ['] (.status-line) catch dup IF  nip  THEN
+	IF  -status  THEN
+	status$ $free ;
+
+    [IFDEF] win-winch-hook
+	' status-winch is win-winch-hook
+    [THEN]
 [ELSE]
     ' noop Alias +status ( -- ) \ gforth
     ' noop Alias -status ( -- ) \ gforth

@@ -103,6 +103,17 @@ kernel-editor edit-out !
     dup -1 =   IF  drop 4  THEN  \ -1 is EOF
     dup #del = IF  drop #bs  THEN ; \ del is rubout
 
+\ The terminal size changed (k-winch).  status-line.fs installs a redraw of
+\ the status bar here (status-winch); the engine updates form itself.
+Defer win-winch-hook ' noop is win-winch-hook
+[IFDEF] status-winch ' status-winch is win-winch-hook [THEN]
+
+: win-handle-winch ( max span addr pos1 -- max span addr pos1 flag )
+    form 2drop
+    \ hide the editor's cells so that the hook (status bar) sees only the user's stack
+    >r >r >r >r  win-winch-hook  r> r> r> r>
+    false ;
+
 : win-ekey?
     s" GFORTH_WIN_EKEY" win-env? win-interactive? or ;
 
@@ -158,9 +169,6 @@ Defer edit-key
 	THEN
     THEN
     edit-key ;
-
-: win-handle-winch
-    form 2drop false ;
 
 : edit-line ( c-addr n1 n2 -- n3 ) \ gforth
     \G edit the string with length @var{n2} in the buffer @var{c-addr
