@@ -1,7 +1,7 @@
 # Version update checklist
 
 Version format: `<upstream base>+fukuyori.<major>.<minor>`
-(e.g. `0.7.9_20260923+fukuyori.3.3`).  The base is the upstream tag
+(e.g. `0.7.9_20260923+fukuyori.3.4`).  The base is the upstream tag
 that was merged (tagged releases only; branches and untagged commits wait for the
 next tag, see README "Fork Synchronization"); the fork number is bumped by the
 maintainer.

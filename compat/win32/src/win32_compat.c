@@ -585,9 +585,105 @@ int sigaltstack(const stack_t *ss, stack_t *old_ss) {
   return 0;
 }
 
+/* The C runtime resets a signal's disposition to SIG_DFL each time the signal
+   is delivered (signal() has System V semantics), but Gforth relies on
+   sigaction() semantics: it turns SIGSEGV and the like into Forth exceptions
+   (throw -9, ...) and expects the handler to stay installed.  Without this,
+   the second invalid memory access in a process terminates it (e.g. `see` on
+   a word whose literal is not a valid address).  So the CRT gets a trampoline
+   that re-arms itself before calling the real handler (which usually leaves by
+   longjmp and never returns). */
+#define GFORTH_SIG_MAX 64
+
+extern void **__cdecl __pxcptinfoptrs(void);
+
+static Sigfunc *gforth_sig_handler[GFORTH_SIG_MAX];
+static unsigned char gforth_sig_with_info[GFORTH_SIG_MAX];
+
+/* Call the registered handler of SIG for the exception described by EP (NULL
+   if unknown).  SA_SIGINFO handlers get a siginfo_t built from it. */
+static void gforth_sig_dispatch(int sig, EXCEPTION_POINTERS *ep) {
+  Sigfunc *handler;
+
+  if (sig < 0 || sig >= GFORTH_SIG_MAX) {
+    return;
+  }
+  handler = gforth_sig_handler[sig];
+  if (handler == NULL) {
+    return;
+  }
+  if (gforth_sig_with_info[sig]) {
+    /* The CRT passes only the signal number.  The faulting address and the
+       SIGFPE code are recovered from the exception record; Gforth's handlers
+       use them to tell a stack overflow from a stray access and to pick the
+       Forth exception.  Otherwise the handler gets a defined, zeroed siginfo_t
+       instead of whatever happens to be in the argument registers. */
+    siginfo_t info;
+    memset(&info, 0, sizeof(info));
+    info.si_signo = sig;
+    if (ep != NULL && ep->ExceptionRecord != NULL) {
+      EXCEPTION_RECORD *er = ep->ExceptionRecord;
+      if (sig == SIGFPE) {
+        switch (er->ExceptionCode) {
+        case EXCEPTION_INT_DIVIDE_BY_ZERO: info.si_code = FPE_INTDIV; break;
+        case EXCEPTION_INT_OVERFLOW:       info.si_code = FPE_INTOVF; break;
+        case EXCEPTION_FLT_DIVIDE_BY_ZERO: info.si_code = FPE_FLTDIV; break;
+        case EXCEPTION_FLT_OVERFLOW:       info.si_code = FPE_FLTOVF; break;
+        case EXCEPTION_FLT_UNDERFLOW:      info.si_code = FPE_FLTUND; break;
+        case EXCEPTION_FLT_INEXACT_RESULT: info.si_code = FPE_FLTRES; break;
+        case EXCEPTION_FLT_INVALID_OPERATION:
+        case EXCEPTION_FLT_DENORMAL_OPERAND:
+        case EXCEPTION_FLT_STACK_CHECK:    info.si_code = FPE_FLTINV; break;
+        default:                           info.si_code = 0; break;
+        }
+      }
+      if (er->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && er->NumberParameters >= 2) {
+        info.si_addr = (void *)er->ExceptionInformation[1];
+      } else {
+        info.si_addr = er->ExceptionAddress;
+      }
+    }
+    ((void (*)(int, siginfo_t *, void *))handler)(sig, &info, NULL);
+  } else {
+    handler(sig);
+  }
+}
+
+static void gforth_sig_trampoline(int sig) {
+  if (sig < 0 || sig >= GFORTH_SIG_MAX) {
+    return;
+  }
+  signal(sig, gforth_sig_trampoline);  /* re-arm before the handler may longjmp */
+  /* While the CRT dispatches an exception (SIGSEGV, SIGFPE, SIGILL),
+     __pxcptinfoptrs() gives the EXCEPTION_POINTERS of the fault. */
+  gforth_sig_dispatch(sig, (EXCEPTION_POINTERS *)*__pxcptinfoptrs());
+}
+
+/* The C runtime turns only some exceptions into signals: integer division by
+   zero (and the INT_MIN / -1 overflow) is not delivered as SIGFPE, so the
+   process died on `1 0 /`.  Hook the top-level exception filter, the same
+   place the CRT uses for SIGSEGV, and hand these two exceptions to the SIGFPE
+   handler; everything else goes to the previous filter. */
+static LPTOP_LEVEL_EXCEPTION_FILTER gforth_prev_exception_filter = NULL;
+static int gforth_exception_filter_installed = 0;
+
+static LONG WINAPI gforth_exception_filter(EXCEPTION_POINTERS *ep) {
+  if (ep != NULL && ep->ExceptionRecord != NULL &&
+      (ep->ExceptionRecord->ExceptionCode == EXCEPTION_INT_DIVIDE_BY_ZERO ||
+       ep->ExceptionRecord->ExceptionCode == EXCEPTION_INT_OVERFLOW)) {
+    gforth_sig_dispatch(SIGFPE, ep);  /* normally leaves by longjmp */
+  }
+  if (gforth_prev_exception_filter != NULL) {
+    return gforth_prev_exception_filter(ep);
+  }
+  return EXCEPTION_CONTINUE_SEARCH;
+}
+
 int sigaction(int sig, const struct sigaction *act, struct sigaction *oldact) {
   Sigfunc *previous;
   Sigfunc *handler;
+  Sigfunc *old_user = NULL;
+  int tracked = (sig >= 0 && sig < GFORTH_SIG_MAX);
 
   if (oldact != NULL) {
     memset(oldact, 0, sizeof(*oldact));
@@ -604,14 +700,32 @@ int sigaction(int sig, const struct sigaction *act, struct sigaction *oldact) {
   }
 
   handler = (act->sa_flags & SA_SIGINFO) ? (Sigfunc *)act->sa_sigaction : (Sigfunc *)act->sa_handler;
-  previous = signal(sig, handler);
+  if (tracked) {
+    old_user = gforth_sig_handler[sig];
+  }
+
+  if (!tracked || handler == SIG_DFL || handler == SIG_IGN) {
+    previous = signal(sig, handler);
+    if (tracked) {
+      gforth_sig_handler[sig] = NULL;
+      gforth_sig_with_info[sig] = 0;
+    }
+  } else {
+    gforth_sig_handler[sig] = handler;
+    gforth_sig_with_info[sig] = (act->sa_flags & SA_SIGINFO) != 0;
+    previous = signal(sig, gforth_sig_trampoline);
+    if (sig == SIGFPE && !gforth_exception_filter_installed) {
+      gforth_exception_filter_installed = 1;
+      gforth_prev_exception_filter = SetUnhandledExceptionFilter(gforth_exception_filter);
+    }
+  }
   if (previous == SIG_ERR) {
     errno = EINVAL;
     return -1;
   }
 
   if (oldact != NULL) {
-    oldact->sa_handler = previous;
+    oldact->sa_handler = (previous == gforth_sig_trampoline && old_user != NULL) ? old_user : previous;
   }
   return 0;
 }

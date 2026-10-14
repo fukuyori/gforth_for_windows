@@ -64,6 +64,19 @@ struct sigaction {
 #define SIGWINCH 28
 #endif
 
+/* si_code values for SIGFPE (POSIX; the numbers are those of Linux).  The
+   Gforth engine uses them to pick the Forth exception in fpe_handler. */
+#ifndef FPE_INTDIV
+#define FPE_INTDIV 1
+#define FPE_INTOVF 2
+#define FPE_FLTDIV 3
+#define FPE_FLTOVF 4
+#define FPE_FLTUND 5
+#define FPE_FLTRES 6
+#define FPE_FLTINV 7
+#define FPE_FLTSUB 8
+#endif
+
 int sigemptyset(sigset_t *set);
 int sigaddset(sigset_t *set, int sig);
 int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);

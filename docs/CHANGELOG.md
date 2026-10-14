@@ -5,6 +5,28 @@ Version format: `<upstream base>+fukuyori.<major>.<minor>`.  Entries were
 compiled from the git history, the GitHub release notes, and
 `WINDOWS-RELEASE-3.1.md`; commit hashes are given for traceability.
 
+## 0.7.9_20260923+fukuyori.3.4 (2026-10-14)
+
+### Fixed
+- `see` crashed (access violation) on most words of the advanced image, e.g.
+  `see decode`.  The Windows `sigaction()` emulation (`compat/win32`) used the C
+  runtime's `signal()`, which resets the handler to `SIG_DFL` on every delivery,
+  so the second invalid memory access in a process terminated it instead of
+  throwing -9; `see` probes literals as addresses and hits that.  The emulation
+  now keeps the handler installed (a trampoline re-arms it before calling the
+  real handler).
+- `SA_SIGINFO` handlers (`segv_handler`, `fpe_handler`) used to be called with
+  undefined second/third arguments.  They now get the fault address
+  (`si_addr`, from the CRT's `__pxcptinfoptrs()`) and POSIX `FPE_*` codes, so
+  stack faults are reported as in Gforth on Unix: stack underflow -4, stack
+  overflow -3, return stack overflow -5 (previously all -9).
+- Integer division by zero (`1 0 /`, `mod`, `/mod`, `*/`, `um/mod`, ...)
+  terminated the process (exception 0xC0000094) instead of throwing -10: the C
+  runtime does not deliver it as `SIGFPE`, not even in a minimal C program.
+  The compat layer now hooks the top-level exception filter (the place the CRT
+  uses for `SIGSEGV`) and hands integer divide-by-zero and the `INT_MIN / -1`
+  overflow to the SIGFPE handler: `1 0 /` throws -10, `INT_MIN -1 /` throws -11.
+
 ## 0.7.9_20260923+fukuyori.3.3 (2026-10-14)
 
 ### Fixed
