@@ -1,7 +1,10 @@
 param(
     [string]$BootstrapExe,
     [string]$StageDir = "$(Join-Path (Get-Location) 'build/installer/stage')",
-    [switch]$SkipNative
+    [switch]$SkipNative,
+    # With -SkipNative: only warn when build/native is not current (see
+    # release-preflight.ps1) instead of stopping.
+    [switch]$AllowStale
 )
 
 $ErrorActionPreference = "Stop"
@@ -23,6 +26,12 @@ $nativeImageBuilder = Join-Path $RepoRoot "build/native/gforth-ditc.exe"
 $nativeImage = Join-Path $RepoRoot "build/native/gforth.fi"
 if (-not (Test-Path $nativeExe) -or -not (Test-Path $nativeImageBuilder) -or -not (Test-Path $nativeImage)) {
     throw "Missing build/native/gforth.exe, gforth-ditc.exe, or gforth.fi. Run scripts/build-release.ps1 without -SkipNative first."
+}
+
+if ($SkipNative) {
+    # build/native is reused as it is: make sure it is current before staging it
+    . (Join-Path $PSScriptRoot "release-preflight.ps1")
+    Test-NativeBuildFresh -Root $RepoRoot -AllowStale:$AllowStale
 }
 
 $advancedImageBuilder = Join-Path $RepoRoot "scripts/build-advanced-interactive-image.ps1"

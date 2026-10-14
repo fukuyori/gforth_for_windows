@@ -264,6 +264,15 @@ staged `gforth.fi`) differs from `kernl64l.fi`.  The warnings do not stop the
 build.  Because `kernel/accept.fs` and the other kernel files are compiled into
 `kernl64l.fi`, run `regen-bootstrap.ps1` after changing them.
 
+`build-release.ps1 -SkipNative` stages `build/native` as it is, so it first runs
+a preflight (`scripts/release-preflight.ps1`) and stops when the artifacts are
+not current: the `version-string` of `gforth.exe` differs from `configure.ac`,
+the engines are older than `engine/*.c|h|i` or `compat/win32`, `kernl64l.fi`
+does not match its recorded inputs, or `build/native/gforth.fi` differs from
+`kernl64l.fi`.  The message names the cause and the script to run
+(`regen-bootstrap.ps1` or `build-native.ps1 -SkipBootstrap`); `-AllowStale`
+turns the failures into warnings.
+
 Other bootstrap options (official Windows Gforth with `-BootstrapExe`, or
 upstream snapshot tarball artifacts) are described under "Bootstrap
 requirements after an upstream sync" in `docs/WINDOWS-NATIVE.md`.

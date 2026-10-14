@@ -5,6 +5,16 @@ Version format: `<upstream base>+fukuyori.<major>.<minor>`.  Entries were
 compiled from the git history, the GitHub release notes, and
 `WINDOWS-RELEASE-3.1.md`; commit hashes are given for traceability.
 
+## Unreleased
+
+### Build and installer
+- `build-release.ps1 -SkipNative` now runs a preflight
+  (`scripts/release-preflight.ps1`) before staging `build/native`, and stops
+  when the engine is older than its sources, `gforth.exe` reports a different
+  version than `configure.ac`, `kernl64l.fi` is older than the kernel sources,
+  or `build/native/gforth.fi` is not the current `kernl64l.fi`.  `-AllowStale`
+  turns these failures into warnings.
+
 ## 0.7.9_20260923+fukuyori.3.4 (2026-10-14)
 
 ### Fixed
