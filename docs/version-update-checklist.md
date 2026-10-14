@@ -25,11 +25,18 @@ Do not rewrite historical mentions (sync history in `README.md`,
 
 ## After editing
 
-0. If `prim`, `kernel/` or the startup libraries changed (upstream sync) or on a fresh
-   clone: `.\scripts\regen-bootstrap.ps1` (WSL Gforth; see README "Bootstrap artifacts").
-1. `.\scripts\build-native.ps1 -SkipBootstrap` (or with a bootstrap host)
-2. `.\scripts\build-advanced-interactive-image.ps1 -IncludeHistory`
+1. `.\scripts\regen-bootstrap.ps1` (WSL Gforth; see README "Bootstrap artifacts").
+   Always after a version change: the version string is compiled into the kernel
+   image (`kernel/version.fs`), and the script refreshes the generated support
+   files first.  Also needed after changes to `prim`, `kernel/*.fs` or the startup
+   libraries, and on a fresh clone.
+2. `.\scripts\build-release.ps1 -SkipNative` (builds the advanced image and stages
+   the release).  Its preflight stops when `build/native` is not current (version,
+   engine, kernel image); `-AllowStale` turns the failures into warnings.
 3. Confirm `version-string` prints the new version.
 4. Distribution artifacts (ZIP, installer) are built by the maintainer:
    `.\scripts\build-installer.ps1 -Sign` (needs `CODESIGN_CERT` = certificate
    subject name in the current user's store, and signtool.exe from the Windows SDK).
+5. Release tag: create the lightweight tag `<version>` on the release commit of
+   `main` and push only that tag (`git push origin refs/tags/<version>`); do not
+   push upstream's tags.  Then publish a GitHub Release with the signed installer.

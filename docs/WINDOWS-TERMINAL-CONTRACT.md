@@ -22,7 +22,7 @@ In scope:
 - standard stream text/binary mode
 - TTY vs non-TTY behavior
 - ordinary output and cursor-control assumptions
-- future resize and `ekey` integration points
+- resize and `ekey` integration points
 
 Out of scope for this phase:
 
@@ -183,16 +183,25 @@ Otherwise, it provides a reduced fallback used only by the status-line code.
 
 ### Resize
 
-Resize support is a future advanced feature.
+Resize is implemented for the advanced path (0.7.9_20260923+fukuyori.3.3).
 
-The contract target is:
+Windows never raises `SIGWINCH`, so the engine detects a size change itself:
+while Gforth reads the console, a watcher thread (`engine/io.c`) re-reads the
+console size every 150 ms.  On a change it updates `rows`/`cols` (what `form`,
+`rows` and `cols` report), raises the `winch?` flag and interrupts the blocked
+read.  The contract is:
 
-- resize is eventually surfaced as `k-winch` or an equivalent event
-- `key?` may report availability when a resize event is pending
-- `ekey` may return `k-winch` when advanced input is enabled
+- a resize is surfaced as `k-winch`
+- `key?` reports availability while a resize is pending (`winch? @` is part of
+  `(key?)` in `kernel/io.fs`)
+- `ekey` returns `k-winch` when advanced input is enabled
+- the editor calls `win-winch-hook` (`kernel/accept.fs`); `status-line.fs` sets
+  it to `status-winch`, which redraws the status bar for the new width
 
-Until this is implemented and verified, reduced Windows mode must not require
-resize events for correctness.
+The watcher starts on the first console read, only when stdin and stdout are
+both consoles, and `GFORTH_WIN_NO_WINSIZE_WATCH` disables it.  If the interrupt
+cannot be delivered, the change is picked up at the next key press.  Reduced
+Windows mode must still not require resize events for correctness.
 
 ## Code Map
 

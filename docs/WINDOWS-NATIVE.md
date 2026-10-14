@@ -166,8 +166,14 @@ testing the advanced image; the history path must be a file.
 Release build:
 
 ```powershell
-.\scripts\build-release.ps1
+.\scripts\regen-bootstrap.ps1             # when needed (see below)
+.\scripts\build-release.ps1 -SkipNative    # preflight, advanced image, staging
 ```
+
+`-SkipNative` reuses `build/native`, so `build-release.ps1` first runs
+`scripts/release-preflight.ps1`, which stops when the engine, the kernel image
+or the version are not current (`-AllowStale` turns the failures into
+warnings).  Without `-SkipNative` the script runs `build-native.ps1` itself.
 
 The release build step produces:
 
@@ -177,12 +183,13 @@ The release build step produces:
 - `build/native/gforth-advanced.fi`
 - `build/installer/stage/`
 
-Electronically sign `build/installer/stage/gforth.exe` and
-`build/installer/stage/gforth-ditc.exe`, then create the installer from the
-signed staged release build:
+Create the installer from the staged release build.  `-Sign` signs
+`gforth.exe` and `gforth-ditc.exe`, the uninstaller and the setup program with
+the certificate named by `CODESIGN_CERT`:
 
 ```powershell
-.\scripts\build-installer.ps1
+$env:CODESIGN_CERT = "<subject name of the code-signing certificate>"
+.\scripts\build-installer.ps1 -Sign
 ```
 
 The installer build produces:
@@ -260,6 +267,24 @@ This layer provides the minimum runtime surface needed by the engine, including:
 - `getpwuid` and `getpwnam` style account lookup
 - terminal-related shims
 - signal compatibility, including `SIGWINCH`
+
+Signal emulation (`sigaction()` in `win32_compat.c`):
+
+- The C runtime resets a handler to `SIG_DFL` on every delivery, but Gforth
+  relies on `sigaction()` semantics (a fault becomes a Forth exception and the
+  handler stays installed).  The handler is kept in a table and the runtime
+  gets a trampoline that re-arms itself before calling it.  Without this the
+  second invalid memory access terminated the process; `see` probes literals as
+  addresses and crashed on most words.
+- `SA_SIGINFO` handlers get a `siginfo_t` built from the exception record: the
+  faulting address (`si_addr`, via the runtime's `__pxcptinfoptrs()`) and POSIX
+  `FPE_*` codes (defined in `compat/win32/include/signal.h`).  Stack faults are
+  therefore reported as on Unix: stack underflow -4, stack overflow -3, return
+  stack overflow -5 (invalid memory access -9).
+- The C runtime does not deliver integer division by zero (or `INT_MIN / -1`)
+  as `SIGFPE`.  A top-level exception filter, chained like the runtime's own
+  `SIGSEGV` path, hands both to the `SIGFPE` handler: `1 0 /` throws -10,
+  `INT_MIN -1 /` throws -11.
 
 The template `compat/win32/native-config.h.in` also carries Windows-specific
 build properties used by the native build.
@@ -425,7 +450,8 @@ Higher-effort candidates:
   context
 - enabling a visible, useful status bar that coexists with full history redraw,
   locate, and resize handling
-- restoring resize-driven interactive behavior that depends on `k-winch`
+- any further resize-driven interactive behavior beyond the status-bar redraw
+  (see "Window resize detection" above for what exists)
 
 These are the expensive items because the current Windows-native port
 deliberately replaced the upstream `ekey.fs` plus `history.fs` startup path
@@ -504,7 +530,16 @@ Important installer choices:
 - no administrator privileges are required
 - PATH modification is optional and unchecked by default
 - a desktop shortcut is optional and unchecked by default
-- the installer can launch `gforth.exe` after installation
+- the installer can launch Gforth after installation (`gforth-advanced.cmd`,
+  advanced mode)
+- `gforth-advanced.fi` is generated at install time from `[Code]`
+  (`GenerateAdvancedImage`, running `generate-advanced.ps1`); if the generation
+  fails, or the image is missing afterwards, the installer shows a message with
+  the exit code and the log path (`generate-advanced.log` in the install
+  directory), and `gforth-advanced.cmd` says that it started in plain mode
+- with `build-installer.ps1 -Sign` the `SignTool`/`SignedUninstaller`
+  directives are active, so the setup program and the uninstaller are signed
+  (see "Signing" in the README)
 
 The installer consumes the staged tree recursively, so the staging step defines
 the contents of the final package.
@@ -533,7 +568,16 @@ the Windows-native configuration.
 
 In particular:
 
-- the build remains bootstrap-dependent on an existing Gforth
+- the build remains bootstrap-dependent on a full-image Gforth for regenerating
+  `prim.b`, `engine/*.i` and `kernl64l.fi` (`scripts/regen-bootstrap.ps1` uses
+  one in WSL); ordinary rebuilds do not need it
+- fault details for `SA_SIGINFO` handlers come from the C runtime
+  (`__pxcptinfoptrs()`), which ties the signal emulation to the Microsoft
+  runtime the engine is linked against
+- the resize watcher interrupts the blocked console read with
+  `CancelSynchronousIo`; if a child process sharing the console changes its
+  input mode at that moment the interrupt may not arrive and the redraw happens
+  at the next key press
 - some optional library-loading paths are still Unix-oriented
 - the installer packaging focuses on runtime use, not a full development tree
 
@@ -699,7 +743,7 @@ Interactive startup:
 Recreate the installer from an existing native build:
 
 ```powershell
-.\scripts\build-release.ps1
-# Electronically sign build\installer\stage\gforth.exe and gforth-ditc.exe.
-.\scripts\build-installer.ps1
+.\scripts\build-release.ps1 -SkipNative
+$env:CODESIGN_CERT = "<subject name of the code-signing certificate>"
+.\scripts\build-installer.ps1 -Sign
 ```

@@ -73,11 +73,16 @@ Smoke test:
 
 ### Windows installer
 
-Create the release build first:
+Create the release build first.  After a version change, or changes to `prim`,
+`kernel/` or the startup libraries, regenerate the bootstrap artifacts first
+(see "Bootstrap artifacts" below):
 
 ```powershell
-.\scripts\build-release.ps1
+.\scripts\regen-bootstrap.ps1             # when needed
+.\scripts\build-release.ps1 -SkipNative    # preflight, advanced image, staging
 ```
+
+Without `-SkipNative`, `build-release.ps1` runs `build-native.ps1` first.
 
 This produces the native runtime files and stages the installer input tree:
 
@@ -87,13 +92,22 @@ This produces the native runtime files and stages the installer input tree:
 - `build/native/gforth-advanced.fi`
 - `build/installer/stage/`
 
-Electronically sign `build/installer/stage/gforth.exe` and
-`build/installer/stage/gforth-ditc.exe`, then create the installer from the
-signed staged release build:
+Create the installer from the staged release build.  With `-Sign` it signs
+`gforth.exe` and `gforth-ditc.exe` (when not already signed), the uninstaller and
+the setup program:
 
 ```powershell
-.\scripts\build-installer.ps1
+$env:CODESIGN_CERT = "<subject name of the code-signing certificate>"
+.\scripts\build-installer.ps1 -Sign
 ```
+
+#### Signing
+
+`-Sign` uses the certificate named by the `CODESIGN_CERT` environment variable
+(the subject name in the current user's certificate store, `signtool /n`) and
+`signtool.exe` from the Windows SDK; `-TimestampUrl` overrides the timestamp
+server.  Without `-Sign` nothing is signed.  Check the result with
+`Get-AuthenticodeSignature` (`Status` should be `Valid`).
 
 The installer output is written to:
 
@@ -123,6 +137,12 @@ The installer regenerates `gforth-advanced.fi` with the bundled
 `gforth-ditc.exe`.  This keeps the image fully relocatable and prevents its
 primitive checksum from becoming invalid when Windows ASLR chooses a different
 address after a reboot.
+
+If the generation fails (or `gforth-advanced.fi` is missing afterwards) the
+installer shows a message with the exit code and the log path
+(`generate-advanced.log` in the install directory), and `gforth-advanced.cmd`
+prints that it started in plain mode.  To retry, run `generate-advanced.ps1` in
+the installation folder.
 
 The default install directory is `%LOCALAPPDATA%\Programs\Gforth`.
 

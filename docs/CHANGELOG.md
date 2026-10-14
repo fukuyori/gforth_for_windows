@@ -7,6 +7,13 @@ compiled from the git history, the GitHub release notes, and
 
 ## Unreleased
 
+### Documentation
+- Updated for the resize support (`WINDOWS-TERMINAL-CONTRACT.md`,
+  `WINDOWS-NATIVE.md`), the signal emulation and installer failure notice
+  (`WINDOWS-NATIVE.md`), the signing and release steps (`README.md`,
+  `WINDOWS-NATIVE.md`, `version-update-checklist.md`), and the known
+  limitations.
+
 ### Build and installer
 - `build-release.ps1 -SkipNative` now runs a preflight
   (`scripts/release-preflight.ps1`) before staging `build/native`, and stops
