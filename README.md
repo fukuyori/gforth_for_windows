@@ -4,7 +4,7 @@ This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that has been modified so
 Gforth can be built, run, and packaged natively on Windows.  It is currently
 based on `Gforth 0.7.9_20260923` and this fork's current release version is
-`0.7.9_20260923+fukuyori.3.2`.
+`0.7.9_20260923+fukuyori.3.3`.
 
 Gforth is a fast and portable implementation of ANS Forth and Forth 200x.  The
 upstream project remains the base of this repository; this fork adds a native
@@ -254,6 +254,15 @@ The script runs `scripts/regen-bootstrap-wsl.sh` in WSL, then
 from a different `prim` in place: an engine and a kernel image built from
 different `prim` files make advanced-image creation fail with
 `Primitive ... is not implemented by this engine`.
+
+`regen-bootstrap.ps1` records a SHA256 of every kernel input (`kernel/*.fs`,
+`prim`, `cross.fs`, `machpc.fs`, `mach64l.fs`) in `kernl64l.fi.inputs`.
+`build-advanced-interactive-image.ps1` (and so `build-release.ps1`) compares it
+with the current sources and warns when `kernl64l.fi` is older than they are,
+naming the changed files; it also warns when `build/native/gforth.fi` (or the
+staged `gforth.fi`) differs from `kernl64l.fi`.  The warnings do not stop the
+build.  Because `kernel/accept.fs` and the other kernel files are compiled into
+`kernl64l.fi`, run `regen-bootstrap.ps1` after changing them.
 
 Other bootstrap options (official Windows Gforth with `-BootstrapExe`, or
 upstream snapshot tarball artifacts) are described under "Bootstrap

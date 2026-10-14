@@ -13,6 +13,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $script:BuildWorkingDirectory = (Get-Location).Path
+. (Join-Path $PSScriptRoot "kernel-inputs.ps1")
 
 function Resolve-ExistingPath {
     param(
@@ -818,6 +819,22 @@ if (-not (Test-Path -LiteralPath $kernelImage)) {
 }
 if (-not (Test-EngineKernelConsistency -Name "build:engine-kernel-consistency" -Exe $imageBuilder -Image $kernelImage)) {
     exit 2
+}
+
+# Warn (do not stop) when the kernel image may be older than its sources, or
+# when the default gforth.fi is not the same kernel image.
+if (-not $PSBoundParameters.ContainsKey("KernelImage")) {
+    $kernelStamp = Test-KernelInputsStamp -Root $repoRoot -StampPath "$kernelImage.inputs"
+    if ($kernelStamp.Status -eq "missing") {
+        Write-Warning "No record of what kernl64l.fi was built from (kernl64l.fi.inputs).  If kernel/*.fs or prim changed since it was generated, run .\scripts\regen-bootstrap.ps1."
+    } elseif ($kernelStamp.Status -eq "stale") {
+        Write-Warning ("kernl64l.fi is older than its sources; changed: " + (($kernelStamp.Changed | Select-Object -First 8) -join ", "))
+        Write-Warning "Run .\scripts\regen-bootstrap.ps1 before building the release, or the new code will not be in the image."
+    }
+}
+if ((Test-Path -LiteralPath $defaultImage) -and
+    ((Get-FileHash -LiteralPath $defaultImage -Algorithm SHA256).Hash -ne (Get-FileHash -LiteralPath $kernelImage -Algorithm SHA256).Hash)) {
+    Write-Warning "$defaultImage differs from $kernelImage; copy the kernel image (regen-bootstrap.ps1 does this) or rebuild the release stage."
 }
 
 $buildNoOffsetImage = Join-Path $repoRoot "build/native/gforth-mi-build-no-offset.fi"

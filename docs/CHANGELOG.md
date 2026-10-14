@@ -5,7 +5,7 @@ Version format: `<upstream base>+fukuyori.<major>.<minor>`.  Entries were
 compiled from the git history, the GitHub release notes, and
 `WINDOWS-RELEASE-3.1.md`; commit hashes are given for traceability.
 
-## Unreleased
+## 0.7.9_20260923+fukuyori.3.3 (2026-10-14)
 
 ### Fixed
 - The status bar width was not recalculated after the window was resized:
@@ -18,6 +18,11 @@ compiled from the git history, the GitHub release notes, and
   regenerated (`scripts\regen-bootstrap.ps1`) because `kernel/accept.fs` changed.
 
 ### Build and installer
+- `regen-bootstrap.ps1` records the inputs of `kernl64l.fi` (`kernl64l.fi.inputs`)
+  and the image builder warns, naming the changed files, when the kernel image is
+  older than its sources or differs from the default `gforth.fi`.  It also
+  refreshes the generated support files (`kernel/version.fs`, ...) first, so a
+  version bump is no longer built into the kernel from a stale `version.fs`.
 - `build-advanced-interactive-image.ps1` checks that the kernel image matches
   the engine before building (previously a mismatch failed with
   `Primitive ... is not implemented by this engine`) and its smoke test now also

@@ -16,6 +16,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+. (Join-Path $PSScriptRoot "kernel-inputs.ps1")
 
 $wslArgs = @()
 if ($Distro) { $wslArgs += @("-d", $Distro) }
@@ -25,11 +26,24 @@ if ($LASTEXITCODE -ne 0 -or -not $wslRoot) {
     throw "Could not convert $RepoRoot to a WSL path. Is WSL installed?"
 }
 
+# The kernel is built from generated files too (kernel/version.fs, machpc.fs, ...),
+# which build-native.ps1 writes from configure.ac.  Refresh them first so that a
+# version bump is not built into the kernel from stale copies.
+Write-Host "Refreshing generated support files..." -ForegroundColor Cyan
+Set-Location $RepoRoot
+& (Join-Path $PSScriptRoot "build-native.ps1") -SkipBootstrap -SyntaxOnly *> $null
+if ($LASTEXITCODE -ne 0) {
+    throw "build-native.ps1 -SyntaxOnly failed (exit $LASTEXITCODE); run it directly to see the error."
+}
+
 Write-Host "Regenerating bootstrap artifacts in WSL ($wslRoot)..." -ForegroundColor Cyan
 & wsl @wslArgs --exec bash "$wslRoot/scripts/regen-bootstrap-wsl.sh"
 if ($LASTEXITCODE -ne 0) {
     throw "WSL regeneration failed (exit $LASTEXITCODE)."
 }
+
+# Record what kernl64l.fi was built from (checked by the image builders)
+Write-KernelInputsStamp -Root $RepoRoot -StampPath (Join-Path $RepoRoot "kernl64l.fi.inputs")
 
 if ($SkipBuild) {
     Write-Host "Artifacts regenerated. Skipped the native build (-SkipBuild)." -ForegroundColor Green
