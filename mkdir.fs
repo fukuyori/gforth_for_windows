@@ -1,7 +1,7 @@
 \ mkdir wrapper
 
 \ Authors: Anton Ertl, Bernd Paysan
-\ Copyright (C) 2008,2010,2012,2016,2019,2022,2023,2025 Free Software Foundation, Inc.
+\ Copyright (C) 2008,2010,2012,2016,2019,2022,2023,2025,2026 Free Software Foundation, Inc.
 
 \ This file is part of Gforth.
 
@@ -40,18 +40,17 @@
     [THEN]
 [THEN]
 
-17 Constant EEXIST
-#-512 EEXIST - Constant file-exist#
-
 : mkdir-parents {: c-addr u mode -- ior :} \ gforth
     \G create the directory @i{c-addr u} and all its parents with mode
     \G @i{mode} (modified by umask).  @i{mode} is a 9-bit number
     \G rwxrwxrwx (see @word{+fmode}, @pxref{General files}).
     c-addr u begin { d: s }
         s 1 /string '/' scan 2dup while ( s1 s1addr )
-	    c-addr tuck - 2dup [: type '/' emit ;] $tmp file-status nip
-	    0< IF  2dup delete-file drop  THEN  \ if it's a file, delete it
-	    mode =mkdir dup file-exist# <> and throw
+	    c-addr tuck - \ 2dup [: type '/' emit ;] $tmp file-status nip
+	    \ 0< IF  2dup delete-file drop  THEN  \ if it's a file, delete it
+	    mode =mkdir dup file-exist# <> over and if
+		nip nip exit
+	    then  drop
     repeat
     drop 2drop
     c-addr u mode =mkdir ;

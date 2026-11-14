@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 #Authors: Bernd Paysan, Anton Ertl
-#Copyright (C) 1995,1996,1997,1998,2000,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025 Free Software Foundation, Inc.
+#Copyright (C) 1995,1996,1997,1998,2000,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026 Free Software Foundation, Inc.
 
 #This file is part of Gforth.
 
@@ -21,13 +21,13 @@ dnl Process this file with autoconf to produce a configure script.
 
 #We use some automake macros here,
 #but don't use automake for creating Makefile.in
-AC_INIT([gforth],[0.7.9_20260923+fukuyori.3.4],[https://savannah.gnu.org/bugs/?func=addbug&group=gforth])
+AC_INIT([gforth],[1.0.2+fukuyori.4.0],[https://savannah.gnu.org/bugs/?func=addbug&group=gforth])
 AC_PREREQ([2.69])
 AC_CONFIG_MACRO_DIR([m4])
 #snapshots have numbers major.minor.release_YYYYMMDD
 #note that lexicographic ordering must be heeded.
 #I.e., 0.4.1_YYYYMMDD must not exist before 0.4.1!
-UPDATED="July 08, 2026"
+UPDATED="November 12, 2026"
 AC_SUBST(UPDATED)
 AC_CONFIG_HEADERS(engine/config.h)
 AC_USE_SYSTEM_EXTENSIONS
@@ -727,6 +727,10 @@ AC_SUBST(FAST)
 BFD_ARCH=`grep '#define BFD_ARCH' "$srcdir/arch/$machine/machine.h" | cut -f3 -d' '`
 BFD_MACH=`grep '#define BFD_MACH' "$srcdir/arch/$machine/machine.h" | cut -f3 -d' '`
 
+# the line produced two values for BFD_MACH on RISC-V
+# (now zero by using indentation for #define), so let's work around that
+test -z "$BFD_MACH" && BFD_MACH=bfd_mach_${host_cpu}
+
 AC_DEFINE_UNQUOTED(BFD_ARCH, $BFD_ARCH, [BFD architecture for libopcodes])
 AC_DEFINE_UNQUOTED(BFD_MACH, $BFD_MACH, [BFD machine for libopcodes])
 
@@ -1307,9 +1311,7 @@ then
 	config_warns="$config_warns
 Dynamic NC generation disabled."
     fi
-    AC_DEFINE_UNQUOTED(SKIP4,asm(""),statement for skipping 4 bytes)
 else
-    AC_DEFINE_UNQUOTED(SKIP4,asm("$skipcode"),statement for skipping 4 bytes)
     SKIPCODE=$skipcode
     AC_SUBST(SKIPCODE)
 fi
@@ -1479,7 +1481,11 @@ if test -z "$GNU_LIBTOOL"; then
   config_warns="$config_warns
 GNU libtool not found (package libtool-bin on Debian)."
   #'
-  GNU_LIBTOOL=libtool
+  GNU_LIBTOOL=libtool-unavailable
+fi
+if test "$GNU_LIBTOOL" = libtool-unavailable
+then
+  enable_lib=no
 fi
 GNU_LIBTOOL=${GNU_LIBTOOL#$CROSS_PREFIX}
 AC_SUBST(GNU_LIBTOOL)
@@ -1488,7 +1494,7 @@ AC_SUBST(GNU_LIBTOOL)
 #This check is just for making later checks link with libm.
 #using sin here is no good idea since it is built-into gcc and typechecked
 AC_CHECK_LIB(m,asin)
-AC_CHECK_LIB(ltdl,lt_dlinit)
+AC_CHECK_HEADER(ltdl.h, AC_CHECK_LIB(ltdl,lt_dlinit))
 #,LIB_SUFFIX=.la,LIB_SUFFIX=.so)
 if test "x$ac_cv_lib_ltdl_lt_dlinit" = xyes; then
    case "$host_os" in
@@ -1548,9 +1554,9 @@ AC_SUBST(disasm2_fs)
 AC_SUBST(disasm2_la)
 
 AC_CHECK_FUNCS(dlopen)
-if test -n "$GNU_LIBTOOL" -a "x$ac_cv_lib_ltdl_lt_dlinit" = xyes; then
+if test "$GNU_LIBTOOL" != libtool-unavailable -a "x$ac_cv_lib_ltdl_lt_dlinit" = xyes; then
   build_libcc_named=build-libcc-named
-elif test -n "$GNU_LIBTOOL" -a "x$ac_cv_func_dlopen" = xyes; then
+elif test "$GNU_LIBTOOL" != libtool-unavailable -a "x$ac_cv_func_dlopen" = xyes; then
   build_libcc_named=build-libcc-named
 else
   AC_MSG_WARN([No LIBTOOL found, skip pre-building libcc-based libraries])
@@ -1621,6 +1627,10 @@ AC_HEADER_STDC
 
 AC_CHECK_LIB(dl,dlopen)
 AC_REPLACE_FUNCS(memmove strtoul exp10 sincos strerror strsignal atanh)
+AC_CHECK_FUNCS(strerrordesc_np)
+AC_COMPUTE_INT([ERRNO_EEXIST], [EEXIST],
+               [AC_INCLUDES_DEFAULT([@%:@include <errno.h>])], [ERRNO_EEXIST=17])
+AC_SUBST(ERRNO_EEXIST)
 AC_FUNC_FSEEKO
 AC_CHECK_FUNCS(ftello sys_siglist getrusage nanosleep clock_gettime)
 AC_CHECK_TYPES(stack_t,,,[#include <signal.h>])
@@ -1754,6 +1764,7 @@ fi
 if test -z "$GFORTH"; then
   PREFORTH='echo "You need to configure with a gforth in \$PATH to build this part" >&2 && false'
   GFORTHKER='echo "You need to configure with a gforth in \$PATH to build this part" >&2 && false'
+  NOGFORTH='no_gforth'
   kernel_anti_dependence=''
   if test ! -f ${srcdir}/kernl32l.fi
   then
@@ -1789,6 +1800,7 @@ fi
 AC_SUBST(PREFORTH)
 AC_SUBST(GFORTH)
 AC_SUBST(GFORTHKER)
+AC_SUBST(NOGFORTH)
 AC_SUBST(kernel_anti_dependence)
 AC_MSG_RESULT($PREFORTH)
 AC_DEFINE_UNQUOTED(GKERNEL, "$kernel_fi", [The kernel to load in the image])
@@ -1819,13 +1831,20 @@ GLXFLAG=false
 GLESFLAG=false
 MINOSFLAG=false
 HAS_SWIG_FORTH=
-if test -n "$SWIG" && $SWIG -forth $srcdir/unix/test.i; then
-    echo "Swig works in Forth mode"
-    has_swig=yes
-    MINOSFLAG=true
-    HAS_SWIG_FORTH=has-swig-forth
-    mkdir -p unix
-    echo timestamp > unix/$HAS_SWIG_FORTH
+if test "$GNU_LIBTOOL" = libtool-unavailable
+then
+   echo "Swig not used, because we have no GNU libtool"
+   config_warns="$config_warns
+swig not used due to lack of libtool."
+else
+    if test -n "$SWIG" && $SWIG -forth $srcdir/unix/test.i; then
+       echo "Swig works in Forth mode"
+       has_swig=yes
+       MINOSFLAG=true
+       HAS_SWIG_FORTH=has-swig-forth
+       mkdir -p unix
+       echo timestamp > unix/$HAS_SWIG_FORTH
+    fi
 fi
 
 AC_SUBST(HAS_SWIG_FORTH)
@@ -2063,6 +2082,17 @@ fi
 				     SWIGDISTFSI="$SWIGDISTFSI webp.fs"
 		      ,), ,)
    fi
+   if test x$has_swig = xyes || test -f $srcdir/unix/v4l2-fsi.c; then
+      AC_CHECK_HEADER(linux/v4l2-common.h, SWIGMODULES="$SWIGMODULES v4l2.fs"
+   					   SWIGLIBS="$SWIGLIBS v4l2.fs"
+   					   SWIGDISTFSI="$SWIGDISTFSI v4l2.fs", ,)
+   fi
+   if test x$has_swig = xyes || test -f $srcdir/unix/yuv-fsi.c; then
+      AC_CHECK_LIB(yuv,YUY2ToARGB,
+      AC_CHECK_HEADER(libyuv/convert_argb.h, SWIGMODULES="$SWIGMODULES yuv.fs"
+   					     SWIGLIBS="$SWIGLIBS yuv.fs"
+   				       	     SWIGDISTFSI="$SWIGDISTFSI yuv.fs", ,))
+   fi
 else
    MINOSFLAG=false
 fi
@@ -2183,11 +2213,13 @@ wayland protocols not found."
 	    do
 		if test -f ""`find $WAYLAND_PROTOCOLS_DATADIR -name $i.xml`
 		then
+		    test -z "$WAYLAND_PROTOCOLS" && WAYLAND_HEADER="$i-client.h"
 		    WAYLAND_PROTOCOLS="$WAYLAND_PROTOCOLS $i"
 		else
 		    if test -f $srcdir/wayland/$i.c && test -f $srcdir/wayland/$i-client.h
 		    then
-		    	WAYLAND_PROTOCOLS="$WAYLAND_PROTOCOLS $i"
+			test -z "$WAYLAND_PROTOCOLS" && WAYLAND_HEADER="$i-client.h"
+			WAYLAND_PROTOCOLS="$WAYLAND_PROTOCOLS $i"
 		    else
 			echo "wayland protocol $i not found"
 		    fi
@@ -2212,6 +2244,7 @@ AC_SUBST(WAYLAND_SCANNER)
 AC_SUBST(WAYLAND_PROTOCOLS_DATADIR)
 AC_SUBST(WAYLAND_PROTOCOLS)
 AC_SUBST(WAYLAND_INCLUDES)
+AC_SUBST(WAYLAND_HEADER)
 AC_SUBST(WAYLAND_SWIG_INCLUDES)
 AC_SUBST(INCLUDE_WAYLAND)
 AC_SUBST(PREPENV)
@@ -2354,9 +2387,6 @@ doc/Makefile
 unix/Makefile
 unix/wayland.i
 unix/vulkan.i
-debian/changelog
-debian/control
-debian/rules
 docker/runner/Dockerfile
 build-ec ])
 AC_CONFIG_COMMANDS([stamp-h],[[echo timestamp > stamp-h
@@ -2367,7 +2397,6 @@ chmod +x preforth
 chmod +x libforth
 chmod +x gforthker
 chmod +x gforthp
-chmod +x debian/rules
 test -f $srcdir/unix/wayland-fsi.c&&touch $srcdir/unix/wayland-fsi.c
 test -d kernel||mkdir kernel
 test -d logs||mkdir logs

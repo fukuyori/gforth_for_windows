@@ -1,7 +1,7 @@
 \ smart .s                                             09mar2012py
 
 \ Authors: Bernd Paysan, Anton Ertl, Gerald Wodni
-\ Copyright (C) 2012,2018,2019,2020,2021,2022,2023,2024,2025 Free Software Foundation, Inc.
+\ Copyright (C) 2012,2018,2019,2020,2021,2022,2023,2024,2025,2026 Free Software Foundation, Inc.
 
 \ This file is part of Gforth.
 
@@ -124,6 +124,23 @@ debug: .string.( ( -- ) \ gforth-internal dot-string-dot-paren
 10 stack: smart<> \ gforth-experimental
 
 ' .s.skip ' .s.cs ' .s.string ' .s.smart 4 smart<> set-stack
+
+\ Vfx compatible access words
+
+: >smart-stack ( xt -- ) \ gforth-experimental
+    smart<> >back ;
+: smart-stack> ( -- xt ) \ gforth-experimental
+    smart<> back> ;
+: filter-stack { x stack -- x1 ... xn n } \ gforth-experimental
+    0 stack $@ cell MEM+DO
+	I @ x <> IF  I @ swap 1+  THEN
+    LOOP ;
+: -smart-stack ( xt -- ) \ gforth-experimental
+    smart<> filter-stack  smart<> set-stack ;
+: +smart-stack ( xt -- ) \ gforth-experimental
+    dup -smart-stack >smart-stack ;
+
+\ toplevel
 
 : smart.s. ( total n -- total ) \ gforth-experimental
     over r> i swap >r - { dpth } \ i is the loop index of the calling .s

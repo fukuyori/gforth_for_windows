@@ -2,7 +2,7 @@
   This is the machine-specific part for RISC-V processors
 
   Authors: Bernd Paysan
-  Copyright (C) 2022 Free Software Foundation, Inc.
+  Copyright (C) 2022,2026 Free Software Foundation, Inc.
 
   This file is part of Gforth.
 
@@ -22,9 +22,9 @@
 
 #define BFD_ARCH bfd_arch_riscv
 #if __SIZEOF_POINTER__ == 4
-#define BFD_MACH bfd_mach_riscv32
+# define BFD_MACH bfd_mach_riscv32
 #else
-#define BFD_MACH bfd_mach_riscv64
+# define BFD_MACH bfd_mach_riscv64
 #endif
 
 #include "../generic/machine.h"

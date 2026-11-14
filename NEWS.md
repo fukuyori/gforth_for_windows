@@ -2,9 +2,9 @@
 
 Many of the words below are just mentioned, without much indication
 what they do.  You can find out more by klicking on the word in the
-[Web version of this document](https://net2o.de/gforth-1.0/NEWS.html),
+[Web version of this document](https://gforth.org/manual/1.0/NEWS.html),
 by typing "help <word>" in Gforth, or by clicking on the word in the
-[word index](https://net2o.de/gforth-1.0/Word-Index.html).
+[word index](https://gforth.org/manual/1.0/Word-Index.html).
 
 This text mentions words that appear the first time in the
 documentation; some have been available earlier, but were not
@@ -14,7 +14,7 @@ documented.
 
 It is now documented which words are intended to be permanently
 supported, and which are not; see [Stability
-Goals](https://net2o.de/gforth-1.0/Stability-Goals.html).
+Goals](https://gforth.org/manual/1.0/Stability-Goals.html).
 
 ## Headline features
 
@@ -23,14 +23,14 @@ Goals](https://net2o.de/gforth-1.0/Stability-Goals.html).
     for FP numbers (`6k5`, `23%`); strings (`"string"`), xts (``
     `word``), nts (``` ``word```), body addresses (`<word> <word+8>`).
     See [Literals in source
-    code](https://net2o.de/gforth-1.0/Literals-in-source-code.html);
+    code](https://gforth.org/manual/1.0/Literals-in-source-code.html);
   * You can specify the vocabulary (or several) of a word, e.g.,
     `forth:and` vs. `assembler:and`.
   * Nonparsing syntax for dealing with value-flavoured and
     defer-flavoured words (`v` and `d` in the following examples): `->v`
     for `to v`; `+>v` for `+to v`; `'v` for `addr v`; `@>d` for
     `action-of d`; `=>d` for `is d`.  See
-    [`rec-to`](https://net2o.de/gforth-1.0/Default-recognizers.html#gforth_002dexperimental_002d_002drec_002dto).
+    [`rec-to`](https://gforth.org/manual/1.0/Default-recognizers.html#gforth_002dexperimental_002d_002drec_002dto).
   * Contents of environment variables: `${LANG}`
   * You can extend the text interpreter with more **recognizers**:
     `recs rec-name rec-local rec-scope rec-number .-is-dcell? rec-float
@@ -49,7 +49,7 @@ Goals](https://net2o.de/gforth-1.0/Stability-Goals.html).
   * other words: `fancy-after-l xt-locate l n b before-locate
     after-locate ll short-where expand-where prepend-where unused-words`
 
-* "Smart `.s`: `...` guesses what stack items mean and displays them
+* Smart `.s`: `...` guesses what stack items mean and displays them
   appropriately. `.s` itself stays dumb.
 
 * A status line at the bottom of the terminal shows `BASE`, stacks,
@@ -76,7 +76,7 @@ Goals](https://net2o.de/gforth-1.0/Stability-Goals.html).
 * The dictionary can now have more than one section, each with its own
   dictionary pointer, which allows allocation without affecting other
   sections, used, e.g., for nested definitions.
-  See [Sections](https://net2o.de/gforth-1.0/Sections.html).
+  See [Sections](https://gforth.org/manual/1.0/Sections.html).
   Words: `next-section previous-section extra-section .sections`
 
 * Postpone multiple words with `]]`...`[[`.
@@ -93,7 +93,7 @@ Goals](https://net2o.de/gforth-1.0/Stability-Goals.html).
 
 * New word header layout, and based on that:
   * Modify the behaviour of words: `set-does> set-compsem set->int
-    set->comp set-name>string set-name>link`; using a code addres
+    set->comp set-name>string set-name>link`; using a code address
     instead of an xt: `set-execute`; new code addresses for that:
     `dovalue: dodoes: doabicode:`
   * User-defined `to` etc.: `to-table: n/a to-class: >uvalue set-to`
@@ -114,7 +114,7 @@ Goals](https://net2o.de/gforth-1.0/Stability-Goals.html).
   
   * `.name` (use `id.`);
   * `does-handler!` (implementation changed, use `set-does>`);
-  * `/does-handler` (implementation changed, see [Carnal words](https://net2o.de/gforth-1.0/Carnal-words.html));
+  * `/does-handler` (implementation changed, see [Carnal words](https://gforth.org/manual/1.0/Carnal-words.html));
   * `@local# f@local# laddr# lp+!#` (replaced by `@localn f@localn lp+n lp+!`);
   * `clear-libs` (interface changed, use `c-library` ... `end-c-library`)
   * `<interpretation interpretation> <compilation compilation>
@@ -148,7 +148,7 @@ Goals](https://net2o.de/gforth-1.0/Stability-Goals.html).
   * Bitwise operations: `mux arshift dlshift drshift darshift >pow2
     log2 pow2?  ctz wrol wror lrol lror rol ror drol dror`
   * Pseudo-random numbers: `rnd random seed!`
-  * Floating-point: `s>f f>s fcopysign ftrunc v* faxpy infinity inf
+  * Floating-point: `f*+ s>f f>s fcopysign ftrunc v* faxpy infinity inf
     -infinity -inf nan`
 
 * Stack Manipulation:
@@ -661,7 +661,7 @@ $?)  added (SYSTEM) ( c_addr u -- wretval wior ).
 # -----
 ```
 Authors: Anton Ertl, Bernd Paysan
-Copyright (C) 1995,1996,1997,1998,2000,2003,2006,2007,2008,2019,2022,2023,2024 Free Software Foundation, Inc.
+Copyright (C) 1995,1996,1997,1998,2000,2003,2006,2007,2008,2019,2022,2023,2024,2026 Free Software Foundation, Inc.
 
 This file is part of Gforth.
 

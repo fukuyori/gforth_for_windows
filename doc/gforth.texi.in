@@ -104,20 +104,15 @@ serves as reference manual, but it also contains an introduction to
 Forth and a Forth tutorial.
 
 Authors: Bernd Paysan, Anton Ertl, Gerald Wodni, Neal Crook, David Kuehling, Jens Wilke
-Copyright @copyright{} 1995, 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024,2025 Free Software Foundation, Inc.
+Copyright @copyright{} 1995, 1996, 1997, 1998, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024,2025,2026 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
+under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with no
-Invariant Sections, with the Front-Cover texts being ``A GNU Manual,''
-and with the Back-Cover Texts as in (a) below.  A copy of the
-license is included in the section entitled ``GNU Free Documentation
-License.''
-
-(a) The FSF's Back-Cover Text is: ``You have freedom to copy and modify
-this GNU Manual, like GNU software.  Copies published by the Free
-Software Foundation raise funds for GNU development.''
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+copy of the license is included in the section entitled ``GNU Free
+Documentation License.''
 @end quotation
 @end copying
 
@@ -3112,11 +3107,12 @@ s" foo.in"  r/o open-file throw Value fd-in
 s" foo.out" w/o create-file throw Value fd-out
 @end example
 
-The available file modes are r/o for read-only access, r/w for
-read-write access, and w/o for write-only access. You could open both
-files with r/w, too, if you like. All file words return error codes; for
-most applications, it's best to pass there error codes with @code{throw}
-to the outer error handler.
+The available file modes are @word{r/o} for read-only access,
+@word{r/w} for read-write access, and @word{w/o} for write-only
+access. You could open both files with @word{r/w}, too, if you
+like. All file words return error codes; for most applications, it's
+best to pass the error codes with @code{throw} to the outer error
+handler.
 
 If you want words for opening and assigning, define them as follows:
 
@@ -3337,9 +3333,9 @@ word with @code{compile,}:
 see foo1
 @end example
 
-This is non-standard, because @code{compile,} has no compilation
-semantics in the standard, but it works in good Forth systems.  For the
-broken ones, use
+This is non-standard, because @code{compile,} has no interpretation
+semantics in the standard, but it works in good Forth systems.  For
+the bad ones, use
 
 @example
 : [compile,] compile, ; immediate
@@ -5872,6 +5868,7 @@ Arithmetics:
 doc-f+
 doc-f-
 doc-f*
+doc-f*+
 doc-f/
 doc-fnegate
 doc-fabs

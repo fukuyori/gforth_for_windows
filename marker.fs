@@ -1,7 +1,7 @@
 \ marker                                               18dec94py
 
 \ Authors: Anton Ertl, Bernd Paysan, Neal Crook, Jens Wilke
-\ Copyright (C) 1995,1998,2000,2003,2005,2007,2009,2010,2011,2013,2014,2016,2017,2018,2019,2020,2021,2023,2024 Free Software Foundation, Inc.
+\ Copyright (C) 1995,1998,2000,2003,2005,2007,2009,2010,2011,2013,2014,2016,2017,2018,2019,2020,2021,2023,2024,2026 Free Software Foundation, Inc.
 
 \ This file is part of Gforth.
 
@@ -91,7 +91,7 @@ Defer marker>here \ set here
     \ restore udp and dp
     dup @ udp !
     cell+ dup @ hm-list !
-    cell+ [IFDEF] forget-dyncode dup forget-dyncode3 drop [then]
+    cell+ [IFDEF] forget-dyncode3 dup forget-dyncode3 drop [then]
     cell+ ;
 
 : marker ( "<spaces> name" -- ) \ core-ext

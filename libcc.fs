@@ -1,7 +1,7 @@
 \ libcc.fs	foreign function interface implemented using a C compiler
 
 \ Authors: Bernd Paysan, Anton Ertl, David Kühling
-\ Copyright (C) 2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025 Free Software Foundation, Inc.
+\ Copyright (C) 2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026 Free Software Foundation, Inc.
 
 \ This file is part of Gforth.
 
@@ -996,14 +996,15 @@ tmp$ $execstr-ptr !
 : compile-wrapper-function1 ( -- )
     hash-c-source open-wrappers dup lib-handle!
     0= if
-	c-library-name-create
-	libcc$ $@ c-source-file write-file throw  libcc$ $free
-	c-source-file close-file throw
-	c-source-file-id off
 	s" GFORTH_COMPILELIB" getenv s" no" str= 0= IF
+	    c-library-name-create
+	    libcc$ $@ c-source-file write-file throw
+	    c-source-file close-file throw
+	    c-source-file-id off
 	    ['] compile-cmd $tmp system $? 0<> !!libcompile!! and throw
 	    ['] link-cmd    $tmp system $? 0<> !!liblink!! and throw
 	THEN
+	libcc$ $free
 	open-wrappers dup 0= if
 	    .lib-error
 	    host?  IF  !!openlib!! throw  ELSE

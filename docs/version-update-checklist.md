@@ -1,7 +1,7 @@
 # Version update checklist
 
 Version format: `<upstream base>+fukuyori.<major>.<minor>`
-(e.g. `0.7.9_20260923+fukuyori.3.4`).  The base is the upstream tag
+(e.g. `1.0.2+fukuyori.4.0`).  The base is the upstream tag
 that was merged (tagged releases only; branches and untagged commits wait for the
 next tag, see README "Fork Synchronization"); the fork number is bumped by the
 maintainer.
@@ -12,7 +12,7 @@ maintainer.
   `build-native.ps1` / `build-installer.ps1` read PACKAGE_VERSION from here)
 - `README.md`: lines 6-7 (base version and current release version)
 - `docs/WINDOWS-NATIVE.md`: lines 6-7 (base version and current release version)
-- `docs/LICENSE-NOTICE-TEMPLATE.md`: base version (`Gforth 0.7.9_YYYYMMDD`) and
+- `docs/LICENSE-NOTICE-TEMPLATE.md`: base version (`Gforth X.Y.Z`) and
   fork release version, all occurrences
 
 Do not rewrite historical mentions (sync history in `README.md`,

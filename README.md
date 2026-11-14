@@ -3,8 +3,8 @@
 This repository is a fork of
 [forthy42/gforth](https://github.com/forthy42/gforth) that has been modified so
 Gforth can be built, run, and packaged natively on Windows.  It is currently
-based on `Gforth 0.7.9_20260923` and this fork's current release version is
-`0.7.9_20260923+fukuyori.3.4`.
+based on `Gforth 1.0.2` and this fork's current release version is
+`1.0.2+fukuyori.4.0`.
 
 Gforth is a fast and portable implementation of ANS Forth and Forth 200x.  The
 upstream project remains the base of this repository; this fork adds a native
@@ -220,19 +220,19 @@ git remote -v
 ```
 
 **Policy: follow tagged upstream releases only.**  This fork takes in the
-latest *tagged* upstream release (`0.7.9_YYYYMMDD`).  Upstream branches
-(`master` and others) and commits made between tags are not merged; wait for
-the next tag.  The fork's base version (the `0.7.9_YYYYMMDD` part of
-`0.7.9_YYYYMMDD+fukuyori.X.Y`) must match the merged tag exactly.  If no newer
-tag exists, there is nothing to sync.
+latest *tagged* upstream release (`X.Y.Z`, e.g. `1.0.2`; before 1.0.0,
+`0.7.9_YYYYMMDD`).  Upstream branches (`master` and others) and commits made
+between tags are not merged; wait for the next tag.  The fork's base version
+(the `1.0.2` part of `1.0.2+fukuyori.X.Y`) must match the merged tag exactly.
+If no newer tag exists, there is nothing to sync.
 
 Bring a tagged release into this fork with a merge:
 
 ```powershell
 git fetch upstream --tags
-git tag --list "0.7.9_*" --sort=-creatordate    # pick the newest upstream tag
+git tag --sort=-creatordate | Select-Object -First 10   # pick the newest upstream tag
 git checkout main
-git merge <tag>                                  # e.g. 0.7.9_20260923
+git merge <tag>                                  # e.g. 1.0.2
 git push origin main
 ```
 

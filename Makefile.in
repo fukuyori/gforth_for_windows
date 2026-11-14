@@ -1,7 +1,7 @@
 #Makefile for Gforth
 
 #Authors: Bernd Paysan, Anton Ertl, Jens Wilke, David Kühling, Neal Crook, Gerald Wodni, Darren Bane
-#Copyright (C) 1995,1996,1997,1998,2000,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025 Free Software Foundation, Inc.
+#Copyright (C) 1995,1996,1997,1998,2000,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026 Free Software Foundation, Inc.
 
 #This file is part of Gforth.
 
@@ -39,7 +39,7 @@ endif
 VERSION	= @PACKAGE_VERSION@
 DOSVERSION=`echo $(VERSION)|sed 's/\.//g'|sed 's/-.*//g'`
 #release version (between releases this is the prospective next release) 
-RVERSION = 1.0
+RVERSION = 1.1
 
 # -------------	System specific variables	
 
@@ -160,7 +160,10 @@ FORTHK	= ./gforthker -p ".$(PATHSEP)~+$(PATHSEP)$(srcdir)"
 #the "-2 image-included-files +!" undoes the change to image-included-files
 # in exboot.fs
 STARTUP	= exboot.fs startup.fs @asm_fs@ @disasm_fs@
-STARTUP_FULL = $(STARTUP) unix/pthread.fs @disasm2_fs@
+STARTUP_FULL = $(STARTUP)
+ifneq "@GNU_LIBTOOL@" "libtool-unavailable"
+STARTUP_FULL += unix/pthread.fs @disasm2_fs@
+endif
 STRIP	= strip
 DOSTRIP = true
 
@@ -428,7 +431,11 @@ FREETYPE_GL_SRC = $(FREETYPE_GL_C_SRC) $(FREETYPE_GL_INCLUDE)	\
 	$(FREETYPE_GL_LICENSES)
 
 EXTRA_DOC = mini-oof2.fs objects.fs oof.fs moofglos.fs regexp.fs fft.fs	\
-	cilk.fs coverage.fs $(LIBCC_LIB_SRC) doc/dummy.fs
+	coverage.fs
+ifneq "@GNU_LIBTOOL@" "libtool-unavailable"
+EXTRA_DOC += cilk.fs $(LIBCC_LIB_SRC)
+endif
+EXTRA_DOC += doc/dummy.fs
 
 MINOS_DOC = minos2/widgets.fs
 
@@ -438,13 +445,14 @@ LIBCC_DIST_SRC = $(SWIG_SRC) unix/stat-fsi.c unix/pthread-types-fsi.c	      \
 	@HAS_SWIG_FORTH@) Makefile.wayland
 
 LIBCC_FORTH_SRC = unix/libffi.fs unix/fflib.fs @disasm2_fs@ $(UNIXLIBS_SRC) $(LIBCC_SRC1)
+LIBCC_LIB_SRC = $(patsubst %, unix/%, $(SWIGLIBS)) @LIBCC_BUILD_SRC@
+ifneq "@GNU_LIBTOOL@" "libtool-unavailable"
 LIBCC_GEN_SRC = unix/stat.fs unix/pthread-types.fs $(patsubst %, unix/%, \
 	$(SWIGMODULES))
-LIBCC_LIB_SRC = $(patsubst %, unix/%, $(SWIGLIBS)) @LIBCC_BUILD_SRC@
-
-LIBCC_BUILD_SRC = $(LIBCC_GEN_SRC) @LIBCC_BUILD_SRC@
 LIBCC_BUILD_LA = $(patsubst %.fs,$(buildccdir)/libgf%.la,$(shell echo $(LIBCC_LIB_SRC) $(LIBCC_SRC1) libcc.fs | sed -e s,unix/,,g))
-
+LIBCC_GEN_DOC = $(LIBCC_GEN_SRC) build-libcc-named
+endif
+LIBCC_BUILD_SRC = $(LIBCC_GEN_SRC) @LIBCC_BUILD_SRC@
 LIBCC_BUILD_NOEC = @NO_CHECKX@ $(LIBCC_BUILD_SRC)
 
 UNICODE_SRC = mirror.fs bidi.fs vertical.fs bidi-db.fs mirrors.fs bidis.fs \
@@ -718,8 +726,8 @@ SOURCES = $(ENGINE_SOURCES) compat Makefile.in Makedist.in unix/Makefile.in  \
 
 CONFIG_GEN = Makefile Makedist gforthmi gforthmi.sh vmgen preforth libforth \
 	gforthker engine/Makefile engine/gforth.h doc/version.texi	    \
-	doc/Makefile unix/Makefile debian/changelog unix/vulkan.i	    \
-	unix/wayland.i debian/control debian/rules build-ec $(CONFIG_FORTH)
+	doc/Makefile unix/Makefile unix/vulkan.i unix/wayland.i build-ec    \
+	$(CONFIG_FORTH)
 
 CONFIG_FORTH = machpc.fs kernel/version.fs envos.fs
 
@@ -735,10 +743,16 @@ LIBENGINES_FAST = $(ENGINES_FAST:%=lib%)
 GEN = $(ENGINES) $(ENGINES_FAST) @gforth_elc@
 
 # things that need a working forth system to be generated
+ifeq "@NOGFORTH@" "no_gforth"
+# if we don't have a Gforth, we can only generate from tarball,
+# and these things are part of the tarball
+FORTH_GEN_ENGINE=
+else
 FORTH_GEN_ENGINE=engine/prim.i engine/prim_lab.i engine/prim_names.i \
 	engine/prim_superend.i engine/profile.i \
 	engine/prim_num.i engine/prim_grp.i \
 	engine/costs.i engine/super2.i
+endif
 FORTH_GEN_ENGINE_FAST= engine/prim-fast.i \
 	engine/prim_lab-fast.i engine/prim_names-fast.i \
 	engine/prim_superend-fast.i engine/profile-fast.i \
@@ -1112,7 +1126,9 @@ $(buildccdir)/libgfsocket.la: $(buildccdir)/libgflibc.la
 $(buildccdir)/libgffreetype_gl.la: $(FREETYPE_GL_SRC)
 $(buildccdir)/libgfpthread.la: unix/pthread-types.fs
 $(buildccdir)/libgfdisasm2.la: unix/disasm2.fs
+ifneq "@GNU_LIBTOOL@" "libtool-unavailable"
 gforth.fi: $(buildccdir)/libgfpthread.la @disasm2_la@
+endif
 
 $(buildccdir)/libgf%.la: unix/%.fs $(FORTH_GEN_LIGHT) $(GEN) $(LIBCC_LIB_SRC) libforth
 		@echo LIBFORTH $<
@@ -1218,11 +1234,11 @@ checkone test: prim.b gforth-light.fi engine/prim-s.i
 		  "c-flag on s\" prim.i\" out-filename 2! s\" $<\" ' output-c ' output-c-combined process-file bye"| \
 		  tr -d '\015' | grep -v '^#line '|diff -u engine/prim-s.i -
 		@echo TEST $(ENGINE) fptests
-		-$(TIMEOUT) $(FORTH) -i gforth-light.fi test/fp/runfptests.fth -e bye | diff -u $(srcdir)/test/fp/fptest.out - || $(COWSAY_FAIL) "=== Floating point test failed ===" | $(LOLCAT_FAIL)
+		-$(TIMEOUT) $(FORTH) -i gforth-light.fi test/fp/runfptests.fth -e bye | diff -u $(srcdir)/test/fp/fptest.out - || echo "=== Floating point test failed ===" | $(FAIL)
 		@echo TEST $(ENGINE) read-line
 		$(TIMEOUT) $(FORTHS) -i gforth-light.fi test/read-line.fs -e bye | diff -u - $(srcdir)/test/read-line.out
 		@echo TEST $(ENGINE) regexp
-		$(TIMEOUT) $(FORTHS) -i gforth-light.fi regexp.fs test/regexp-test.fs | diff -u - $(srcdir)/test/regexp.out || $(COWSAY_FAIL) "=== Regexp test failed ===" | $(LOLCAT_FAIL)
+		$(TIMEOUT) $(FORTHS) -i gforth-light.fi regexp.fs test/regexp-test.fs | diff -u - $(srcdir)/test/regexp.out || echo "=== Regexp test failed ===" | $(FAIL)
 
 check-nofast: gforth-light.fi
 		@echo TEST $(ENGINE) nofast
@@ -1680,17 +1696,17 @@ standard-words.fs: doc/2012-words doc/2012-words-extra
 		awk -f $(srcdir)/doc/standard-words.awk $< >>$@
 		cat $(srcdir)/doc/2012-words-extra >>$@
 
-doc/doc.fd:	doc/makedoc.fs hold-number-line.fs gforth$(EXT) $(GFORTH_FI_SRC) $(LIBCC_GEN_SRC)
+doc/doc.fd:	doc/makedoc.fs hold-number-line.fs gforth$(EXT) $(GFORTH_FI_SRC) $(LIBCC_GEN_DOC)
 		@echo DOC.FD
 		$(FORTHK) -e "s\" doc/doc.fd.tmp\"" doc/makedoc.fs except.fs startup.fs -e bye
 		$(srcdir)/move-if-change doc/doc.fd.tmp $@
 
-doc/extradoc.fd: doc/makedoc.fs hold-number-line.fs gforth$(EXT) gforth-light.fi $(EXTRA_DOC) $(LIBCC_GEN_SRC) build-libcc-named
+doc/extradoc.fd: doc/makedoc.fs hold-number-line.fs gforth$(EXT) gforth-light.fi $(EXTRA_DOC) $(LIBCC_GEN_DOC)
 		@echo EXTRADOC.FD
 		env GFORTH_IGNLIB=true GFORTH_COMPILELIB=no $(FORTHP) -i gforth-light.fi -e "s\" doc/extradoc.fd.tmp\"" doc/makedoc.fs -e "warnings off" $(EXTRA_DOC) -e bye
 		$(srcdir)/move-if-change doc/extradoc.fd.tmp $@
 
-doc/minosdoc.fd: doc/makedoc.fs hold-number-line.fs gforth$(EXT) gforth-light.fi $(MINOS_DOC) $(LIBCC_GEN_SRC) build-libcc-named
+doc/minosdoc.fd: doc/makedoc.fs hold-number-line.fs gforth$(EXT) gforth-light.fi $(MINOS_DOC) $(LIBCC_GEN_DOC)
 		@echo MINOSDOC.FD
 		env GFORTH_IGNLIB=true GFORTH_COMPILELIB=no XDG_SESSION_TYPE=x11 $(FORTHP) -i gforth-light.fi -e "s\" doc/minosdoc.fd.tmp\"" doc/makedoc.fs $(MINOS_DOC) -e bye
 		$(srcdir)/move-if-change doc/minosdoc.fd.tmp $@
@@ -1787,10 +1803,10 @@ show-summary:
 	$(RMTREE) $(LOGDIR)
 
 show-success-message:
-	$(COWSAY_SUCCESS) "=== Yay, make succeeded ===" | $(LOLCAT_SUCCESS)
+	echo "=== Yay, make succeeded ===" | $(SUCCESS)
 
 show-fail-message:
-	$(COWSAY_FAIL) "=== Oh no, make failed ===" | $(LOLCAT_FAIL)
+	echo "=== Oh no, make failed ===" | $(FAIL)
 
 show-success: show-summary show-success-message
 

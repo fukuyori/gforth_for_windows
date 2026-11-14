@@ -110,6 +110,8 @@ function Get-NativeTemplateValues {
         EC_MODE = "false"
         PEEPHOLEFLAG = "true"
         ATOMIC = "true"
+        LIBOPCODES = ""
+        ERRNO_EEXIST = "17"
     }
 }
 

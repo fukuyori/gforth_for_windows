@@ -4,7 +4,49 @@
 # Created by Bernd Paysan, in the public domain
 
 GFORTH_VER = @PACKAGE_VERSION@
-GFORTH_ARCH = @machine@
+HOST_ARCH = $(shell bash --version | grep -w bash | sed -e 's/.*(\([^- ]*\)-.*)$$/\1/g')
+ifeq ($(HOST_ARCH),x86_64)
+GFORTH_ARCH = amd64
+endif
+ifeq ($(HOST_ARCH),i686)
+GFORTH_ARCH = 386
+endif
+ifeq ($(HOST_ARCH),aarch64)
+GFORTH_ARCH = arm64
+endif
+ifeq ($(HOST_ARCH),armhf)
+GFORTH_ARCH = arm
+endif
+ifeq ($(HOST_ARCH),armel)
+GFORTH_ARCH = arm64
+endif
+ifeq ($(HOST_ARCH),riscv64)
+GFORTH_ARCH = riscv
+endif
+ifeq ($(HOST_ARCH),loongarch64)
+GFORTH_ARCH = loongarch
+endif
+ifeq ($(HOST_ARCH),powerpc64)
+GFORTH_ARCH = power
+endif
+ifeq ($(HOST_ARCH),powerpc64le)
+GFORTH_ARCH = power
+endif
+ifeq ($(HOST_ARCH),s390x)
+GFORTH_ARCH = s390
+endif
+ifeq ($(HOST_ARCH),sparc)
+GFORTH_ARCH = sparc
+endif
+ifeq ($(HOST_ARCH),sparc64)
+GFORTH_ARCH = sparc
+endif
+ifeq ($(HOST_ARCH),mips)
+GFORTH_ARCH = mips
+endif
+ifeq ($(HOST_ARCH),mips64)
+GFORTH_ARCH = mips
+endif
 D = $(CURDIR)/debian/gforth
 DC = $(CURDIR)/debian/gforth-common
 DL = $(CURDIR)/debian/gforth-lib
@@ -66,11 +108,11 @@ override_dh_auto_install:
 	mkdir -p $(DB)/$(LIB)
 	mv $(DLC)/$(LIB)/*.f* $(DB)/$(LIB)
 	mkdir -p $(DLGLES)$(LIBCC) $(DLGLES)$(LIB)/unix
-	-mv $(DLC)$(LIBCC)/libgfegl.* $(DLC)$(LIBCC)/libgfgles.* $(DLGLES)$(LIBCC)
-	-mv $(DLC)$(LIB)/unix/egl.fs $(DLC)$(LIB)/unix/gles.fs $(DLGLES)$(LIB)/unix
+	mv $(DLC)$(LIBCC)/libgfegl.* $(DLC)$(LIBCC)/libgfgles.* $(DLGLES)$(LIBCC)
+	mv $(DLC)$(LIB)/unix/egl.fs $(DLC)$(LIB)/unix/gles.fs $(DLGLES)$(LIB)/unix
 	mkdir -p $(DLGL)$(LIBCC) $(DLGL)$(LIB)/unix
-	-mv $(DLC)$(LIBCC)/libgfgl*.* $(DLGL)$(LIBCC)
-	-mv $(DLC)$(LIB)/unix/gl*.fs $(DLGL)$(LIB)/unix
+	mv $(DLC)$(LIBCC)/libgfgl*.* $(DLGL)$(LIBCC)
+	mv $(DLC)$(LIB)/unix/gl*.fs $(DLGL)$(LIB)/unix
 	mkdir -p $(DLX11)$(LIBCC) $(DLX11)$(LIB)/unix
 	mv $(DLC)$(LIBCC)/libgfx.* $(DLC)$(LIBCC)/libgfxrandr.* $(DLX11)$(LIBCC)
 	mv $(DLC)$(LIB)/unix/x.fs $(DLC)$(LIB)/unix/xrandr.fs $(DLX11)$(LIB)/unix
@@ -81,9 +123,9 @@ override_dh_auto_install:
 	mv $(DLC)$(LIBCC)/libgfyuv.* $(DLV4L)$(LIBCC)
 	mv $(DLC)$(LIB)/unix/v4l2.fs $(DLC)$(LIB)/unix/yuv.fs $(DLV4L)$(LIB)/unix
 	mkdir -p $(DLM2)$(SHARE)/unix $(DLM2)$(LIB)/unix -p $(DLM2)$(LIBCC)
-	bash -c "mv $(DLC)$(LIB)/unix/{freetype_gl,harfbuzz}.fs $(DLM2)$(LIB)/unix"
+	bash -c "mv $(DLC)$(LIB)/unix/{freetype_gl,harfbuzz,webp}.fs $(DLM2)$(LIB)/unix"
 	bash -c "mv $(DC)$(SHARE)/unix/{stb-image,stb-image-write}.fs $(DLM2)$(SHARE)/unix"
-	bash -c "mv $(DLC)$(LIBCC)/libgf{harfbuzz,freetype_gl,stb-image,stb-image-write}.* $(DLM2)$(LIBCC)"
+	bash -c "mv $(DLC)$(LIBCC)/libgf{harfbuzz,freetype_gl,stb-image,stb-image-write,webp}.* $(DLM2)$(LIBCC)"
 	mkdir -p $(DLA)$(LIB)/unix $(DLA)$(LIBCC)
 	bash -c "mv $(DLC)$(LIB)/unix/{opus,pulse}.fs $(DLA)$(LIB)/unix"
 	bash -c "mv $(DLC)$(LIBCC)/libgf{opus,pulse}.* $(DLA)$(LIBCC)"
@@ -114,3 +156,10 @@ override_dh_installchangelogs:
 	rm -rf $(DV)/usr/share
 	@DOPDF@rm -rf $(DP)/usr/share/doc/gforth-pdf
 	@DOHTML@rm -rf $(DH)/usr/share/doc/gforth-html
+
+# Debug output: print vars
+.PHONY: printvars
+printvars:
+		@$(foreach V,$(sort $(.VARIABLES)), \
+		   $(if $(filter-out environment% default automatic, \
+		   $(origin $V)),$(warning $V=$($V) ($(value $V)))))

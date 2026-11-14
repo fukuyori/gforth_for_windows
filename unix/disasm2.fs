@@ -48,7 +48,15 @@ get-current also c-lib definitions
 previous set-current
 
 c-library disasm2 \ same name as .fs file!
-    "opcodes" trylibs add-lib
+    [IFDEF] libopcodes libopcodes dup 4 - 0 max safe/string "_pic" str=
+    [ELSE] 0 [THEN]
+    [IF]
+	\ workaround: force binding _sch_istable from libiberty
+	\c extern short _sch_istable[0x100];
+	c-variable _sch_istable _sch_istable
+	"iberty" add-lib
+	libopcodes 2 /string
+    [ELSE] "opcodes" trylibs [THEN] add-lib
     \c #include <stddef.h>
     \c #include "config.h"
     \c #include <dis-asm.h>

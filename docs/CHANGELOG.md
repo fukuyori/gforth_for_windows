@@ -5,7 +5,30 @@ Version format: `<upstream base>+fukuyori.<major>.<minor>`.  Entries were
 compiled from the git history, the GitHub release notes, and
 `WINDOWS-RELEASE-3.1.md`; commit hashes are given for traceability.
 
-## Unreleased
+## Unreleased (1.0.2+fukuyori.4.0)
+
+### Upstream
+- Merged the upstream release tag `1.0.2` (83 non-merge commits, 147 files
+  changed on the upstream side).  It includes the upstream `1.0.0` / `1.0.1`
+  releases and the tags `0.7.9_20261024` / `0.7.9_20261025`.  Highlights:
+  faster `read-line` (stdio locking with `getc_unlocked`), `file-exist#` now
+  derived from `EEXIST`, `strerror` returning `0 0` for invalid errnos, `F*+`,
+  VFX-compatible smart stack accesses (`+smart-stack` / `-smart-stack`),
+  `MARKER` forgetting native code, and RISC-V assembler/disassembler fixes.
+- Conflicts: kept the fork's `README.md` and the fork's deletion of
+  `arch/arm/android/src/gnu/gforth/Gforth.java`, `vmgen-ex/Makefile` and
+  `vmgen-ex2/Makefile`; `configure.ac` takes upstream's changes with the fork
+  version.
+- The base version scheme changes from `0.7.9_YYYYMMDD` to upstream's release
+  numbers (`X.Y.Z`); the fork number starts a new major, `4.0`.
+
+### Build
+- `compat/win32/include/gforth-win32.h`: map `flockfile` / `funlockfile` /
+  `getc_unlocked` to the UCRT's `_lock_file` / `_unlock_file` /
+  `_getc_nolock` (needed by upstream's new `read_line`).
+- `scripts/build-native.ps1`: supply the new `envos.fs.in` substitutions
+  `@ERRNO_EEXIST@` (17, as in the UCRT `errno.h`) and `@LIBOPCODES@` (empty; no
+  libopcodes on Windows).
 
 ### Documentation
 - Updated for the resize support (`WINDOWS-TERMINAL-CONTRACT.md`,

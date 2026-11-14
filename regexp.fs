@@ -1,7 +1,7 @@
 \ Regexp compiler
 
 \ Authors: Bernd Paysan, Anton Ertl
-\ Copyright (C) 2005,2006,2007,2008,2010,2015,2016,2018,2019,2020,2022,2023,2025 Free Software Foundation, Inc.
+\ Copyright (C) 2005,2006,2007,2008,2010,2015,2016,2018,2019,2020,2022,2023,2025,2026 Free Software Foundation, Inc.
 
 \ This file is part of Gforth.
 
@@ -32,15 +32,17 @@
 : FORK ( compilation -- orig ; run-time f -- ) \ gforth
     \G AHEAD-like control structure: calls the code after JOIN.
     POSTPONE call >mark ; immediate restrict
+0 warnings !@ >r
 : JOIN ( orig -- ) \ gforth
     \G THEN-like control structure for FORK
     postpone THEN ; immediate restrict
+r> warnings !
 
 \ Charclasses
 
 : +bit ( addr n -- )  + 1 swap c! ;
 : -bit ( addr n -- )  + 0 swap c! ;
-: @+ ( addr -- n addr' )  dup @ swap cell+ ;
+?: @+ ( addr1 -- addr2 x ) dup cell+ swap @ ;
 
 0 Value cur-class
 : charclass ( -- ) \ regexp-cg
@@ -62,11 +64,11 @@
 ?: and! ( n addr -- )  tuck @ and swap ! ;
 : +class ( class -- ) \ regexp-cg
     \G union of charclass @var{class} and the current charclass
-    $100 0 ?DO  @+ swap
+    $100 0 ?DO  @+
     cur-class I + or!  cell +LOOP  drop ;
 : -class ( class -- ) \ regexp-cg
     \G subtract the charclass @var{class} from the current charclass
-    $100 0 ?DO  @+ swap invert
+    $100 0 ?DO  @+ invert
     cur-class I + and!  cell +LOOP  drop ;
 
 : char? ( addr class -- addr' flag )
@@ -81,7 +83,7 @@
     \G check @var{addr} for not membership in charclass @var{class}
     ]] char?    ?LEAVE [[ ; immediate
 
-charclass digit  '0 '9 ..char
+charclass digits '0 '9 ..char
 charclass blanks 0 bl ..char
 \ bl +char #tab +char #cr +char #lf +char ctrl L +char
 charclass letter 'a 'z ..char 'A 'Z ..char
@@ -89,7 +91,7 @@ charclass any    0 $FF ..char #lf -char
 
 : \d ( addr -- addr' ) \ regexp-pattern
     \G check for digit
-    ]] digit c?        [[ ; immediate
+    ]] digits c?       [[ ; immediate
 : \s ( addr -- addr' ) \ regexp-pattern
     \G check for blanks
     ]] blanks c?       [[ ; immediate
@@ -98,7 +100,7 @@ charclass any    0 $FF ..char #lf -char
     ]] any c?          [[ ; immediate
 : -\d ( addr -- addr' ) \ regexp-pattern
     \G check for not digit
-    ]] digit -c?       [[ ; immediate
+    ]] digits -c?       [[ ; immediate
 : -\s ( addr -- addr' ) \ regexp-pattern
     \G check for not blank
     ]] blanks -c?      [[ ; immediate
@@ -127,12 +129,12 @@ Variable vars     #20 cells allot
 Variable varstack #10 cells allot
 Variable varsmax
 : >var ( -- addr )
-    vars @+ swap 2* cells +
-    vars @ varstack @+ swap th!
+    vars @+ 2* cells +
+    vars @ varstack @+ th!
     1 vars +! 1 varstack +! ;
 : var> ( -- addr )
     -1 varstack +!
-    varstack @+ swap th@
+    varstack @+ th@
     1+ 2* cells vars + ;
 Variable greed-counts  9 cells allot \ no more than 9 nested greedy loops
 : greed' ( -- addr )  greed-counts dup @ + ;

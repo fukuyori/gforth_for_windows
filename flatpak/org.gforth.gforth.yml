@@ -2,8 +2,8 @@ app-id: org.gforth.gforth
 runtime: org.freedesktop.Platform
 platform-extensions:
   - org.freedesktop.Platform.GL.default
-runtime-version: "25.08"
-branch: "25.08"
+runtime-version: "26.08"
+branch: "26.08"
 sdk: org.freedesktop.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.stb
@@ -23,5 +23,5 @@ modules:
     no-autogen: true
     sources:
       - type: archive
-        url: https://net2o.de/gforth-dist/Snapshots/0.7.9_20260923/gforth-0.7.9_20260923.tar.xz
-        sha256: faca0e0779f978284ca5600a4b421ba6b526a438d54ae9bfd9fc8e9e5bc5985a
+        url: https://net2o.de/gforth-dist/Snapshots/1.0.1/gforth-1.0.1.tar.xz
+        sha256: d7cb2a1d0d0d9e4d895bce0739179ba97037a9da790fea536afcdc91f6d93d00

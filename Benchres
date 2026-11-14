@@ -1,5 +1,5 @@
 Authors: Anton Ertl, Bernd Paysan, David Kühling
-Copyright (C) 2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025 Free Software Foundation, Inc.
+Copyright (C) 2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026 Free Software Foundation, Inc.
 
    This file is free documentation; the Free Software Foundation gives
 unlimited permission to copy, distribute and modify it.
@@ -15,7 +15,14 @@ http://www.complang.tuwien.ac.at/papers/ertl&maierhofer95.ps.gz.
 All times are given in milliseconds of CPU time for the new output
 format, in seconds of CPU time for the old output format.
 
+gforth-1.0:
+ sieve bubble matrix    fib    fft CPU; gcc
+ 275.6  264.6  125.8  348.7  178.3 SPARC-M8 5067MHz; gcc-16.1.0
+ 297.2  352.5  184.9  318.4  250.5 Spacemit X60 1600MHz; gcc-14.2.0
+1420.0 1570.0 1520.0 1670.0  980.0 Cavium OCTEON (MIPS 64b) 1000MHz; gcc-8.4.0
 
+
+Before gforth-1.0:
 After 2026-08-24 (new output format, all architectures in one list):
   sieve bubble matrix    fib    fft release; CPU; gcc
    16.8   18.2    8.9   23.4   11.6 20260910; Ryzen AI Pro 350 (Zen 5) 4900MHz; gcc-15.2

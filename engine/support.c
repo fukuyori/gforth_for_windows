@@ -1,7 +1,7 @@
 /* Gforth support functions
 
   Authors: Bernd Paysan, Anton Ertl
-  Copyright (C) 1995,1996,1997,1998,2000,2003,2004,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025 Free Software Foundation, Inc.
+  Copyright (C) 1995,1996,1997,1998,2000,2003,2004,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026 Free Software Foundation, Inc.
 
   This file is part of Gforth.
 
@@ -670,9 +670,10 @@ struct Cellquad read_line(Char *c_addr, UCell u1, FILE *wfileid)
   if (u1>0)
     gf_regetc(wfileid);
 #endif
+  flockfile(wfileid);
   for(u2=0; u2<u1; u2++) {
     do{
-      c = getc(wfileid);
+      c = getc_unlocked(wfileid);
     } while (c == EOF && ferror(wfileid)==EINTR);
     if (c==EOF) {
       int err=ferror(wfileid);
@@ -712,7 +713,7 @@ struct Cellquad read_line(Char *c_addr, UCell u1, FILE *wfileid)
     if (c=='\n') break;
     if (c=='\r') {
       do{
-        c = getc(wfileid);
+        c = getc_unlocked(wfileid);
       } while (c == EOF && ferror(wfileid)==EINTR);
       if (c==EOF) {
         int err=ferror(wfileid);
@@ -734,6 +735,7 @@ struct Cellquad read_line(Char *c_addr, UCell u1, FILE *wfileid)
 #endif
     c_addr[u2] = (Char)c;
   }
+  funlockfile(wfileid);
   r.n1 = u2;
   r.n2 = flag;
   r.n3 = u3;

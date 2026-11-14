@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <malloc.h>
+#include <stdio.h>
 
 #ifndef GFORTH_WIN32_CADDR_T
 #define GFORTH_WIN32_CADDR_T
@@ -25,6 +26,17 @@ typedef char *caddr_t;
 
 #ifndef alloca
 #define alloca _alloca
+#endif
+
+/* POSIX stdio locking (used by read_line in engine/support.c) */
+#ifndef flockfile
+#define flockfile _lock_file
+#endif
+#ifndef funlockfile
+#define funlockfile _unlock_file
+#endif
+#ifndef getc_unlocked
+#define getc_unlocked _getc_nolock
 #endif
 
 int asprintf(char **strp, const char *fmt, ...);
