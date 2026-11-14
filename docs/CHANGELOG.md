@@ -5,7 +5,7 @@ Version format: `<upstream base>+fukuyori.<major>.<minor>`.  Entries were
 compiled from the git history, the GitHub release notes, and
 `WINDOWS-RELEASE-3.1.md`; commit hashes are given for traceability.
 
-## Unreleased (1.0.2+fukuyori.4.0)
+## 1.0.2+fukuyori.4.0 (2026-11-14)
 
 ### Upstream
 - Merged the upstream release tag `1.0.2` (83 non-merge commits, 147 files
